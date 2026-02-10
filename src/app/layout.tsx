@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,9 +21,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <head>
@@ -39,8 +40,24 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
+
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Page content */}
+        <main style={{ flex: 1 }}>
+          {children}
+        </main>
+
+        {/* Footer */}
+        <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px 24px" }}>
+          <Footer />
+        </div>
       </body>
     </html>
   );
