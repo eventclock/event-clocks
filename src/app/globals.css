@@ -33,3 +33,61 @@ input:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.25);
 }
+
+/* ---------- Site Typography (preflight-safe) ---------- */
+h1 {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 12px;
+}
+
+h2 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 18px 0 8px;
+}
+
+p {
+  line-height: 1.7;
+  margin: 10px 0;
+  opacity: 0.9;
+}
+
+/* Optional: nicer links */
+/* Default links (content text) */
+.typography a,
+.card a:not(.btn) {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.9;
+}
+
+/* Button-like links */
+a.btn {
+  text-decoration: none;
+}
+
+a:hover {
+  opacity: 1;
+}
+
+/* ---------- Reusable "card" helper class ---------- */
+.card {
+  border: 1.5px solid rgba(196, 181, 253, 0.45);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);
+  padding: 16px;
+}
+
+/* Optional subtitle helper */
+.subtitle {
+  margin-top: -6px;
+  margin-bottom: 14px;
+  opacity: 0.75;
+}

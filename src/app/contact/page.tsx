@@ -1,20 +1,31 @@
+import PageShell from "@/components/PageShell";
+
 export default function ContactPage() {
   return (
-    <main style={{ maxWidth: 800, margin: "0 auto", padding: 24 }}>
-      <h1>Contact</h1>
-
+    <PageShell
+      title="Contact"
+      subtitle="Feedback and questions are welcome."
+    >
       <p>
-        For questions, feedback, or issues, you can reach us at:
+        For questions, feedback, or issues related to Event Clocks, you can
+        reach us at:
       </p>
 
       <p>
         <strong>Email:</strong>{" "}
-        <a href="mailto:admin@event-clocks.com">admin@event-clocks.com</a>
+        <a href="mailto:admin@event-clocks.com">
+          admin@event-clocks.com
+        </a>
       </p>
 
       <p>
-        We may not be able to respond immediately, but all messages are reviewed.
+        Please replace the email address above with your Cloudflare Email Routing
+        address.
       </p>
-    </main>
+
+      <p>
+        While responses may not be immediate, all messages are reviewed.
+      </p>
+    </PageShell>
   );
 }

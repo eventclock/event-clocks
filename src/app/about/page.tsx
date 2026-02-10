@@ -1,22 +1,30 @@
+import PageShell from "@/components/PageShell";
+
 export default function AboutPage() {
   return (
-    <main style={{ maxWidth: 800, margin: "0 auto", padding: 24 }}>
-      <h1>About</h1>
-
+    <PageShell
+      title="About"
+      subtitle="What Event Clocks is and why it exists."
+    >
       <p>
-        Event Clocks is a simple, practical set of time-related tools designed to
-        help people compare timezones, plan meetings, and avoid scheduling
-        mistakes across regions.
+        Event Clocks is a small collection of practical time-based tools designed
+        to make scheduling across timezones clearer and less error-prone.
       </p>
 
       <p>
-        The goal is clarity and usefulness — no accounts required, no unnecessary
-        complexity.
+        It focuses on simplicity, accuracy, and usefulness — no user accounts,
+        no unnecessary features, and no distractions.
       </p>
 
       <p>
-        This site is actively being improved. Feedback is always welcome.
+        The goal is to provide tools that people can trust when planning meetings,
+        events, or deadlines across regions.
       </p>
-    </main>
+
+      <p>
+        This site is actively evolving, with new tools and improvements added
+        over time.
+      </p>
+    </PageShell>
   );
 }
