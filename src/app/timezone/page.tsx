@@ -1,13 +1,14 @@
 // src/app/timezone/page.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   formatInTimeZone,
   getLocalTimeZone,
   getUtcOffsetLabelAtUtc,
   zonedDateTimeLocalToUtc,
 } from "@/lib/tz";
+import TimezoneDatalist from "@/components/TimezoneDatalist";
 
 const FALLBACK_TZS = [
   "UTC",
@@ -41,6 +42,13 @@ const semantic = {
   result: "rgba(167,243,208,0.6)", // green – output
   accent: "rgba(253,224,71,0.55)", // yellow – highlight
 };
+
+function toLocalDatetimeInputValue(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
 
 function getTimeZoneChoices(): string[] {
   const anyIntl = Intl as any;
@@ -84,15 +92,10 @@ function getOffsetMsAtUtc(timeZone: string, dateUtc: Date): number {
   const mm = get("minute");
   const ss = get("second");
 
-  // "asUTC": interpret the TZ wall-clock output as if it were UTC
   const asUtcMs = Date.UTC(y, m - 1, d, hh, mm, ss);
   return asUtcMs - dateUtc.getTime();
 }
 
-/**
- * Creates a label like (+16h) or (−3:30h) representing:
- * target local clock time minus from local clock time at the same UTC instant.
- */
 function formatLocalDiffLabel(fromOffsetMs: number, targetOffsetMs: number): string {
   const diffMs = targetOffsetMs - fromOffsetMs;
   if (diffMs === 0) return "(±0h)";
@@ -134,8 +137,48 @@ function safeParse(json: string | null): SavedState | null {
   }
 }
 
+type SortKey = "tz" | "local" | "offset";
+type SortDir = "asc" | "desc";
+
+type Row = {
+  tz: string;
+  time: string;
+  offset: string;
+  diffLabel: string;
+  targetOffsetMs: number;
+  localMs: number;
+};
+
+function SortIndicator({
+  active,
+  dir,
+}: {
+  active: boolean;
+  dir: SortDir;
+}) {
+  // Always reserve space so headers never change width.
+  const symbol = active ? (dir === "asc" ? "▲" : "▼") : "↕";
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: "inline-block",
+        width: 14,
+        textAlign: "center",
+        opacity: active ? 0.9 : 0.35,
+        marginLeft: 6,
+        fontSize: 12,
+      }}
+      title="Sortable"
+    >
+      {symbol}
+    </span>
+  );
+}
+
 export default function TimezonePage() {
-  const tzChoices = useMemo(() => getTimeZoneChoices(), []);
+  // Kept for compatibility / future use; also makes your Intl fallback available.
+  useMemo(() => getTimeZoneChoices(), []);
 
   const [fromTz, setFromTz] = useState(getLocalTimeZone());
   const [dtLocal, setDtLocal] = useState(""); // datetime-local
@@ -146,6 +189,13 @@ export default function TimezonePage() {
   const [favorites, setFavorites] = useState<string[]>(DEFAULT_FAVORITES);
 
   const [copied, setCopied] = useState(false);
+
+  // Sorting
+  const [sortKey, setSortKey] = useState<SortKey>("offset");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  // Track whether dt was explicitly provided in the URL (share links)
+  const hasDtFromUrlRef = useRef(false);
 
   // Load localStorage
   useEffect(() => {
@@ -169,7 +219,11 @@ export default function TimezonePage() {
     const to = p.get("to");
 
     if (from && isValidIanaTz(from)) setFromTz(from);
-    if (dt) setDtLocal(dt);
+
+    if (dt) {
+      hasDtFromUrlRef.current = true;
+      setDtLocal(dt);
+    }
 
     if (to) {
       const list = to
@@ -180,6 +234,13 @@ export default function TimezonePage() {
       if (list.length > 0) setTargets(Array.from(new Set(list)));
     }
   }, []);
+
+  // Default datetime to "now" when entering the page (but do NOT override share-link dt)
+  useEffect(() => {
+    if (!dtLocal && !hasDtFromUrlRef.current) {
+      setDtLocal(toLocalDatetimeInputValue(new Date()));
+    }
+  }, [dtLocal]);
 
   // Persist state
   useEffect(() => {
@@ -206,24 +267,48 @@ export default function TimezonePage() {
     };
   }, [utcDate, fromTz]);
 
-  const rows = useMemo(() => {
+  const rows: Row[] = useMemo(() => {
     if (!utcDate || fromOffsetMs == null) return [];
 
-    // De-dupe targets AND avoid repeating the "from" timezone in comparison
     const uniqueTargets = Array.from(new Set(targets))
       .filter(isValidIanaTz)
       .filter((tz) => tz !== fromTz);
 
     return uniqueTargets.map((tz) => {
       const targetOffsetMs = getOffsetMsAtUtc(tz, utcDate);
+      const localMs = utcDate.getTime() + targetOffsetMs;
+
       return {
         tz,
         time: formatInTimeZone(utcDate, tz),
         offset: getUtcOffsetLabelAtUtc(tz, utcDate),
         diffLabel: formatLocalDiffLabel(fromOffsetMs, targetOffsetMs),
+        targetOffsetMs,
+        localMs,
       };
     });
   }, [targets, utcDate, fromOffsetMs, fromTz]);
+
+  const sortedRows = useMemo(() => {
+    const dir = sortDir === "asc" ? 1 : -1;
+
+    const cmp = (a: Row, b: Row) => {
+      if (sortKey === "tz") return dir * a.tz.localeCompare(b.tz, "en");
+      if (sortKey === "offset") return dir * (a.targetOffsetMs - b.targetOffsetMs);
+      return dir * (a.localMs - b.localMs); // local
+    };
+
+    return [...rows].sort(cmp);
+  }, [rows, sortKey, sortDir]);
+
+  const onSort = (k: SortKey) => {
+    if (sortKey === k) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(k);
+      setSortDir("asc");
+    }
+  };
 
   const addTarget = (tzOverride?: string) => {
     const tz = (tzOverride ?? newTarget).trim();
@@ -273,7 +358,7 @@ export default function TimezonePage() {
 
   const canCompute = dtLocal.length > 0 && isValidIanaTz(fromTz);
 
-  // Cards
+  // Styles
   const inputCardStyle: React.CSSProperties = {
     border: `1.5px solid ${semantic.input}`,
     borderRadius: 12,
@@ -305,38 +390,33 @@ export default function TimezonePage() {
     padding: 12,
   };
 
-  // Inputs/buttons
   const inputStyle: React.CSSProperties = {
-  padding: 10,
-  borderRadius: 8,
-  border: "1px solid rgba(196,181,253,0.45)", // visible border
-  background: "rgba(255,255,255,0.04)",
-  width: "100%",
-  outline: "none",
-  WebkitAppearance: "none",
-  appearance: "none",
-};
-
+    padding: 10,
+    borderRadius: 8,
+    border: "1px solid rgba(196,181,253,0.45)",
+    background: "rgba(255,255,255,0.04)",
+    width: "100%",
+    outline: "none",
+    WebkitAppearance: "none",
+    appearance: "none",
+  };
 
   const buttonStyle: React.CSSProperties = {
-  padding: "10px 14px",
-  borderRadius: 8,
-  border: "1px solid rgba(196,181,253,0.55)", // stronger + matches purple card
-  background: "rgba(255,255,255,0.06)",
-  cursor: "pointer",
-  whiteSpace: "nowrap",
-  fontWeight: 700,
-};
+    padding: "10px 14px",
+    borderRadius: 8,
+    border: "1px solid rgba(196,181,253,0.55)",
+    background: "rgba(255,255,255,0.06)",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    fontWeight: 700,
+  };
 
+  const buttonPrimaryStyle: React.CSSProperties = {
+    ...buttonStyle,
+    borderColor: "rgba(167,243,208,0.75)",
+    background: "rgba(167,243,208,0.14)",
+  };
 
- const buttonPrimaryStyle: React.CSSProperties = {
-  ...buttonStyle,
-  borderColor: "rgba(167,243,208,0.75)",
-  background: "rgba(167,243,208,0.14)",
-};
-
-
-  // Chips
   const chipBase: React.CSSProperties = {
     display: "inline-flex",
     alignItems: "center",
@@ -360,6 +440,20 @@ export default function TimezonePage() {
     border: "1px solid rgba(255,255,255,0.18)",
     background: "rgba(255,255,255,0.04)",
   };
+
+  const thClickable: React.CSSProperties = {
+    padding: "10px 8px",
+    borderBottom: "1px solid rgba(255,255,255,0.14)",
+    cursor: "pointer",
+    userSelect: "none",
+    whiteSpace: "nowrap",
+  };
+
+  const rowSep = "1px solid rgba(255,255,255,0.12)";
+
+  const stripeA = "rgba(255,255,255,0.028)";
+  const stripeB = "rgba(255,255,255,0.00)";
+  const hoverBg = "rgba(255,255,255,0.055)";
 
   return (
     <main style={{ maxWidth: 980, margin: "0 auto", padding: 24 }}>
@@ -398,11 +492,7 @@ export default function TimezonePage() {
             </div>
           </div>
 
-          <datalist id="tz-list">
-            {tzChoices.map((tz) => (
-              <option key={tz} value={tz} />
-            ))}
-          </datalist>
+          <TimezoneDatalist />
 
           <div
             style={{
@@ -430,7 +520,6 @@ export default function TimezonePage() {
         {/* FAVORITES + ADD + COMPARING */}
         <section style={compareCardStyle}>
           <div style={{ display: "grid", gap: 14 }}>
-            {/* Add timezone first (bordered) */}
             <div style={subCard}>
               <div style={{ fontSize: 12, opacity: 0.75, fontWeight: 800, marginBottom: 8 }}>
                 Add a timezone
@@ -503,7 +592,7 @@ export default function TimezonePage() {
               </div>
             </div>
 
-            {/* Comparing list (management) */}
+            {/* Comparing list */}
             <div style={subCard}>
               <div style={{ fontSize: 12, opacity: 0.75, fontWeight: 800, marginBottom: 8 }}>
                 Comparing ({targets.length})
@@ -578,42 +667,72 @@ export default function TimezonePage() {
               </div>
 
               <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: 13,
+                    tableLayout: "fixed",
+                  }}
+                >
+                  <colgroup>
+                    <col style={{ width: "45%" }} />
+                    <col style={{ width: "40%" }} />
+                    <col style={{ width: "15%" }} />
+                  </colgroup>
+
                   <thead>
                     <tr style={{ textAlign: "left", opacity: 0.85 }}>
-                      <th style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+                      <th style={thClickable} onClick={() => onSort("tz")}>
                         Timezone
+                        <SortIndicator active={sortKey === "tz"} dir={sortDir} />
                       </th>
-                      <th style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+                      <th style={thClickable} onClick={() => onSort("local")}>
                         Local time
+                        <SortIndicator active={sortKey === "local"} dir={sortDir} />
                       </th>
-                      <th style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+                      <th style={thClickable} onClick={() => onSort("offset")}>
                         UTC offset
+                        <SortIndicator active={sortKey === "offset"} dir={sortDir} />
                       </th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {fromRow && (
                       <tr style={{ borderLeft: `4px solid ${semantic.accent}` }}>
-                        <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                        <td style={{ padding: "10px 8px", borderBottom: rowSep }}>
                           <strong>{fromRow.tz}</strong>{" "}
                           <span style={{ opacity: 0.7 }}>(From)</span>
                         </td>
-                        <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                        <td style={{ padding: "10px 8px", borderBottom: rowSep }}>
                           <strong>{fromRow.time}</strong>
                         </td>
-                        <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                        <td style={{ padding: "10px 8px", borderBottom: rowSep }}>
                           <strong>{fromRow.offset}</strong>
                         </td>
                       </tr>
                     )}
 
-                    {rows.map((r) => (
-                      <tr key={r.tz}>
-                        <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                    {sortedRows.map((r, idx) => (
+                      <tr
+                        key={r.tz}
+                        style={{
+                          background: idx % 2 === 0 ? stripeA : stripeB,
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLTableRowElement).style.background = hoverBg;
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLTableRowElement).style.background =
+                            idx % 2 === 0 ? stripeA : stripeB;
+                        }}
+                      >
+                        <td style={{ padding: "10px 8px", borderBottom: rowSep }}>
                           {r.tz}
                         </td>
-                        <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+
+                        <td style={{ padding: "10px 8px", borderBottom: rowSep }}>
                           <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
                             <span>{r.time}</span>
                             <span
@@ -629,13 +748,14 @@ export default function TimezonePage() {
                             </span>
                           </div>
                         </td>
-                        <td style={{ padding: "10px 8px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+
+                        <td style={{ padding: "10px 8px", borderBottom: rowSep }}>
                           {r.offset}
                         </td>
                       </tr>
                     ))}
 
-                    {rows.length === 0 && (
+                    {sortedRows.length === 0 && (
                       <tr>
                         <td colSpan={3} style={{ padding: "10px 8px", opacity: 0.75 }}>
                           Add at least one comparison timezone.
