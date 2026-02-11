@@ -19,11 +19,6 @@ export default function ContactPage() {
       </p>
 
       <p>
-        Please replace the email address above with your Cloudflare Email Routing
-        address.
-      </p>
-
-      <p>
         While responses may not be immediate, all messages are reviewed.
       </p>
     </PageShell>
