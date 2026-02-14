@@ -71,7 +71,7 @@ export function zonedDateTimeLocalToUtc(dateTimeLocal: string, fromTimeZone: str
   return new Date(utcGuessMs);
 }
 
-export function formatInTimeZone(dateUtc: Date, timeZone: string): string {
+export function formatInTimeZone_old(dateUtc: Date, timeZone: string): string {
   // Friendly output like: 2026-02-10 15:30:00
   const dtf = getFormatter(timeZone);
   const parts = dtf.formatToParts(dateUtc);
@@ -85,6 +85,18 @@ export function formatInTimeZone(dateUtc: Date, timeZone: string): string {
   const ss = get("second");
 
   return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+}
+
+export function formatInTimeZone(date: Date, timeZone: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
 }
 
 export function getLocalTimeZone(): string {
