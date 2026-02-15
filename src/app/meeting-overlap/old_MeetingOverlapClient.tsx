@@ -165,88 +165,19 @@ function minutesToHHMM(mins: number) {
 function hhmmToMinutes(v: string) {
   const [hh, mm] = v.split(":").map((x) => parseInt(x, 10));
   if (!Number.isFinite(hh) || !Number.isFinite(mm)) return 0;
-  return clampInt(hh * 60 + mm, 0, 23 * 60 + 45);
+  return clampInt(hh * 60 + mm, 0, 23 * 60 + 45); // up to 23:45
 }
 
-// ---- Info icon with click/tap tooltip ----
-function InfoTip({ id, text }: { id: string; text: string }) {
-  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    const onClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const root = document.getElementById(id);
-      if (root && !root.contains(target)) setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("click", onClick);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("click", onClick);
-    };
-  }, [open, id]);
-
-  return (
-    <span id={id} className="relative inline-flex items-center">
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-sm border border-slate-200 text-[10px] font-bold text-slate-500 hover:text-slate-700"
-        aria-label="Info"
-        aria-expanded={open}
-      >
-        i
-      </button>
-
-      {open && (
-        <div
-          className="absolute z-20 top-6 left-0 w-72 rounded-md border border-slate-200 bg-white p-2 shadow-lg text-[11px] text-slate-700"
-          role="tooltip"
-        >
-          {text}
-        </div>
-      )}
-    </span>
-  );
-}
-
-// ---- Compact UI (neutral structure + gray-blue primary + gray-green success) ----
-const inputCls =
-  "mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100";
-
-const selectCls =
-  "mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100";
-
-const btnBase =
-  "inline-flex items-center justify-center rounded-md px-2 py-1 text-[11px] font-semibold border transition disabled:opacity-50 disabled:cursor-not-allowed";
-
-const btnNeutral = `${btnBase} bg-white border-slate-200 hover:bg-slate-50 text-slate-800`;
-
-// Primary (gray-blue, darker, not pastel)
-const btnPrimary = `${btnBase} bg-blue-900 border-blue-900 text-white hover:bg-blue-800 disabled:bg-slate-200 disabled:border-slate-200 disabled:text-white/70`;
-
-// Success (gray-green, darker, not pastel)
-const btnSuccessActive = `${btnBase} bg-green-900 border-green-900 text-white hover:bg-green-800`;
-const btnSuccessIdle = `${btnBase} bg-white border-slate-200 hover:bg-slate-50 text-slate-800`;
-
-const pillBase =
-  "inline-flex items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-semibold leading-none";
-const pillNeutral = `${pillBase} border-slate-200 bg-white text-slate-600`;
-const pillOverlapLegend = `${pillBase} border-slate-200 bg-green-50 text-slate-800`;
-const pillFavorite = `${pillBase} border-slate-200 bg-white text-slate-800 hover:bg-slate-50`;
-
+// ---- Component ----
 export default function MeetingOverlapClient() {
   const defaultTZ = "America/Los_Angeles";
 
+  // ✅ Mounted gate to eliminate hydration warnings completely
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // Load timeZones only on client
   const [timeZones, setTimeZones] = useState<string[]>([]);
   useEffect(() => {
     if (!mounted) return;
@@ -272,8 +203,9 @@ export default function MeetingOverlapClient() {
     setBaseDateLocal(`${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`);
   }, [mounted]);
 
-  const [startMin, setStartMin] = useState<number>(8 * 60);
-  const [endMin, setEndMin] = useState<number>(22 * 60);
+  const [startMin, setStartMin] = useState<number>(8 * 60);   // 08:00
+  const [endMin, setEndMin] = useState<number>(22 * 60);      // 22:00
+
 
   const [stepMinutes, setStepMinutes] = useState<StepMinutes>(30);
   const [meetingMinutes, setMeetingMinutes] = useState<MeetingMinutes>(60);
@@ -282,8 +214,9 @@ export default function MeetingOverlapClient() {
   const [sortMode, setSortMode] = useState<"utc" | "overlapFirst">("overlapFirst");
 
   useEffect(() => {
-    if (startMin > endMin) setEndMin(startMin);
-  }, [startMin, endMin]);
+  if (startMin > endMin) setEndMin(startMin);
+    }, [startMin, endMin]);
+
 
   const canAddTZ = useMemo(() => {
     const tz = newTZInput.trim();
@@ -400,11 +333,14 @@ export default function MeetingOverlapClient() {
         const windowStart = startMin;
         const windowEnd = endMin;
         return start.minutes >= windowStart && end.minutes <= windowEnd;
+
       });
+
+      const utcLabel = utcFmt.format(utcDate).replace(",", "") + " UTC";
 
       out.push({
         utcISO: toUtcISO(utcDate),
-        utcLabel: utcFmt.format(utcDate).replace(",", "") + " UTC",
+        utcLabel,
         locals,
         isOverlap,
       });
@@ -415,21 +351,33 @@ export default function MeetingOverlapClient() {
     const firstTZ = tzList[0]?.tz;
 
     return out.slice().sort((a, b) => {
-      if (a.isOverlap !== b.isOverlap) return a.isOverlap ? -1 : 1;
-      const aStart = localDateTimeParts(new Date(a.utcISO), firstTZ).minutes;
-      const bStart = localDateTimeParts(new Date(b.utcISO), firstTZ).minutes;
-      return aStart - bStart;
+        if (a.isOverlap !== b.isOverlap) return a.isOverlap ? -1 : 1;
+
+        const aStart = localDateTimeParts(new Date(a.utcISO), firstTZ).minutes;
+        const bStart = localDateTimeParts(new Date(b.utcISO), firstTZ).minutes;
+
+        return aStart - bStart;
     });
-  }, [baseDateLocal, tzList, startMin, endMin, stepMinutes, meetingMinutes, businessHoursOnly, sortMode]);
+  }, [
+    baseDateLocal,
+    tzList,
+    startMin,
+    endMin,
+    stepMinutes,
+    meetingMinutes,
+    businessHoursOnly,
+    sortMode,
+  ]);
 
   const overlapCount = useMemo(() => rows.filter((r) => r.isOverlap).length, [rows]);
 
+  // ✅ Render a stable placeholder during SSR+hydration
   if (!mounted) {
     return (
       <PageShell title="Meeting Overlap" subtitle="Find times that work across multiple time zones.">
-        <section className="rounded-md border border-slate-200 bg-white shadow-sm">
-          <div className="p-3">
-            <div className="text-[11px] text-slate-600">Loading planner…</div>
+        <section className="rounded-2xl border border-black/10 bg-white shadow-sm">
+          <div className="p-5">
+            <div className="text-sm text-black/60">Loading planner…</div>
           </div>
         </section>
       </PageShell>
@@ -438,27 +386,25 @@ export default function MeetingOverlapClient() {
 
   return (
     <PageShell title="Meeting Overlap" subtitle="Find times that work across multiple time zones.">
-      <div className="space-y-3">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          {/* Time Zones */}
-          <section className="lg:col-span-2 rounded-md border border-slate-200 bg-white shadow-sm">
-            <div className="p-3">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <section className="lg:col-span-2 rounded-2xl border border-black/10 bg-white shadow-sm">
+            <div className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-[13px] font-semibold text-slate-900">Time zones</h2>
-                  <p className="mt-1 text-[11px] text-slate-600">
-                    Add up to 6 time zones.
-                    <InfoTip id="tip-tz" text="Use IANA format like Asia/Manila or America/New_York. Favorites are stored in this browser only." />
+                  <h2 className="text-lg font-semibold text-black/90">Time zones</h2>
+                  <p className="text-sm text-black/60">
+                    Type a time zone (e.g., <span className="font-semibold">Asia/Manila</span>) then add it. Save favorites for one-click reuse.
                   </p>
                 </div>
 
-                <div className="hidden sm:flex items-center gap-2 rounded-md border border-slate-200 px-2 py-1 bg-white">
-                  <span className="text-[11px] font-medium text-slate-600">Selected</span>
-                  <span className="text-[11px] font-semibold text-slate-800">{tzList.length} / 6</span>
+                <div className="hidden sm:flex items-center gap-2 rounded-full border border-black/10 px-3 py-1.5 bg-black/[0.02]">
+                  <span className="text-xs font-medium text-black/60">Selected</span>
+                  <span className="text-xs font-semibold text-black/80">{tzList.length}</span>
                 </div>
               </div>
 
-              <div className="mt-3">
+              <div className="mt-4">
                 <div className="flex flex-col sm:flex-row gap-2">
                   <div className="flex-1">
                     <label className="sr-only">Add time zone</label>
@@ -480,8 +426,9 @@ export default function MeetingOverlapClient() {
                         if (e.key === "Enter") addTZ();
                       }}
                       list="iana-timezones"
-                      placeholder="Type a time zone (Asia/Manila)"
-                      className={inputCls}
+                      placeholder="Type a time zone, e.g. Asia/Manila"
+                      className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm
+                                 focus:outline-none focus:ring-2 focus:ring-black/10"
                     />
 
                     {timeZones.length > 0 && (
@@ -493,20 +440,28 @@ export default function MeetingOverlapClient() {
                     )}
 
                     {tzInputError ? (
-                      <div className="mt-1 text-[11px] font-semibold text-rose-600">{tzInputError}</div>
+                      <div className="mt-1 text-xs font-semibold text-rose-600">{tzInputError}</div>
                     ) : (
-                      <div className="mt-1 text-[11px] text-slate-500">Example: America/Los_Angeles, Asia/Manila</div>
+                      <div className="mt-1 text-xs text-black/50">Tip: Start typing “America/” or “Asia/”.</div>
                     )}
                   </div>
 
-                  <button onClick={() => addTZ()} disabled={!canAddTZ} className={btnPrimary}>
-                    Add
+                  <button
+                    onClick={() => addTZ()}
+                    disabled={!canAddTZ}
+                    className="rounded-xl px-4 py-2 text-sm font-semibold shadow-sm border border-black/10
+                               bg-black text-white disabled:bg-black/20 disabled:text-white/70 disabled:cursor-not-allowed
+                               hover:bg-black/90 transition"
+                  >
+                    + Add
                   </button>
 
                   <button
                     onClick={() => toggleFavorite(newTZInput.trim())}
                     disabled={!newTZInput.trim() || !isValidIanaTz(newTZInput.trim())}
-                    className={btnNeutral}
+                    className="rounded-xl px-4 py-2 text-sm font-semibold shadow-sm border border-black/10 bg-white
+                               disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black/[0.03] transition"
+                    title="Save/unsave this as a favorite"
                   >
                     ★ Favorite
                   </button>
@@ -514,14 +469,14 @@ export default function MeetingOverlapClient() {
 
                 <div className="mt-3">
                   <div className="flex items-center justify-between">
-                    <div className="text-[14px] font-semibold text-slate-600">Favorites</div>
+                    <div className="text-xs font-semibold text-black/60">Favorites (saved in this browser)</div>
                     {favorites.length > 0 && (
                       <button
                         onClick={() => {
                           setFavorites([]);
                           saveFavorites([]);
                         }}
-                        className="text-[11px] font-semibold text-slate-600"
+                        className="text-xs font-semibold text-black/60 hover:text-black/80 transition"
                       >
                         Clear
                       </button>
@@ -529,15 +484,26 @@ export default function MeetingOverlapClient() {
                   </div>
 
                   {favorites.length === 0 ? (
-                    <div className="mt-2 text-[11px] text-slate-500">No favorites yet.</div>
+                    <div className="mt-2 text-sm text-black/50">No favorites yet. Add a time zone above, then click ★ Favorite.</div>
                   ) : (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {favorites.map((tz) => (
-                        <div key={tz} className={pillFavorite}>
-                          <button onClick={() => addFromFavorite(tz)} className="hover:text-slate-900">
+                        <div
+                          key={tz}
+                          className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/[0.02] px-3 py-1.5"
+                        >
+                          <button
+                            onClick={() => addFromFavorite(tz)}
+                            className="text-xs font-semibold text-black/80 hover:text-black transition"
+                            title="Add this time zone"
+                          >
                             + {tz}
                           </button>
-                          <button onClick={() => toggleFavorite(tz)} className="font-bold text-slate-400 hover:text-slate-700" title="Remove">
+                          <button
+                            onClick={() => toggleFavorite(tz)}
+                            className="text-xs font-bold text-black/40 hover:text-black/70 transition"
+                            title="Remove from favorites"
+                          >
                             ×
                           </button>
                         </div>
@@ -547,20 +513,40 @@ export default function MeetingOverlapClient() {
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2">
+              <div className="mt-5 space-y-2">
                 {tzList.map((t) => {
                   const isFav = favorites.includes(t.tz);
                   return (
-                    <div key={t.id} className="flex flex-col sm:flex-row sm:items-center gap-2 rounded-md border border-slate-200 bg-white p-2">
+                    <div
+                      key={t.id}
+                      className="flex flex-col sm:flex-row sm:items-center gap-2 rounded-xl border border-black/10 bg-black/[0.02] p-3"
+                    >
                       <div className="flex-1">
-                        <input value={t.tz} onChange={(e) => setTZ(t.id, e.target.value)} list="iana-timezones" className={inputCls} />
+                        <input
+                          value={t.tz}
+                          onChange={(e) => setTZ(t.id, e.target.value)}
+                          list="iana-timezones"
+                          className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm shadow-sm
+                                     focus:outline-none focus:ring-2 focus:ring-black/10"
+                        />
                       </div>
 
-                      <button onClick={() => toggleFavorite(t.tz)} className={btnNeutral}>
+                      <button
+                        onClick={() => toggleFavorite(t.tz)}
+                        className="rounded-lg px-3 py-2 text-sm font-semibold border border-black/10 bg-white shadow-sm
+                                   hover:bg-black/[0.03] transition"
+                        title={isFav ? "Remove from favorites" : "Save to favorites"}
+                      >
                         {isFav ? "★ Saved" : "☆ Save"}
                       </button>
 
-                      <button onClick={() => removeTZ(t.id)} disabled={tzList.length <= 1} className={btnNeutral}>
+                      <button
+                        onClick={() => removeTZ(t.id)}
+                        disabled={tzList.length <= 1}
+                        className="rounded-lg px-3 py-2 text-sm font-semibold border border-black/10 bg-white shadow-sm
+                                   disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black/[0.03] transition"
+                        title={tzList.length <= 1 ? "Keep at least one time zone" : "Remove"}
+                      >
                         Remove
                       </button>
                     </div>
@@ -570,45 +556,59 @@ export default function MeetingOverlapClient() {
             </div>
           </section>
 
-          {/* Settings */}
-          <section className="rounded-md border border-slate-200 bg-white shadow-sm">
-            <div className="p-3">
-              <h2 className="text-[13px] font-semibold text-slate-900">Time window</h2>
-              <p className="mt-1 text-[11px] text-slate-600">
-                Overlap requires the <span className="font-semibold">full meeting length</span> to fit in every person’s local window.
+          <section className="rounded-2xl border border-black/10 bg-white shadow-sm">
+            <div className="p-5">
+              <h2 className="text-lg font-semibold text-black/90">Settings</h2>
+              <p className="text-sm text-black/60">
+                Step controls how often we try a start time. Meeting length controls the interval we validate.
               </p>
 
-              <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="mt-4 grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <label className="text-[11px] font-semibold text-slate-700">
-                    Scan date (UTC)
-                    <InfoTip id="tip-date" text="We scan the full UTC day for this date. Local dates may differ by time zone." />
-                  </label>
-                  <input type="date" value={baseDateLocal} onChange={(e) => setBaseDateLocal(e.target.value)} className={inputCls} />
+                  <label className="text-xs font-semibold text-black/70">Date</label>
+                  <input
+                    type="date"
+                    value={baseDateLocal}
+                    onChange={(e) => setBaseDateLocal(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm
+                               focus:outline-none focus:ring-2 focus:ring-black/10"
+                  />
+                  <p className="mt-1 text-xs text-black/50">We scan the full UTC day of this date.</p>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-700">
-                    Start (local)
-                    <InfoTip id="tip-start" text="Window start in each person’s own local time." />
-                  </label>
-                  <input type="time" step={15 * 60} value={minutesToHHMM(startMin)} onChange={(e) => setStartMin(hhmmToMinutes(e.target.value))} className={inputCls} />
-                </div>
+                    <label className="text-xs font-semibold text-black/70">Start time</label>
+                    <input
+                        type="time"
+                        step={15 * 60} // 15 minutes
+                        value={minutesToHHMM(startMin)}
+                        onChange={(e) => setStartMin(hhmmToMinutes(e.target.value))}
+                        className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm
+                                focus:outline-none focus:ring-2 focus:ring-black/10"
+                    />
+                    </div>
+
+                    <div>
+                    <label className="text-xs font-semibold text-black/70">End time</label>
+                    <input
+                        type="time"
+                        step={15 * 60} // 15 minutes
+                        value={minutesToHHMM(endMin)}
+                        onChange={(e) => setEndMin(hhmmToMinutes(e.target.value))}
+                        className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm
+                                focus:outline-none focus:ring-2 focus:ring-black/10"
+                    />
+                    </div>
+
 
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-700">
-                    End (local)
-                    <InfoTip id="tip-end" text="Window end in each person’s own local time." />
-                  </label>
-                  <input type="time" step={15 * 60} value={minutesToHHMM(endMin)} onChange={(e) => setEndMin(hhmmToMinutes(e.target.value))} className={inputCls} />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-semibold text-slate-700">
-                    Start-time step
-                    <InfoTip id="tip-step" text="How often we try a new start time (example: every 30 minutes)." />
-                  </label>
-                  <select value={stepMinutes} onChange={(e) => setStepMinutes(parseInt(e.target.value, 10) as StepMinutes)} className={selectCls}>
+                  <label className="text-xs font-semibold text-black/70">Start-time step</label>
+                  <select
+                    value={stepMinutes}
+                    onChange={(e) => setStepMinutes(parseInt(e.target.value, 10) as StepMinutes)}
+                    className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm
+                               focus:outline-none focus:ring-2 focus:ring-black/10"
+                  >
                     <option value={60}>60 min</option>
                     <option value={30}>30 min</option>
                     <option value={15}>15 min</option>
@@ -616,11 +616,13 @@ export default function MeetingOverlapClient() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-700">
-                    Meeting length
-                    <InfoTip id="tip-length" text="Overlap is true only if the entire meeting interval fits in all time zones." />
-                  </label>
-                  <select value={meetingMinutes} onChange={(e) => setMeetingMinutes(parseInt(e.target.value, 10) as MeetingMinutes)} className={selectCls}>
+                  <label className="text-xs font-semibold text-black/70">Meeting length</label>
+                  <select
+                    value={meetingMinutes}
+                    onChange={(e) => setMeetingMinutes(parseInt(e.target.value, 10) as MeetingMinutes)}
+                    className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm
+                               focus:outline-none focus:ring-2 focus:ring-black/10"
+                  >
                     <option value={30}>30 min</option>
                     <option value={45}>45 min</option>
                     <option value={60}>60 min</option>
@@ -629,118 +631,122 @@ export default function MeetingOverlapClient() {
                   </select>
                 </div>
 
-                <div className="col-span-2 flex items-start gap-2 pt-1">
+                <div className="col-span-2 flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={businessHoursOnly}
                     onChange={(e) => setBusinessHoursOnly(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded-sm border-slate-300"
+                    className="h-4 w-4 rounded border-black/20"
                     id="businessHours"
                   />
-                  <label htmlFor="businessHours" className="text-[11px] font-semibold text-slate-700 cursor-pointer leading-5">
+                  <label htmlFor="businessHours" className="text-sm font-semibold text-black/70 cursor-pointer">
                     Business hours (9AM–5PM local)
-                    <InfoTip id="tip-biz" text="If enabled, your start/end window is ignored and replaced with 9AM–5PM for each person." />
                   </label>
+                </div>
+
+                <div className="col-span-2 rounded-xl border border-black/10 bg-black/[0.02] p-3">
+                  <div className="text-xs font-semibold text-black/70">Ordering</div>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      onClick={() => setSortMode("overlapFirst")}
+                      className={[
+                        "flex-1 rounded-lg px-3 py-2 text-sm font-semibold border shadow-sm transition",
+                        sortMode === "overlapFirst"
+                          ? "bg-black text-white border-black"
+                          : "bg-white border-black/10 hover:bg-black/[0.03]",
+                      ].join(" ")}
+                    >
+                      Overlap first
+                    </button>
+                    <button
+                      onClick={() => setSortMode("utc")}
+                      className={[
+                        "flex-1 rounded-lg px-3 py-2 text-sm font-semibold border shadow-sm transition",
+                        sortMode === "utc"
+                          ? "bg-black text-white border-black"
+                          : "bg-white border-black/10 hover:bg-black/[0.03]",
+                      ].join(" ")}
+                    >
+                      UTC order
+                    </button>
+                  </div>
+                </div>
+
+                <div className="col-span-2">
+                  <div className="rounded-xl border border-black/10 bg-white p-3 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-black/70">Overlap slots</span>
+                      <span className="text-sm font-bold text-black/90">{overlapCount}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-black/50">
+                      Overlap rows are visually emphasized. Non-overlap rows are muted for scanning.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
         </div>
 
-        {/* Results */}
-        <section className="rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="p-3 border-b border-slate-200">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-2">
-              <div>
-                <h2 className="text-[13px] font-semibold text-slate-900">Results</h2>
-                <p className="mt-1 text-[11px] text-slate-600">
-                  Highlight means the <span className="font-semibold">full meeting</span> fits inside everyone’s local window.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <div className="text-[11px] font-semibold text-slate-700">
-                  Sort
-                  <InfoTip id="tip-sort" text="Overlap-first groups valid times at the top. UTC order shows the full day chronologically." />
-                </div>
-
-                <div className="flex gap-2">
-                  <button onClick={() => setSortMode("overlapFirst")} className={sortMode === "overlapFirst" ? btnSuccessActive : btnSuccessIdle}>
-                    Overlap first
-                  </button>
-                  <button onClick={() => setSortMode("utc")} className={sortMode === "utc" ? btnSuccessActive : btnSuccessIdle}>
-                    UTC order
-                  </button>
-                </div>
-
-                <div className="sm:ml-1 inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700">
-                  Overlap slots: <span className="text-slate-900">{overlapCount}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
-              <span className={pillOverlapLegend}>
-                <span className="h-2 w-2 rounded-full bg-green-700" />
-                Overlap
-              </span>
-              <span className={pillNeutral}>
-                <span className="h-2 w-2 rounded-full bg-slate-300" />
-                Not a fit
-              </span>
-            </div>
+        <section className="rounded-2xl border border-black/10 bg-white shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-black/10">
+            <h2 className="text-lg font-semibold text-black/90">Results</h2>
+            <p className="text-sm text-black/60">Strong highlight indicates a valid overlap for the full meeting length.</p>
           </div>
 
           <div className="overflow-auto">
-            <table className="min-w-[900px] w-full text-[11px]">
-              <thead className="sticky top-0 bg-white border-b border-slate-200">
+            <table className="min-w-[900px] w-full text-sm">
+              <thead className="sticky top-0 bg-white border-b border-black/10">
                 <tr className="text-left">
                   {tzList.map((t) => (
-                    <th key={t.id} className="px-2.5 py-2 font-semibold text-slate-700">
+                    <th key={t.id} className="px-4 py-3 font-semibold text-black/70">
                       {t.tz}
                     </th>
                   ))}
-                  <th className="px-2.5 py-2 font-semibold text-slate-700 w-[120px]">Status</th>
+                  <th className="px-4 py-3 font-semibold text-black/70 w-[120px]">Status</th>
                 </tr>
               </thead>
 
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={tzList.length + 1} className="px-3 py-10 text-center text-slate-500">
+                    <td colSpan={tzList.length + 1} className="px-4 py-10 text-center text-black/50">
                       Choose a date and time zones to generate results.
                     </td>
                   </tr>
                 ) : (
                   rows.map((r, idx) => {
-                    const zebra = idx % 2 === 0 ? "bg-white" : "bg-slate-50";
+                    const zebra = idx % 2 === 0 ? "bg-black/[0.02]" : "bg-white";
                     const ok = r.isOverlap;
 
                     return (
                       <tr
                         key={r.utcISO}
                         className={[
-                          "border-b border-slate-100",
-                          ok ? "bg-green-100/25" : zebra,
-                          // muted left stripe (gray-green, not bright)
-                          ok ? "shadow-[inset_5px_0_0_0_rgba(20,83,45,0.95)]" : "",
-                          ok ? "text-slate-900" : "text-slate-600",
+                          "border-b border-black/5",
+                          ok ? "bg-emerald-100/70" : zebra,
+                          ok ? "shadow-[inset_4px_0_0_0_rgba(16,185,129,0.95)]" : "",
+                          !ok ? "text-black/60" : "text-black/90",
                         ].join(" ")}
                       >
+                        
+
                         {tzList.map((t) => {
                           const local = r.locals.find((x) => x.tz === t.tz);
                           return (
-                            <td key={t.id} className={["px-2.5 py-2 whitespace-nowrap", ok ? "font-semibold" : ""].join(" ")}>
+                            <td key={t.id} className={["px-4 py-3 whitespace-nowrap", ok ? "font-semibold" : ""].join(" ")}>
                               {local?.localLabel ?? "—"}
                             </td>
                           );
                         })}
 
-                        <td className="px-2.5 py-2">
+                        <td className="px-4 py-3">
                           <span
                             className={[
-                              "inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold border",
-                              ok ? "bg-green-100 text-green-900 border-slate-200" : "bg-white text-slate-500 border-slate-200",
+                              "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold border",
+                              ok
+                                ? "bg-emerald-200 text-emerald-950 border-emerald-300"
+                                : "bg-black/[0.03] text-black/60 border-black/10",
                             ].join(" ")}
                           >
                             {ok ? "OVERLAP" : "—"}
