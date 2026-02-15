@@ -12,11 +12,20 @@ type TZEntry = {
   tz: string;
 };
 
+type LocalCell = {
+  tz: string;
+  localLabel: string;
+  localHour: number;
+  weekdayShort: string; // Mon/Tue/...
+  isWeekend: boolean;
+};
+
 type Row = {
   utcISO: string;
   utcLabel: string;
-  locals: { tz: string; localLabel: string; localHour: number }[];
+  locals: LocalCell[];
   isOverlap: boolean;
+  weekendZones: number; // number of TZs where the local day is Sat/Sun for the start time
 };
 
 // ---- Utilities ----
@@ -87,7 +96,7 @@ function formatInTimeZone(date: Date, timeZone: string) {
   const parts = dtf.formatToParts(date);
   const part = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
 
-  const weekday = part("weekday");
+  const weekday = part("weekday"); // Mon/Tue/...
   const month = part("month");
   const day = part("day");
   const hourStr = part("hour");
@@ -101,7 +110,12 @@ function formatInTimeZone(date: Date, timeZone: string) {
   if (isPM) hour24 += 12;
 
   const label = `${weekday}, ${month} ${day} • ${parseInt(hourStr, 10)}:${minuteStr} ${dayPeriod}`;
-  return { label, hour24 };
+  return { label, hour24, weekdayShort: weekday };
+}
+
+function isWeekendShort(weekdayShort: string) {
+  const w = weekdayShort.toLowerCase();
+  return w === "sat" || w === "sun";
 }
 
 /**
@@ -205,10 +219,7 @@ function InfoTip({ id, text }: { id: string; text: string }) {
       </button>
 
       {open && (
-        <div
-          className="absolute z-20 top-6 left-0 w-72 rounded-md border border-slate-200 bg-white p-2 shadow-lg text-[11px] text-slate-700"
-          role="tooltip"
-        >
+        <div className="absolute z-20 top-6 left-0 w-72 rounded-md border border-slate-200 bg-white p-2 shadow-lg text-[11px] text-slate-700" role="tooltip">
           {text}
         </div>
       )}
@@ -235,11 +246,14 @@ const btnPrimary = `${btnBase} bg-blue-900 border-blue-900 text-white hover:bg-b
 const btnSuccessActive = `${btnBase} bg-green-900 border-green-900 text-white hover:bg-green-800`;
 const btnSuccessIdle = `${btnBase} bg-white border-slate-200 hover:bg-slate-50 text-slate-800`;
 
-const pillBase =
-  "inline-flex items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-semibold leading-none";
+const pillBase = "inline-flex items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-semibold leading-none";
 const pillNeutral = `${pillBase} border-slate-200 bg-white text-slate-600`;
 const pillOverlapLegend = `${pillBase} border-slate-200 bg-green-50 text-slate-800`;
 const pillFavorite = `${pillBase} border-slate-200 bg-white text-slate-800 hover:bg-slate-50`;
+
+// weekend badge (small + formal)
+const weekendBadge =
+  "ml-2 inline-flex items-center rounded-sm border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-600";
 
 export default function MeetingOverlapClient() {
   const defaultTZ = "America/Los_Angeles";
@@ -279,6 +293,7 @@ export default function MeetingOverlapClient() {
   const [meetingMinutes, setMeetingMinutes] = useState<MeetingMinutes>(60);
 
   const [businessHoursOnly, setBusinessHoursOnly] = useState<boolean>(false);
+  const [weekdaysOnly, setWeekdaysOnly] = useState<boolean>(false);
   const [sortMode, setSortMode] = useState<"utc" | "overlapFirst">("overlapFirst");
 
   useEffect(() => {
@@ -356,6 +371,7 @@ export default function MeetingOverlapClient() {
     const [yy, mm, dd] = baseDateLocal.split("-").map((x) => parseInt(x, 10));
     if (!yy || !mm || !dd) return [];
 
+    // scan a full UTC day
     const startUtc = new Date(Date.UTC(yy, mm - 1, dd, 0, 0, 0));
     const endUtc = new Date(Date.UTC(yy, mm - 1, dd + 1, 0, 0, 0));
 
@@ -380,16 +396,25 @@ export default function MeetingOverlapClient() {
       const utcDate = new Date(t);
       const utcEndDate = new Date(t + meetingMs);
 
-      const locals = list.map((tz) => {
-        const { label, hour24 } = formatInTimeZone(utcDate, tz);
-        return { tz, localLabel: label, localHour: hour24 };
+      const locals: LocalCell[] = list.map((tz) => {
+        const { label, hour24, weekdayShort } = formatInTimeZone(utcDate, tz);
+        return { tz, localLabel: label, localHour: hour24, weekdayShort, isWeekend: isWeekendShort(weekdayShort) };
       });
+
+      const weekendZones = locals.filter((x) => x.isWeekend).length;
 
       const isOverlap = list.every((tz) => {
         const start = localDateTimeParts(utcDate, tz);
         const end = localDateTimeParts(utcEndDate, tz);
 
+        // keep your existing rule: meeting must not cross a local date boundary
         if (start.ymd !== end.ymd) return false;
+
+        // new rule: weekdays-only filter (Mon–Fri local)
+        if (weekdaysOnly) {
+          const wd = formatInTimeZone(utcDate, tz).weekdayShort;
+          if (isWeekendShort(wd)) return false;
+        }
 
         if (businessHoursOnly) {
           const windowStart = 9 * 60;
@@ -407,6 +432,7 @@ export default function MeetingOverlapClient() {
         utcLabel: utcFmt.format(utcDate).replace(",", "") + " UTC",
         locals,
         isOverlap,
+        weekendZones,
       });
     }
 
@@ -420,7 +446,17 @@ export default function MeetingOverlapClient() {
       const bStart = localDateTimeParts(new Date(b.utcISO), firstTZ).minutes;
       return aStart - bStart;
     });
-  }, [baseDateLocal, tzList, startMin, endMin, stepMinutes, meetingMinutes, businessHoursOnly, sortMode]);
+  }, [
+    baseDateLocal,
+    tzList,
+    startMin,
+    endMin,
+    stepMinutes,
+    meetingMinutes,
+    businessHoursOnly,
+    weekdaysOnly,
+    sortMode,
+  ]);
 
   const overlapCount = useMemo(() => rows.filter((r) => r.isOverlap).length, [rows]);
 
@@ -514,14 +550,14 @@ export default function MeetingOverlapClient() {
 
                 <div className="mt-3">
                   <div className="flex items-center justify-between">
-                    <div className="text-[14px] font-semibold text-slate-600">Favorites</div>
+                    <h3 className="text-[11px] font-semibold text-slate-700 tracking-wide">Favorites</h3>
                     {favorites.length > 0 && (
                       <button
                         onClick={() => {
                           setFavorites([]);
                           saveFavorites([]);
                         }}
-                        className="text-[11px] font-semibold text-slate-600"
+                        className="text-[11px] font-medium text-slate-500 hover:text-slate-700 transition"
                       >
                         Clear
                       </button>
@@ -537,7 +573,11 @@ export default function MeetingOverlapClient() {
                           <button onClick={() => addFromFavorite(tz)} className="hover:text-slate-900">
                             + {tz}
                           </button>
-                          <button onClick={() => toggleFavorite(tz)} className="font-bold text-slate-400 hover:text-slate-700" title="Remove">
+                          <button
+                            onClick={() => toggleFavorite(tz)}
+                            className="font-bold text-slate-400 hover:text-slate-700"
+                            title="Remove"
+                          >
                             ×
                           </button>
                         </div>
@@ -592,7 +632,13 @@ export default function MeetingOverlapClient() {
                     Start (local)
                     <InfoTip id="tip-start" text="Window start in each person’s own local time." />
                   </label>
-                  <input type="time" step={15 * 60} value={minutesToHHMM(startMin)} onChange={(e) => setStartMin(hhmmToMinutes(e.target.value))} className={inputCls} />
+                  <input
+                    type="time"
+                    step={15 * 60}
+                    value={minutesToHHMM(startMin)}
+                    onChange={(e) => setStartMin(hhmmToMinutes(e.target.value))}
+                    className={inputCls}
+                  />
                 </div>
 
                 <div>
@@ -600,7 +646,13 @@ export default function MeetingOverlapClient() {
                     End (local)
                     <InfoTip id="tip-end" text="Window end in each person’s own local time." />
                   </label>
-                  <input type="time" step={15 * 60} value={minutesToHHMM(endMin)} onChange={(e) => setEndMin(hhmmToMinutes(e.target.value))} className={inputCls} />
+                  <input
+                    type="time"
+                    step={15 * 60}
+                    value={minutesToHHMM(endMin)}
+                    onChange={(e) => setEndMin(hhmmToMinutes(e.target.value))}
+                    className={inputCls}
+                  />
                 </div>
 
                 <div>
@@ -620,7 +672,11 @@ export default function MeetingOverlapClient() {
                     Meeting length
                     <InfoTip id="tip-length" text="Overlap is true only if the entire meeting interval fits in all time zones." />
                   </label>
-                  <select value={meetingMinutes} onChange={(e) => setMeetingMinutes(parseInt(e.target.value, 10) as MeetingMinutes)} className={selectCls}>
+                  <select
+                    value={meetingMinutes}
+                    onChange={(e) => setMeetingMinutes(parseInt(e.target.value, 10) as MeetingMinutes)}
+                    className={selectCls}
+                  >
                     <option value={30}>30 min</option>
                     <option value={45}>45 min</option>
                     <option value={60}>60 min</option>
@@ -640,6 +696,20 @@ export default function MeetingOverlapClient() {
                   <label htmlFor="businessHours" className="text-[11px] font-semibold text-slate-700 cursor-pointer leading-5">
                     Business hours (9AM–5PM local)
                     <InfoTip id="tip-biz" text="If enabled, your start/end window is ignored and replaced with 9AM–5PM for each person." />
+                  </label>
+                </div>
+
+                <div className="col-span-2 flex items-start gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    checked={weekdaysOnly}
+                    onChange={(e) => setWeekdaysOnly(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded-sm border-slate-300"
+                    id="weekdaysOnly"
+                  />
+                  <label htmlFor="weekdaysOnly" className="text-[11px] font-semibold text-slate-700 cursor-pointer leading-5">
+                    Weekdays only (Mon–Fri local)
+                    <InfoTip id="tip-weekdays" text="If enabled, overlap is valid only if the local day is Mon–Fri in every selected time zone." />
                   </label>
                 </div>
               </div>
@@ -681,12 +751,16 @@ export default function MeetingOverlapClient() {
 
             <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
               <span className={pillOverlapLegend}>
-                <span className="h-2 w-2 rounded-full bg-green-700" />
+                <span className="h-2 w-2 rounded-full bg-green-800" />
                 Overlap
               </span>
               <span className={pillNeutral}>
                 <span className="h-2 w-2 rounded-full bg-slate-300" />
                 Not a fit
+              </span>
+              <span className={pillNeutral}>
+                <span className="h-2 w-2 rounded-full bg-slate-400" />
+                Weekend (local)
               </span>
             </div>
           </div>
@@ -700,7 +774,7 @@ export default function MeetingOverlapClient() {
                       {t.tz}
                     </th>
                   ))}
-                  <th className="px-2.5 py-2 font-semibold text-slate-700 w-[120px]">Status</th>
+                  <th className="px-2.5 py-2 font-semibold text-slate-700 w-[160px]">Status</th>
                 </tr>
               </thead>
 
@@ -722,29 +796,38 @@ export default function MeetingOverlapClient() {
                         className={[
                           "border-b border-slate-100",
                           ok ? "bg-green-100/25" : zebra,
-                          // muted left stripe (gray-green, not bright)
                           ok ? "shadow-[inset_5px_0_0_0_rgba(20,83,45,0.95)]" : "",
                           ok ? "text-slate-900" : "text-slate-600",
                         ].join(" ")}
                       >
                         {tzList.map((t) => {
                           const local = r.locals.find((x) => x.tz === t.tz);
+                          const showWeekend = !!local?.isWeekend;
                           return (
                             <td key={t.id} className={["px-2.5 py-2 whitespace-nowrap", ok ? "font-semibold" : ""].join(" ")}>
-                              {local?.localLabel ?? "—"}
+                              <span>{local?.localLabel ?? "—"}</span>
+                              {showWeekend && <span className={weekendBadge}>{local?.weekdayShort}</span>}
                             </td>
                           );
                         })}
 
                         <td className="px-2.5 py-2">
-                          <span
-                            className={[
-                              "inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold border",
-                              ok ? "bg-green-100 text-green-900 border-slate-200" : "bg-white text-slate-500 border-slate-200",
-                            ].join(" ")}
-                          >
-                            {ok ? "OVERLAP" : "—"}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={[
+                                "inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold border",
+                                ok ? "bg-green-100 text-green-900 border-slate-200" : "bg-white text-slate-500 border-slate-200",
+                              ].join(" ")}
+                            >
+                              {ok ? "OVERLAP" : "—"}
+                            </span>
+
+                            {r.weekendZones > 0 && (
+                              <span className="text-[10px] font-semibold text-slate-600">
+                                Weekend zones: {r.weekendZones}
+                              </span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
