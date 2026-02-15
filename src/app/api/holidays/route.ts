@@ -44,7 +44,7 @@ export async function GET(req: Request) {
   // Normalize: keep only what you need
   const data = (Array.isArray(raw) ? raw : []).map((h: any) => ({
     date: h?.date, // "YYYY-MM-DD"
-    name: h?.localName || h?.name,
+    name:  h?.name || h?.localName,
     types: h?.types,
   }));
 

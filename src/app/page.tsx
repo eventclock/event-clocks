@@ -102,7 +102,7 @@ export default function HomePage() {
                 Meeting Overlap
               </div>
               <div className="mt-2 text-sm text-black/60 dark:text-white/60">
-                Find meeting times that work for everyone across multiple time zones — with step size, meeting length, and favorites.
+                Find meeting times that work for everyone across multiple time zones — with step size, meeting length, weekends, and holidays.
               </div>
             </div>
 
@@ -116,10 +116,10 @@ export default function HomePage() {
               Overlap-first
             </span>
             <span className="rounded-full border border-violet-200/70 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900 dark:border-violet-300/20 dark:bg-violet-400/10 dark:text-violet-200">
-              Meeting length
+              Weekdays filter
             </span>
             <span className="rounded-full border border-amber-200/70 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-200">
-              Start-time step
+              Holiday badges
             </span>
           </div>
 
@@ -127,6 +127,38 @@ export default function HomePage() {
             Open tool →
           </div>
         </a>
+      </section>
+
+      {/* Quick highlights */}
+      <section className="mt-4 grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
+          <div className="text-sm font-bold text-black/80 dark:text-white/80">Weekend-aware</div>
+          <p className="mt-2 text-sm text-black/60 dark:text-white/60">
+            See which slots land on Saturday/Sunday per person — helpful for cross-region scheduling.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
+          <div className="text-sm font-bold text-black/80 dark:text-white/80">Holiday flags</div>
+          <p className="mt-2 text-sm text-black/60 dark:text-white/60">
+            Tag local public holidays (when supported) and optionally avoid them in overlap results.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
+          <div className="text-sm font-bold text-black/80 dark:text-white/80">Fast + private</div>
+          <p className="mt-2 text-sm text-black/60 dark:text-white/60">
+            Favorites and country selections stay in your browser. No accounts required.
+          </p>
+        </div>
+      </section>
+
+      {/* Holiday disclaimer */}
+      <section className="mt-4 rounded-2xl border border-amber-200/60 bg-amber-50/60 p-5 text-sm text-amber-950 shadow-sm backdrop-blur dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-100">
+        <div className="font-semibold">Holiday coverage note</div>
+        <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
+          Holiday tags use a public holiday dataset. Some countries/regions may be missing, incomplete, or return no data — you’ll see a “No data” or “Error” indicator when that happens.
+        </p>
       </section>
 
       {/* More tools */}
@@ -163,7 +195,7 @@ export default function HomePage() {
 
       {/* Footer note */}
       <section className="mt-6 rounded-2xl border border-black/10 bg-white/50 p-5 text-sm text-black/60 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/60">
-        Tip: Use Timezone Converter to compare times, then use Meeting Overlap to pick a meeting slot that works for everyone.
+        Tip: Use Timezone Converter to compare times, then use Meeting Overlap to pick a slot that works for everyone — and double-check weekends/holidays before sending the invite.
       </section>
     </main>
   );
