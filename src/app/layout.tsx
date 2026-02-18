@@ -42,6 +42,13 @@ export default function RootLayout({
             gtag('config', 'G-B2HX3GQVYF');
           `}
         </Script>
+        <Script
+          id="adsense"
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6052738330647700"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
       </head>
 
       <body
