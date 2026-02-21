@@ -18,8 +18,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.event-clocks.com"),
   title: "Event Clocks",
-  description: "Simple tools for planning events, meetings, and schedules across time zones.",
+  description:
+    "Simple tools for planning events, meetings, and schedules across time zones.",
+  alternates: {
+    canonical: "https://www.event-clocks.com/",
+  },
 };
 
 export default function RootLayout({

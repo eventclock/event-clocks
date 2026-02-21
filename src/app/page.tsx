@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "https://www.event-clocks.com/",
+  },
+};
+
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
