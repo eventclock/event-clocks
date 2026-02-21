@@ -360,7 +360,6 @@ export default function BusinessDaysPage() {
     <PageShell title="Business Day Calculator">
       <main className="mx-auto max-w-4xl px-6 py-10">
         <header className="mb-8">
-          <h1 className="text-3xl font-black tracking-tight">Business Day Calculator</h1>
           <p className="mt-2 text-black/60 dark:text-white/60">
             Calculate working days between dates, or add business days — excluding weekends and country holidays.
           </p>
