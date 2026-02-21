@@ -78,7 +78,7 @@ a:hover {
 
 /* ---------- Reusable "card" helper class ---------- */
 .card {
-  border: 1.5px solid rgba(158, 170, 205, 0.843);
+  border: 1.5px solid rgba(134, 143, 135, 0.843);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.02);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);

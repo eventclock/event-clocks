@@ -25,6 +25,14 @@ export default function HomePage() {
             Meeting Overlap
           </a>
 
+          {/* NEW: Business Days */}
+          <a
+            className="rounded-xl border border-sky-200/70 bg-white/60 px-3 py-2 text-sm font-semibold text-black/80 shadow-sm backdrop-blur hover:bg-white/80 dark:border-sky-300/20 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
+            href="/business-days"
+          >
+            Business Days
+          </a>
+
           <a
             className="rounded-xl border border-black/10 bg-white/60 px-3 py-2 text-sm font-semibold text-black/70 shadow-sm backdrop-blur hover:bg-white/80 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
             href="/about"
@@ -53,7 +61,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero cards */}
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Timezone Converter */}
         <a
           href="/timezone"
@@ -61,9 +69,7 @@ export default function HomePage() {
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-xl font-extrabold tracking-tight">
-                Timezone Converter
-              </div>
+              <div className="text-xl font-extrabold tracking-tight">Timezone Converter</div>
               <div className="mt-2 text-sm text-black/60 dark:text-white/60">
                 Compare one date/time across many timezones — DST-aware, with favorites and share links.
               </div>
@@ -98,11 +104,10 @@ export default function HomePage() {
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-xl font-extrabold tracking-tight">
-                Meeting Overlap
-              </div>
+              <div className="text-xl font-extrabold tracking-tight">Meeting Overlap</div>
               <div className="mt-2 text-sm text-black/60 dark:text-white/60">
-                Find meeting times that work for everyone across multiple time zones — with step size, meeting length, weekends, and holidays.
+                Find meeting times that work for everyone across multiple time zones — with step size, meeting length,
+                weekends, and holidays.
               </div>
             </div>
 
@@ -120,6 +125,41 @@ export default function HomePage() {
             </span>
             <span className="rounded-full border border-amber-200/70 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-200">
               Holiday badges
+            </span>
+          </div>
+
+          <div className="mt-6 text-sm font-semibold text-black/70 group-hover:text-black dark:text-white/70 dark:group-hover:text-white">
+            Open tool →
+          </div>
+        </a>
+
+        {/* NEW: Business Day Calculator */}
+        <a
+          href="/business-days"
+          className="group rounded-2xl border-2 border-violet-200/70 bg-white/60 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md dark:border-violet-300/20 dark:bg-white/5"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-xl font-extrabold tracking-tight">Business Day Calculator</div>
+              <div className="mt-2 text-sm text-black/60 dark:text-white/60">
+                Count working days between two dates, or add business days — excluding weekends and country holidays.
+              </div>
+            </div>
+
+            <span className="rounded-full border border-emerald-200/70 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-900 dark:border-emerald-300/20 dark:bg-emerald-400/10 dark:text-emerald-200">
+              Workdays
+            </span>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <span className="rounded-full border border-sky-200/70 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-900 dark:border-sky-300/20 dark:bg-sky-400/10 dark:text-sky-200">
+              Date range
+            </span>
+            <span className="rounded-full border border-violet-200/70 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900 dark:border-violet-300/20 dark:bg-violet-400/10 dark:text-violet-200">
+              Add business days
+            </span>
+            <span className="rounded-full border border-amber-200/70 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-200">
+              Holiday-aware
             </span>
           </div>
 
@@ -157,7 +197,8 @@ export default function HomePage() {
       <section className="mt-4 rounded-2xl border border-amber-200/60 bg-amber-50/60 p-5 text-sm text-amber-950 shadow-sm backdrop-blur dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-100">
         <div className="font-semibold">Holiday coverage note</div>
         <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
-          Holiday tags use a public holiday dataset. Some countries/regions may be missing, incomplete, or return no data — you’ll see a “No data” or “Error” indicator when that happens.
+          Holiday tags use a public holiday dataset. Some countries/regions may be missing, incomplete, or return no
+          data — you’ll see a “No data” or “Error” indicator when that happens.
         </p>
       </section>
 
@@ -195,7 +236,8 @@ export default function HomePage() {
 
       {/* Footer note */}
       <section className="mt-6 rounded-2xl border border-black/10 bg-white/50 p-5 text-sm text-black/60 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/60">
-        Tip: Use Timezone Converter to compare times, then use Meeting Overlap to pick a slot that works for everyone — and double-check weekends/holidays before sending the invite.
+        Tip: Use Timezone Converter to compare times, then use Meeting Overlap to pick a slot that works for everyone —
+        and double-check weekends/holidays before sending the invite.
       </section>
     </main>
   );

@@ -32,6 +32,8 @@ export default function Header() {
           gap: "18px",
           fontSize: 13,
           fontWeight: 600,
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
         }}
       >
         <Link href="/timezone" style={linkStyle}>
@@ -42,8 +44,21 @@ export default function Header() {
           Meeting Overlap
         </Link>
 
+        {/* NEW */}
+        <Link href="/business-days" style={linkStyle}>
+          Business Days
+        </Link>
+
         <Link href="/about" style={linkStyle}>
           About
+        </Link>
+
+        <Link href="/privacy" style={linkStyle}>
+          Privacy
+        </Link>
+
+        <Link href="/terms" style={linkStyle}>
+          Terms
         </Link>
 
         <Link href="/contact" style={linkStyle}>
@@ -58,4 +73,5 @@ const linkStyle: React.CSSProperties = {
   textDecoration: "none",
   color: "inherit",
   opacity: 0.75,
+  transition: "opacity 120ms ease",
 };
