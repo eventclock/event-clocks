@@ -78,6 +78,7 @@ export default function BusinessDaysPage() {
   const [loading, setLoading] = useState<boolean>(false);
 
   const holidayCacheRef = useRef<Map<string, HolidayCacheEntry>>(new Map());
+  const helpRef = useRef<HTMLDetailsElement | null>(null);
 
   useEffect(() => {
     try {
@@ -360,10 +361,43 @@ export default function BusinessDaysPage() {
     <PageShell title="Business Day Calculator">
       <main className="mx-auto max-w-4xl px-6 py-10">
         <header className="mb-8">
-          <p className="mt-2 text-black/60 dark:text-white/60">
-            Calculate working days between dates, or add business days — excluding weekends and country holidays.
-          </p>
-        </header>
+            <div className="flex items-start justify-between gap-4">
+                <p className="mt-2 text-black/60 dark:text-white/60">
+                Calculate working days between dates, or add business days — excluding weekends and country holidays.
+                
+
+                <button
+                type="button"
+                onClick={() => {
+                    const el = helpRef.current;
+                    if (!el) return;
+                    el.open = true;
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="mt-1 inline-flex items-center justify-center rounded-full border border-black/15 bg-transparent text-[10px] font-bold text-black/60 shadow-sm hover:text-black/80 dark:border-white/15 dark:text-white/60 dark:hover:text-white/85"
+                style={{
+                    fontSize: 13,
+                    verticalAlign: "super",
+                    marginLeft: 4,
+                    border: "1px solid rgba(0,0,0,0.15)",
+                    borderRadius: 999,
+                    width: 16,
+                    height: 16,
+                    lineHeight: "14px",
+                    textAlign: "center",
+                    background: "transparent",
+                    cursor: "pointer",
+                    opacity: 0.65,
+                    padding: 0,
+                }}
+                aria-label="About this tool"
+                title="About this tool"
+                >
+                i
+                </button>
+                </p>
+            </div>
+            </header>
 
         <section className="rounded-2xl border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
           <div className="flex flex-wrap gap-2">
@@ -567,6 +601,48 @@ export default function BusinessDaysPage() {
             </div>
           ) : null}
         </section>
+        <details
+            ref={helpRef}
+            className="mt-6 rounded-2xl border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5"
+            >
+            <summary className="cursor-pointer select-none text-sm font-bold text-black/80 dark:text-white/80 flex items-center gap-2">
+                <span
+                className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-black/10 text-[11px] font-black text-black/60 dark:border-white/10 dark:text-white/60"
+                aria-hidden="true"
+                >
+                i
+                </span>
+                How Business Day Calculator works
+            </summary>
+
+            <div className="mt-4 space-y-4 text-sm text-black/70 dark:text-white/70">
+                <div>
+                <div className="font-bold text-black/85 dark:text-white/85">What this tool does</div>
+                <p className="mt-1">
+                    This calculator helps you count business days between two dates, or add business days to a starting date.
+                    A “business day” usually means weekdays (Monday–Friday), excluding weekends and public holidays.
+                </p>
+                </div>
+
+                <div>
+                <div className="font-bold text-black/85 dark:text-white/85">Weekends and holidays</div>
+                <p className="mt-1">
+                    If “Exclude weekends” is enabled, Saturdays and Sundays are not counted as business days. For holidays, the
+                    page calls the holiday API for the selected country and relevant year(s). If the holiday API returns no data
+                    or errors, you’ll see a banner and results will exclude weekends only.
+                </p>
+                </div>
+
+                <div>
+                <div className="font-bold text-black/85 dark:text-white/85">Tips</div>
+                <ul className="mt-1 list-disc pl-5 space-y-1">
+                    <li>Use Date Range to estimate working days in a project timeline.</li>
+                    <li>Use Add Business Days for “deliver X business days after” deadlines.</li>
+                    <li>If you cross multiple years, holiday coverage depends on each year’s API response.</li>
+                </ul>
+                </div>
+            </div>
+            </details>
       </main>
     </PageShell>
   );

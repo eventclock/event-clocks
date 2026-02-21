@@ -661,6 +661,7 @@ function HolidayLoadPill({ status }: { status: HolidayCountryStatus }) {
 
 export default function MeetingOverlapClient() {
   const defaultTZ = "America/Los_Angeles";
+  const helpRef = useRef<HTMLDetailsElement | null>(null);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -985,6 +986,28 @@ export default function MeetingOverlapClient() {
   return (
     <PageShell title="Meeting Overlap" subtitle="Find times that work across multiple time zones.">
       <div className="space-y-3">
+        <div className="flex justify-end">
+            <button
+                type="button"
+                onClick={() => {
+                const el = helpRef.current;
+                if (!el) return;
+                el.open = true;
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-700"
+                aria-label="About this tool"
+                title="About this tool"
+            >
+                About
+                <span
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-300/70 text-[10px] font-bold leading-none relative -top-1"
+                aria-hidden="true"
+                >
+                i
+                </span>
+            </button>
+            </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {/* Time Zones */}
           <section className="lg:col-span-2 rounded-md border border-slate-200 bg-white shadow-sm">
@@ -1397,6 +1420,49 @@ export default function MeetingOverlapClient() {
             </table>
           </div>
         </section>
+        <details
+            ref={helpRef}
+            className="rounded-md border border-slate-200 bg-white shadow-sm"
+            >
+            <summary className="cursor-pointer select-none px-3 py-2 text-[12px] font-semibold text-slate-800 flex items-center gap-2">
+                <span
+                className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-200 text-[11px] font-black text-slate-500"
+                aria-hidden="true"
+                >
+                i
+                </span>
+                How Meeting Overlap works
+            </summary>
+
+            <div className="px-3 pb-3 pt-1 text-[12px] text-slate-700 space-y-4">
+                <div>
+                <div className="font-semibold text-slate-900">What this tool does</div>
+                <p className="mt-1">
+                    Meeting Overlap helps you find time slots that work across multiple time zones.
+                    You set a date, a set of time zones, and a time window (or business hours), and
+                    the tool lists possible start times while showing everyone’s local time.
+                </p>
+                </div>
+
+                <div>
+                <div className="font-semibold text-slate-900">Weekends and holidays</div>
+                <p className="mt-1">
+                    Weekend badges show if a slot lands on Saturday/Sunday in a given time zone.
+                    If you enable holiday calendars per time zone, the tool can display holiday names
+                    and optionally avoid holiday slots.
+                </p>
+                </div>
+
+                <div>
+                <div className="font-semibold text-slate-900">Tips</div>
+                <ul className="mt-1 list-disc pl-5 space-y-1">
+                    <li>Start with 2–3 time zones, then add more once your window is reasonable.</li>
+                    <li>Use larger step sizes (30/60 min) to reduce noise.</li>
+                    <li>Turn on “Weekdays only” if you’re scheduling work meetings globally.</li>
+                </ul>
+                </div>
+            </div>
+            </details>
       </div>
     </PageShell>
   );

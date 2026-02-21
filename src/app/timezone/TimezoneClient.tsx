@@ -1,4 +1,4 @@
-// src/app/timezone/page.tsx
+// src/app/timezone/TimezoneClient.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -176,9 +176,10 @@ function SortIndicator({
   );
 }
 
-export default function TimezonePage() {
+export default function TimezoneClient() {
   // Kept for compatibility / future use; also makes your Intl fallback available.
   useMemo(() => getTimeZoneChoices(), []);
+  const helpRef = useRef<HTMLDetailsElement | null>(null);
 
   const [fromTz, setFromTz] = useState(getLocalTimeZone());
   const [dtLocal, setDtLocal] = useState(""); // datetime-local
@@ -455,11 +456,90 @@ export default function TimezonePage() {
   const stripeB = "rgba(255,255,255,0.00)";
   const hoverBg = "rgba(255,255,255,0.055)";
 
+  // Help/SEO section styles (subtle, professional)
+  const helpWrap: React.CSSProperties = {
+    marginTop: 18,
+    border: "1px solid rgba(0,0,0,0.08)",
+    borderRadius: 12,
+    padding: 14,
+    background: "rgba(255,255,255,0.02)",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+  };
+
+  const helpSummary: React.CSSProperties = {
+    cursor: "pointer",
+    listStyle: "none",
+    fontWeight: 800,
+    fontSize: 13,
+    opacity: 0.9,
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  };
+
+  const helpIcon: React.CSSProperties = {
+    width: 22,
+    height: 22,
+    borderRadius: 999,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "1px solid rgba(0,0,0,0.12)",
+    fontSize: 12,
+    fontWeight: 900,
+    opacity: 0.85,
+    flex: "0 0 auto",
+  };
+
+  const helpBody: React.CSSProperties = {
+    marginTop: 12,
+    display: "grid",
+    gap: 14,
+    fontSize: 13,
+    lineHeight: 1.55,
+    opacity: 0.82,
+  };
+
+  const helpH3: React.CSSProperties = {
+    fontSize: 13,
+    fontWeight: 900,
+    opacity: 0.95,
+    marginBottom: 6,
+  };
+
   return (
     <main style={{ maxWidth: 980, margin: "0 auto", padding: 24 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 6 }}>
-        Timezone Converter
-      </h1>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>Timezone Converter
+        <button
+            type="button"
+            onClick={() => {
+                const el = helpRef.current;
+                if (!el) return;
+                el.open = true;
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            style={{
+                fontSize: 13,
+                verticalAlign: "super",
+                marginLeft: 4,
+                border: "1px solid rgba(0,0,0,0.15)",
+                borderRadius: 999,
+                width: 16,
+                height: 16,
+                lineHeight: "14px",
+                textAlign: "center",
+                background: "transparent",
+                cursor: "pointer",
+                opacity: 0.65,
+                padding: 0,
+            }}
+            aria-label="Info about this tool"
+            title="About this tool"
+            >
+            i
+            </button></h1>
+        </div>
       <div style={{ opacity: 0.75, marginBottom: 16 }}>
         Convert a date/time from one timezone and compare it across many timezones (DST-aware).
       </div>
@@ -772,6 +852,62 @@ export default function TimezonePage() {
             Tip: the italic value is the time difference vs the “From” timezone.
           </div>
         </section>
+
+        {/* HELP / SEO CONTENT (collapsed by default, present in DOM) */}
+        <details ref={helpRef} style={helpWrap}>
+          <summary style={helpSummary}>
+            <span style={helpIcon} aria-hidden="true">?</span>
+            What is a timezone converter and how does it work?
+          </summary>
+
+          <div style={helpBody}>
+            <div>
+              <div style={helpH3}>What is a Timezone Converter?</div>
+              <div>
+                A timezone converter helps you compare the same date and time across multiple time zones instantly.
+                It’s useful for scheduling meetings, coordinating with remote teams, and planning travel—especially
+                when people are spread across different regions.
+              </div>
+              <div style={{ marginTop: 8 }}>
+                This tool accounts for Daylight Saving Time (DST) automatically, so you don’t have to manually
+                calculate offsets or worry about seasonal changes.
+              </div>
+            </div>
+
+            <div>
+              <div style={helpH3}>Why timezone differences matter</div>
+              <div>
+                A time that looks reasonable in one location can be outside working hours elsewhere. Even a one-hour
+                DST shift can cause confusion if someone is using the wrong offset. Converting times reliably helps
+                prevent missed meetings and incorrect calendar invites.
+              </div>
+            </div>
+
+            <div>
+              <div style={helpH3}>Common use cases</div>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                <li>Scheduling meetings across countries</li>
+                <li>Planning international events and webinars</li>
+                <li>Coordinating remote teams in multiple regions</li>
+                <li>Checking time differences before travel</li>
+                <li>Comparing UTC, GMT, PST, EST, and other time zones</li>
+              </ul>
+            </div>
+
+            <div>
+              <div style={helpH3}>How to use this tool</div>
+              <div>
+                Pick a base date/time and a “From” timezone, then add one or more comparison time zones. The results
+                table shows the local time and UTC offset for each zone. Use the “Copy share link” button to send the
+                exact setup to someone else.
+              </div>
+              <div style={{ marginTop: 8 }}>
+                If you’re trying to find a meeting time that works for everyone, use the Meeting Overlap tool after
+                you’ve confirmed the time zones here.
+              </div>
+            </div>
+          </div>
+        </details>
       </div>
     </main>
   );
