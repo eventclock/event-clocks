@@ -49,6 +49,10 @@ export default function Header() {
           Business Days
         </Link>
 
+        <Link href="/cruise" style={linkStyle}>
+          Cruise Planner
+        </Link>
+
         <Link href="/about" style={linkStyle}>
           About
         </Link>

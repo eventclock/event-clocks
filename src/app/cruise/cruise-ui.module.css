@@ -1,0 +1,220 @@
+/* Scoped UI tokens for Cruise Plan only */
+.wrap {
+  --c-border: rgba(0, 0, 0, 0.14);
+  --c-border-2: rgba(0, 0, 0, 0.10);
+  --c-text: rgba(0, 0, 0, 0.82);
+  --c-muted: rgba(0, 0, 0, 0.58);
+  --c-bg: rgba(255, 255, 255, 0.66);
+}
+
+.card {
+  border: 1px solid var(--c-border-2);
+  background: var(--c-bg);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--c-border);
+  background: rgba(255,255,255,0.9);
+  color: var(--c-text);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.1;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:hover { background: rgba(255,255,255,1); }
+
+.btnIcon {
+  padding: 6px 8px;
+}
+
+.btnSmall {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.segment {
+  display: inline-flex;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.9);
+}
+
+.segmentBtn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--c-text);
+}
+.segmentBtnActive {
+  background: rgba(0,0,0,0.05);
+}
+
+.input {
+  appearance: none;
+  border: 1px solid var(--c-border);
+  background: rgba(255,255,255,0.95);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--c-text);
+  width: 100%;
+}
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-muted);
+  margin-bottom: 4px;
+}
+
+.muted {
+  font-size: 11px;
+  color: var(--c-muted);
+}
+
+.badge {
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.9);
+}
+
+.infoBtn {
+  appearance: none;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  width: 18px;
+  height: 18px;
+  line-height: 16px;
+  text-align: center;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* Calendar layout helpers */
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.calendarHeaderCenter {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-muted);
+}
+
+.monthTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--c-text);
+}
+
+.dayCell {
+  min-height: 62px;
+  border-right: 1px solid var(--c-border-2);
+  border-bottom: 1px solid var(--c-border-2);
+  padding: 6px;
+  background: white;
+}
+
+.dayCellMuted {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.cruiseDay {
+  /* highlight all days during the cruise */
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.sailDay {
+  /* slightly stronger on the sail day */
+  background: rgba(16, 185, 129, 0.14);
+}
+
+.taskLink {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.70);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.taskLink:hover {
+  text-decoration: underline;
+}
+
+.sectionTitle{
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: rgba(0,0,0,0.78);
+}
+.bullets{
+  margin-left: 18px;
+  list-style: disc;
+  font-size: 12px;
+  color: rgba(0,0,0,0.70);
+  line-height: 1.5;
+}
+.featureLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+
+  /* keep it subtle */
+  opacity: 1; /* override muted opacity if needed */
+}
+
+.featureLabel input {
+  margin: 0;
+}
+
+.featurePill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+
+  background: rgba(99, 168, 241, 0.16);
+  border: 1px solid rgba(99, 146, 241, 0.22);
+  color: rgba(48, 88, 163, 0.95);
+}
