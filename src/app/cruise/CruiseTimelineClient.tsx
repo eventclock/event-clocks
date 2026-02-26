@@ -292,6 +292,23 @@ const PLAN_TASKS: PlanTask[] = [
     appliesIf: (ctx) => ctx.isInternational,
   },
 
+  {
+    id: "visa-requirements",
+    title: "Check visa requirements (if applicable)",
+    description: "Some destinations require visas even for cruise passengers.",
+    category: "documents",
+    recommendedOffsetDays: 120,
+    windowStartDays: 180,
+    windowEndDays: 60,
+    checklistItems: [
+        "Check visa requirements for each port",
+        "Confirm entry rules based on passport country",
+        "Apply early if required",
+        "Save digital + printed copies",
+    ],
+    appliesIf: (ctx) => ctx.isInternational,
+    },
+
   // NEW: Name matching + backups (very common gotcha)
   {
     id: "docs-name-match",
