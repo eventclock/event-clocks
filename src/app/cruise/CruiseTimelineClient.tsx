@@ -291,6 +291,23 @@ const PLAN_TASKS: PlanTask[] = [
     ],
     appliesIf: (ctx) => ctx.isInternational,
   },
+
+  // NEW: Name matching + backups (very common gotcha)
+  {
+    id: "docs-name-match",
+    title: "Verify names match across documents",
+    description: "Reservation name should match ID/passport to avoid check-in issues.",
+    category: "documents",
+    recommendedOffsetDays: 45,
+    windowStartDays: 90,
+    windowEndDays: 14,
+    checklistItems: [
+      "Confirm reservation name matches passport/ID",
+      "If name changed: bring supporting document(s)",
+      "Print + save digital copies of key docs",
+    ],
+  },
+
   {
     id: "travel-insurance",
     title: "Consider travel insurance",
@@ -313,6 +330,40 @@ const PLAN_TASKS: PlanTask[] = [
     windowEndDays: 90,
     checklistItems: ["Check exact due date", "Confirm payment method", "Save confirmation"],
   },
+
+  // NEW: Gratuities + onboard account (frequent question)
+  {
+    id: "gratuities-onboard-account",
+    title: "Plan gratuities + onboard spending",
+    description: "Understand auto-gratuities, extra tipping, and how onboard charges work.",
+    category: "payments",
+    recommendedOffsetDays: 21,
+    windowStartDays: 45,
+    windowEndDays: 7,
+    checklistItems: [
+      "Check if gratuities are prepaid or added daily",
+      "Decide if you’ll tip extra (cash)",
+      "Set a daily spend budget (drinks, specialty dining, spa)",
+      "Confirm card-on-file for onboard account",
+    ],
+  },
+
+  // NEW: Cash (ports + porters)
+  {
+    id: "cash-small-bills",
+    title: "Get small cash bills for tips + ports",
+    description: "Onboard is mostly cashless, but cash helps for porters, tours, and extras.",
+    category: "payments",
+    recommendedOffsetDays: 7,
+    windowStartDays: 21,
+    windowEndDays: 1,
+    checklistItems: [
+      "Bring small bills ($1/$5/$10)",
+      "Set aside cash for porters + tour tips",
+      "Keep a little emergency cash separate",
+    ],
+  },
+
   {
     id: "shore-excursions",
     title: "Book shore excursions",
@@ -332,6 +383,21 @@ const PLAN_TASKS: PlanTask[] = [
     windowStartDays: 90,
     windowEndDays: 60,
     checklistItems: ["Pick dinner time", "Reserve specialty nights", "Note dietary needs", "Save confirmations"],
+  },
+  {
+    id: "wifi-package",
+    title: "Decide on Wi-Fi package",
+    description: "Compare onboard internet options and pricing before sailing (optional but common).",
+    category: "reservations",
+    recommendedOffsetDays: 21,
+    windowStartDays: 45,
+    windowEndDays: 7,
+    checklistItems: [
+      "Check package options (per day vs full cruise)",
+      "Decide per device vs multi-device",
+      "Note pricing + promos (if any)",
+      "Purchase or plan to buy onboard",
+    ],
   },
 
   // Travel (conditional on flying)
@@ -395,6 +461,56 @@ const PLAN_TASKS: PlanTask[] = [
       "Set aside swimwear + cover-ups",
     ],
   },
+
+  // NEW: Motion sickness plan (first-timer leaning)
+  {
+    id: "seasickness-plan",
+    title: "Decide on motion-sickness plan",
+    description: "Better to pack something before you need it.",
+    category: "packing",
+    recommendedOffsetDays: 7,
+    windowStartDays: 21,
+    windowEndDays: 2,
+    checklistItems: ["Pick your option (bands/meds/ginger)", "Pack it in carry-on"],
+    appliesIf: (ctx) => !!ctx.isFirstTime,
+  },
+
+  // NEW: Charging plan (outlets limited; first-timer leaning)
+  {
+    id: "charging-plan",
+    title: "Plan charging setup (outlets are limited)",
+    description: "Cabins often have few outlets; pack a simple charging setup.",
+    category: "packing",
+    recommendedOffsetDays: 7,
+    windowStartDays: 21,
+    windowEndDays: 2,
+    checklistItems: [
+      "Count devices + chargers",
+      "Bring a USB hub (no clutter)",
+      "Pack an extra-long cable",
+      "Bring a small power bank for excursions",
+    ],
+    appliesIf: (ctx) => !!ctx.isFirstTime,
+  },
+
+  // NEW: Port-day kit (first-timer leaning)
+  {
+    id: "port-day-kit",
+    title: "Prepare a simple port-day kit",
+    description: "Make leaving the ship easy and low-stress.",
+    category: "packing",
+    recommendedOffsetDays: 3,
+    windowStartDays: 7,
+    windowEndDays: 1,
+    checklistItems: [
+      "Lanyard/wallet for cruise card",
+      "Sunscreen + hat + sunglasses",
+      "Refillable bottle (if allowed)",
+      "Download offline maps/confirmations",
+    ],
+    appliesIf: (ctx) => !!ctx.isFirstTime,
+  },
+
   {
     id: "packing-3days",
     title: "Laundry + finalize outfits",
