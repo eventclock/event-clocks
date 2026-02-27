@@ -1126,7 +1126,7 @@ export default function CruiseTimelineClient() {
   }
 
   return (
-    <PageShell title="Cruise Plan" subtitle="Date-sorted tasks with checklists and remarks.">
+    <PageShell title="Cruise Plan" subtitle="A timeline to keep everything on track before you sail.">
       <div className={styles.wrap}>
         <div className="mx-auto max-w-5xl space-y-4">
           {/* Top bar */}
