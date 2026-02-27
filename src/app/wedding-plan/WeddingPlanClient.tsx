@@ -1196,10 +1196,13 @@ export default function WeddingPlanClient() {
   }
 
   return (
-    <PageShell title="Wedding Plan" subtitle="A timeline to keep everything on track before you get married.">
-      <div className={styles.wrap}>
-        <div className="mx-auto max-w-5xl space-y-4">
-          {/* Top bar */}
+    <div className="min-h-screen bg-[#faf9f7]">
+      <PageShell title="Wedding Plan" subtitle="A calm timeline for your big day.">
+        <div className={styles.wrap}>
+          <div className="mx-auto max-w-4xl space-y-6 rounded-3xl border border-[#e9e5df] bg-white px-10 py-12 shadow-[0_18px_60px_rgba(0,0,0,0.06)]">
+            <div className="mb-6 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+
+            {/* Top bar */}
           <div className={styles.row} style={{ justifyContent: "space-between" }}>
             <div className={styles.row}>
               <button
@@ -1657,9 +1660,7 @@ export default function WeddingPlanClient() {
               );
             })}
           </div>
-        </div>
-      </div>
-
+       
 
 
 
@@ -1788,11 +1789,10 @@ export default function WeddingPlanClient() {
             </div>
           </div>
 
-
+        </div>
+    </div>
     </PageShell>
-
-    
-    
+    </div>
   );
 
   
