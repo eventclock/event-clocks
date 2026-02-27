@@ -200,7 +200,7 @@ function isBetweenInclusive(d: Date, start: Date, end: Date) {
 const DEFAULT_STATE: WeddingPlanStateV1 = {
   v: 1,
   tool: "wedding-plan",
-  weddingDateISO: toISODate(addDays(startOfToday(), 180)),
+  weddingDateISO: toISODate(addDays(startOfToday(), 365)),
 
   // Profiles
   isFirstTime: true,
@@ -1205,13 +1205,14 @@ export default function WeddingPlanClient() {
               <button
                 className={styles.infoBtn}
                 onClick={() => {
-                    setState((s) => {
+                setState((s) => {
                     const nextShow = !s.ui.showHowTo;
-                    return sanitizeState({ ...s, ui: { ...s.ui, showHowTo: true } });
-                    });
-                    window.setTimeout(() => {
+                    return sanitizeState({ ...s, ui: { ...s.ui, showHowTo: nextShow } });
+                });
+
+                window.setTimeout(() => {
                     infoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }, 50);
+                }, 50);
                 }}
                 type="button"
                 title="How to use"
@@ -1255,7 +1256,7 @@ export default function WeddingPlanClient() {
                     setState((s) => sanitizeState({ ...s, ui: { ...s.ui, showCalendar: e.target.checked } }))
                     }
                 />
-                Show calendar
+                Calendar
                 
             </label>
 
@@ -1435,21 +1436,20 @@ export default function WeddingPlanClient() {
                 Legend:
               </span>
               <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
-                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(220, 38, 38, 0.35)", border: "1px solid rgba(185, 28, 28, 0.25)", marginRight: 6, verticalAlign: "middle" }} />
-                {statusCounts.overdue}
-              </span>
-              <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
-                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(250, 204, 21, 0.18)", border: "1px solid rgba(0,0,0,0.18)", marginRight: 6, verticalAlign: "middle" }} />
-                {statusCounts.inRange}
-              </span>
-              <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
-                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(50, 78, 170, 0.7)", border: "1px solid rgba(37, 99, 235, 0.18)", marginRight: 6, verticalAlign: "middle" }} />
-                {statusCounts.soon}
-              </span>
-              <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
-                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(148, 163, 184, 0.18)", border: "1px solid rgba(100, 116, 139, 0.18)", marginRight: 6, verticalAlign: "middle" }} />
-                {statusCounts.later}
-              </span>
+            <UrgencyDot urgency="overdue" /> Overdue: <b>{statusCounts.overdue}</b>
+            </span>
+
+            <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+            <UrgencyDot urgency="inRange" /> Due soon: <b>{statusCounts.inRange}</b>
+            </span>
+
+            <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+            <UrgencyDot urgency="soon" /> Coming up: <b>{statusCounts.soon}</b>
+            </span>
+
+            <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+            <UrgencyDot urgency="later" /> Later: <b>{statusCounts.later}</b>
+            </span>
 
               <span className={styles.muted} style={{ marginLeft: 8 }}>
                 Remaining: <b>{remainingCount}</b> • Completed: <b>{completedCount}</b>

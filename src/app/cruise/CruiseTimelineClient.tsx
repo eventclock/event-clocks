@@ -1389,19 +1389,19 @@ export default function CruiseTimelineClient() {
               </span>
               <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
                 <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(220, 38, 38, 0.35)", border: "1px solid rgba(185, 28, 28, 0.25)", marginRight: 6, verticalAlign: "middle" }} />
-                {statusCounts.overdue}
+                Overdue: {statusCounts.overdue}
               </span>
               <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
                 <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(250, 204, 21, 0.18)", border: "1px solid rgba(0,0,0,0.18)", marginRight: 6, verticalAlign: "middle" }} />
-                {statusCounts.inRange}
+                Due soon: {statusCounts.inRange}
               </span>
               <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
                 <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(50, 78, 170, 0.7)", border: "1px solid rgba(37, 99, 235, 0.18)", marginRight: 6, verticalAlign: "middle" }} />
-                {statusCounts.soon}
+                Coming up: {statusCounts.soon}
               </span>
               <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
                 <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(148, 163, 184, 0.18)", border: "1px solid rgba(100, 116, 139, 0.18)", marginRight: 6, verticalAlign: "middle" }} />
-                {statusCounts.later}
+                Later: {statusCounts.later}
               </span>
 
               <span className={styles.muted} style={{ marginLeft: 8 }}>
