@@ -135,11 +135,13 @@ function computeSignature(state: CruisePlanStateV1) {
 function statusBadge(urgency: ComputedTask["urgency"]) {
   switch (urgency) {
     case "overdue":
-      return { label: "Delayed", cls: "border-red-200 bg-red-50 text-red-700" };
+      // pastel red
+      return { label: "Delayed", cls: "border-gray-200/70 bg-rose-50/70 text-rose-700" };
     case "inRange":
-      return { label: "In range", cls: "border-amber-200 bg-amber-50 text-amber-800" };
+      // pastel yellow
+      return { label: "In range", cls: "border-gray-200/70 bg-yellow-50/70 text-yellow-900/80" };
     case "soon":
-      return { label: "Soon", cls: "border-blue-200 bg-blue-50 text-blue-800" };
+      return { label: "Soon", cls: "border-gray-200/70 bg-sky-50/70 text-sky-900/80" };
     default:
       return { label: "Later", cls: "border-black/10 bg-white text-black/65" };
   }
@@ -147,26 +149,38 @@ function statusBadge(urgency: ComputedTask["urgency"]) {
 function leftAccent(urgency: ComputedTask["urgency"]) {
   switch (urgency) {
     case "overdue":
-      return "border-l-red-300";
+      return "border-l-red-200";
     case "inRange":
-      return "border-l-amber-300";
+      return "border-l-yellow-200";
     case "soon":
-      return "border-l-blue-300";
+      return "border-l-blue-200";
     default:
       return "border-l-black/10";
   }
 }
-function iconFor(urgency: ComputedTask["urgency"]) {
-  switch (urgency) {
-    case "overdue":
-      return "⛔";
-    case "inRange":
-      return "🟡";
-    case "soon":
-      return "⏳";
-    default:
-      return "🗓️";
-  }
+function UrgencyDot({ urgency }: { urgency: ComputedTask["urgency"] }) {
+  const style: React.CSSProperties =
+    urgency === "overdue"
+      ? { background: "rgba(220, 38, 38, 0.35)", border: "1px solid rgba(185, 28, 28, 0.25)" }
+      : urgency === "inRange"
+      ? { background: "rgba(252, 211, 77, 0.22)", border: "1px solid rgba(161, 98, 7, 0.18)" }
+      : urgency === "soon"
+      ? { background: "rgba(50, 78, 170, 0.7)", border: "1px solid rgba(37, 99, 235, 0.18)" }
+      : { background: "rgba(148, 163, 184, 0.22)", border: "1px solid rgba(100, 116, 139, 0.18)" };
+
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: "inline-block",
+        width: 10,
+        height: 10,
+        borderRadius: 999,
+        verticalAlign: "middle",
+        ...style,
+      }}
+    />
+  );
 }
 function sameDay(a: Date, b: Date) {
   return (
@@ -251,6 +265,7 @@ function sanitizeState(raw: any): CruisePlanStateV1 {
     ui: {
       ...base.ui,
       ...(typeof uiRaw === "object" && uiRaw ? uiRaw : {}),
+      // Persisted UI state (expandedTasks) is allowed, but we sanitize shape.
       expandedTasks:
         typeof uiRaw?.expandedTasks === "object" && uiRaw?.expandedTasks
           ? uiRaw.expandedTasks
@@ -541,7 +556,7 @@ const PLAN_TASKS: PlanTask[] = [
     title: "Pack carry-on essentials",
     description: "Meds, chargers, documents, change of clothes.",
     category: "packing",
-    recommendedOffsetDays: 1,
+    recommendedOffsetDays: 2,
     checklistItems: ["Medications", "Chargers + power bank", "Documents / IDs", "Change of clothes"],
   },
 ];
@@ -614,19 +629,32 @@ async function readJsonFile(file: File): Promise<any> {
 function getMonthGrid(monthStart: Date) {
   const first = new Date(monthStart);
   first.setHours(0, 0, 0, 0);
-  const startDay = first.getDay();
+
+  const month = first.getMonth();
+  const monthEnd = new Date(first.getFullYear(), month + 1, 0);
+  monthEnd.setHours(0, 0, 0, 0);
+
+  const startDay = first.getDay(); // 0=Sun
   const gridStart = addDays(first, -startDay);
 
   const weeks: Date[][] = [];
   let cursor = gridStart;
-  for (let w = 0; w < 6; w++) {
+
+  // Build week rows until we've covered the month end.
+  // This yields 4–6 rows depending on the month shape.
+  while (true) {
     const week: Date[] = [];
     for (let d = 0; d < 7; d++) {
       week.push(cursor);
       cursor = addDays(cursor, 1);
     }
     weeks.push(week);
+
+    const lastDayInWeek = week[6];
+    if (lastDayInWeek.getTime() >= monthEnd.getTime()) break;
+    if (weeks.length >= 6) break;
   }
+
   return { weeks };
 }
 
@@ -639,13 +667,21 @@ export default function CruiseTimelineClient() {
 
   const [state, setState] = useState<CruisePlanStateV1>(DEFAULT_STATE);
   const [toast, setToast] = useState("");
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [openRemark, setOpenRemark] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed?.tool === "cruise-plan") setState(sanitizeState(parsed));
+        // Keep the page calm on load: never default tasks open.
+        // (Users can still expand manually during this session.)
+        if (parsed?.tool === "cruise-plan")
+          setState(sanitizeState({
+            ...parsed,
+            ui: { ...(parsed.ui ?? {}), expandedTasks: {} },
+          }));
       } else {
         setState(sanitizeState(DEFAULT_STATE));
       }
@@ -692,6 +728,17 @@ export default function CruiseTimelineClient() {
     () => !!lastExportSig && lastExportSig === currentSig,
     [lastExportSig, currentSig]
   );
+
+  function resetEverything() {
+    try {
+      localStorage.removeItem(LS_KEY);
+      localStorage.removeItem(LS_EXPORT_SIG_KEY);
+    } catch {}
+    setLastExportSig("");
+    setOpenRemark({});
+    setState(sanitizeState(DEFAULT_STATE));
+    setToast("Reset.");
+  }
 
   const sailing = useMemo(() => parseISODateLocal(state.sailingDateISO), [state.sailingDateISO]);
   const today = useMemo(() => startOfToday(), []);
@@ -797,6 +844,14 @@ export default function CruiseTimelineClient() {
     setState((s) => sanitizeState({ ...s, ui: { ...s.ui, calendarMonthISO: toMonthISO(next) } }));
   }
 
+
+  function goToTodayMonth() {
+    const t = startOfToday();
+    const m = new Date(t.getFullYear(), t.getMonth(), 1);
+    m.setHours(0, 0, 0, 0);
+    setState((s) => sanitizeState({ ...s, ui: { ...s.ui, calendarMonthISO: toMonthISO(m) } }));
+  }
+
   function toggleExpanded(taskId: string) {
     setState((s) =>
       sanitizeState({
@@ -845,17 +900,9 @@ export default function CruiseTimelineClient() {
     const m = parseMonthISO(state.ui.calendarMonthISO);
     return m ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   }, [state.ui.calendarMonthISO]);
-
-  const rightMonthStart = useMemo(() => {
-    const d = new Date(leftMonthStart.getFullYear(), leftMonthStart.getMonth() + 1, 1);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, [leftMonthStart]);
-
   const leftGrid = useMemo(() => getMonthGrid(leftMonthStart), [leftMonthStart]);
-  const rightGrid = useMemo(() => getMonthGrid(rightMonthStart), [rightMonthStart]);
 
-  function MonthPanel({ monthStart, grid }: { monthStart: Date; grid: { weeks: Date[][] } }) {
+  function MonthPanel({ monthStart, grid, onToday }: { monthStart: Date; grid: { weeks: Date[][] }; onToday?: () => void }) {
     const title = monthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
     return (
@@ -865,7 +912,7 @@ export default function CruiseTimelineClient() {
         <div
           style={{
             marginTop: 8,
-            border: "1px solid rgba(0,0,0,0.10)",
+            border: "0.5px solid rgba(0, 0, 0, 0.77)",
             borderRadius: 8,
             overflow: "hidden",
             background: "white",
@@ -875,11 +922,11 @@ export default function CruiseTimelineClient() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(7, 1fr)",
-              borderBottom: "1px solid rgba(0,0,0,0.10)",
+              borderBottom: "0.5px solid rgba(0,0,0,0.16)",
               background: "rgba(0,0,0,0.02)",
               fontSize: 11,
               fontWeight: 700,
-              color: "rgba(0,0,0,0.55)",
+              color: "rgba(0, 0, 0, 0.3)",
             }}
           >
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
@@ -894,14 +941,17 @@ export default function CruiseTimelineClient() {
               const iso = toISODate(d);
               const inThisMonth = d.getMonth() === monthStart.getMonth();
 
-              const tasks = (tasksByDoByISO.get(iso) ?? []).filter((ct) =>
+              const tasks = (inThisMonth ? (tasksByDoByISO.get(iso) ?? []) : []).filter((ct) =>
                 state.ui.showCompleted ? true : !isTaskFullyCompleted(state, ct.task)
               );
 
               const hasTasks = tasks.length > 0;
               const sailDay = sailing ? sameDay(d, sailing) : false;
 
-              const isCruiseDay = cruiseStart && cruiseEnd ? isBetweenInclusive(d, cruiseStart, cruiseEnd) : false;
+              const todayISO = toISODate(startOfToday());
+              const isToday = inThisMonth && iso === todayISO;
+
+              const isCruiseDay = inThisMonth && cruiseStart && cruiseEnd ? isBetweenInclusive(d, cruiseStart, cruiseEnd) : false;
 
               const mostUrgent = hasTasks
                 ? tasks.reduce((acc, cur) => {
@@ -921,7 +971,7 @@ export default function CruiseTimelineClient() {
                   : mostUrgent?.urgency === "overdue"
                   ? "rgba(239,68,68,0.9)"
                   : mostUrgent?.urgency === "inRange"
-                  ? "rgba(245,158,11,0.9)"
+                  ? "rgba(217,119,6,0.55)"
                   : mostUrgent?.urgency === "soon"
                   ? "rgba(59,130,246,0.9)"
                   : mostUrgent?.urgency === "later"
@@ -938,23 +988,78 @@ export default function CruiseTimelineClient() {
                 .join(" ");
 
               return (
-                <div key={iso} className={classNames}>
+                <div
+                  key={iso}
+                  className={classNames}
+                  style={{
+                    background: !inThisMonth
+                      ? "rgba(0, 0, 0, 0.11)"
+                      : isCruiseDay
+                      ? "rgba(20, 150, 110, 0.10)"
+                      : hasTasks
+                      ? (() => {
+                          // Color-coded day highlight based on the most urgent (non-completed) task on that day.
+                          const u =
+                            mostUrgent && !isTaskFullyCompleted(state, mostUrgent.task) ? mostUrgent.urgency : null;
+                          if (u === "overdue") return "rgba(244, 169, 169, 0.11)"; // matte pale red
+                          if (u === "inRange") return "rgba(254, 240, 138, 0.13)"; // matte pale yellow
+                          return "rgba(191, 219, 254, 0.27)"; // matte pale blue (soon/later)
+                        })()
+                      : "transparent",
+                    border: "none",
+                    boxShadow: (() => {
+                      // Slightly darker but thinner-feeling grid lines
+                      const u =
+                        mostUrgent && !isTaskFullyCompleted(state, mostUrgent.task) ? mostUrgent.urgency : null;
+
+                      const baseLine = !inThisMonth
+                        ? "inset 0 0 0 0.5px rgba(0, 0, 0, 0.1)"
+                        : "inset 0 0 0 0.5px rgba(0, 0, 0, 0.22)";
+
+                      const urgencyRing =
+                        !inThisMonth || !hasTasks
+                          ? ""
+                          : u === "overdue"
+                          ? ", inset 0 0 0 0.75px rgba(248, 113, 113, 0.17)"
+                          : u === "inRange"
+                          ? ", inset 0 0 0 0.75px rgba(217,119,6,0.22)"
+                          : ", inset 0 0 0 0.75px rgba(59,130,246,0.24)";
+
+                      const cruise = isCruiseDay && inThisMonth ? ", inset 0 0 0 0.75px rgba(20, 150, 111, 0.14)" : "";
+                      const today = isToday ? ", inset 0 0 0 1px rgba(98, 26, 26, 0.42)" : "";
+                      return baseLine + urgencyRing + cruise + today;
+                    })(),
+                  }}
+>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div
                       style={{
                         fontSize: 11,
-                        color: inThisMonth ? "rgba(0,0,0,0.70)" : "rgba(0,0,0,0.35)",
+                        color: !inThisMonth ? "rgba(0,0,0,0.35)" : isToday ? "rgba(127, 29, 29, 0.92)" : "rgba(0,0,0,0.70)",
                       }}
                     >
-                      {d.getDate()}
+                      {inThisMonth ? d.getDate() : ""}
                     </div>
 
-                    {sailDay ? (
+                    {isToday && inThisMonth ? (
                       <span
                         className={styles.badge}
                         style={{
-                          borderColor: "rgba(16,185,129,0.35)",
-                          color: "rgba(16,185,129,0.95)",
+                          borderColor: "rgba(0,0,0,0.20)",
+                          color: "rgba(153,27,27,0.95)",
+                          background: "rgba(248, 238, 238, 0.1)",
+                        }}
+                      >
+                        Today
+                      </span>
+                    ) : null}
+
+                    {sailDay && inThisMonth ? (
+                      <span
+                        className={styles.badge}
+                        style={{
+                          borderColor: "rgba(0,0,0,0.20)",
+                          color: "rgba(24, 142, 103, 0.55)",
                           background: "rgba(16,185,129,0.10)",
                         }}
                       >
@@ -980,11 +1085,18 @@ export default function CruiseTimelineClient() {
                           <button
                             key={ct.task.id}
                             className={styles.taskLink}
+                            style={{
+                              textAlign: "left",
+                              display: "-webkit-box",
+                              WebkitBoxOrient: "vertical" as any,
+                              WebkitLineClamp: 2,
+                              overflow: "hidden",
+                            }}
                             type="button"
                             onClick={() => scrollToTask(ct.task.id)}
                             title="Jump to task in list"
                           >
-                            {completed ? "✅" : iconFor(ct.urgency)} {ct.task.title}
+                            {completed ? "✅" : <UrgencyDot urgency={ct.urgency} />} {ct.task.title}
                           </button>
                         );
                       })}
@@ -1001,8 +1113,13 @@ export default function CruiseTimelineClient() {
           </div>
         </div>
 
-        <div className={styles.muted} style={{ marginTop: 8 }}>
-          Tasks are shown on their Do-by dates.
+        <div className={styles.muted} style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+          {onToday ? (
+            <button className={styles.btn + " " + styles.btnSmall} onClick={onToday} type="button">
+              Today
+            </button>
+          ) : null}
+          <span>Tasks are shown on their Do-by dates.</span>
         </div>
       </div>
     );
@@ -1033,7 +1150,7 @@ export default function CruiseTimelineClient() {
                 </button>
 
               <button
-                className={styles.btn + " " + styles.btnSmall}
+                className={styles.btn + " " + styles.btnSmall + " " + "text-xs"}
                 onClick={() => {
                     setState((s) => sanitizeState({ ...s, ui: { ...s.ui, showAbout: true } }));
                     window.setTimeout(() => {
@@ -1046,6 +1163,15 @@ export default function CruiseTimelineClient() {
                 >
                 About
                 </button>
+              {/* Left-align the "Not exported" signal so the Export/Import button group stays visually balanced. */}
+              {!isExportCurrent ? (
+                <span
+                  className="ml-2 rounded-full border border-black-200/70 bg-yellow-50/70 px-2 py-0.5 text-[11px] font-semibold text-yellow-900/70"
+                  title="You have changes that haven’t been exported yet"
+                >
+                  Not exported
+                </span>
+              ) : null}
 
               {toast ? <span className={styles.badge}>{toast}</span> : null}
             </div>
@@ -1076,6 +1202,15 @@ export default function CruiseTimelineClient() {
                Import ⬆️
               </button>
 
+              <button
+                className={styles.btn + " " + styles.btnIcon}
+                onClick={() => setShowResetConfirm(true)}
+                type="button"
+                title="Reset"
+              >
+                Reset
+              </button>
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -1090,6 +1225,38 @@ export default function CruiseTimelineClient() {
               />
             </div>
           </div>
+
+          {/* Reset confirmation */}
+          {showResetConfirm ? (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+              <div className="w-full max-w-md rounded-2xl border border-black/10 bg-white p-4 shadow-xl">
+                <div className="text-sm font-extrabold text-black/85">Reset this cruise plan?</div>
+                <div className="mt-1 text-xs text-black/60">
+                  This clears the saved plan on this device. You can export first if you want a backup.
+                </div>
+                <div className="mt-4 flex justify-end gap-2">
+                  <button
+                    className={styles.btn + " " + styles.btnSmall}
+                    type="button"
+                    onClick={() => setShowResetConfirm(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className={styles.btn + " " + styles.btnSmall}
+                    type="button"
+                    onClick={() => {
+                      setShowResetConfirm(false);
+                      resetEverything();
+                    }}
+                    style={{ borderColor: "rgba(244, 63, 94, 0.35)", background: "rgba(244, 63, 94, 0.08)" }}
+                  >
+                    Yes, reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           {/* Inputs + trip profile toggles */}
           <div className={styles.card}>
@@ -1196,8 +1363,8 @@ export default function CruiseTimelineClient() {
               <div className={styles.muted}>
                 {sailing ? (
                   <>
-                    <span style={{ fontWeight: 800, color: "rgba(0,0,0,0.75)" }}>Sailing:</span>{" "}
-                    {formatDateLong(sailing)} • <span style={{ fontWeight: 800 }}>{daysToGo}</span> days to go
+                    <span style={{ fontWeight: 900, color: "rgba(0,0,0,0.82)", fontSize: 14 }}>Sailing:</span>{" "}
+                    {formatDateLong(sailing)} • <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(153,27,27,0.06)", color: "rgba(127,29,29,0.92)", fontWeight: 800 }}>{daysToGo} days to go</span>
                   </>
                 ) : (
                   "Enter a valid sailing date."
@@ -1220,23 +1387,26 @@ export default function CruiseTimelineClient() {
               <span className={styles.muted} style={{ fontWeight: 800 }}>
                 Legend:
               </span>
-              <span className={styles.badge}>⛔ {statusCounts.overdue}</span>
-              <span className={styles.badge}>🟡 {statusCounts.inRange}</span>
-              <span className={styles.badge}>⏳ {statusCounts.soon}</span>
-              <span className={styles.badge}>🗓️ {statusCounts.later}</span>
+              <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(220, 38, 38, 0.35)", border: "1px solid rgba(185, 28, 28, 0.25)", marginRight: 6, verticalAlign: "middle" }} />
+                {statusCounts.overdue}
+              </span>
+              <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(250, 204, 21, 0.18)", border: "1px solid rgba(0,0,0,0.18)", marginRight: 6, verticalAlign: "middle" }} />
+                {statusCounts.inRange}
+              </span>
+              <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(50, 78, 170, 0.7)", border: "1px solid rgba(37, 99, 235, 0.18)", marginRight: 6, verticalAlign: "middle" }} />
+                {statusCounts.soon}
+              </span>
+              <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+                <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 999, background: "rgba(148, 163, 184, 0.18)", border: "1px solid rgba(100, 116, 139, 0.18)", marginRight: 6, verticalAlign: "middle" }} />
+                {statusCounts.later}
+              </span>
 
               <span className={styles.muted} style={{ marginLeft: 8 }}>
                 Remaining: <b>{remainingCount}</b> • Completed: <b>{completedCount}</b>
               </span>
-
-              {cruiseStart && cruiseEnd ? (
-                <span
-                  className={styles.badge}
-                  style={{ borderColor: "rgba(16,185,129,0.35)", background: "rgba(16,185,129,0.08)" }}
-                >
-                  Cruise days highlighted
-                </span>
-              ) : null}
             </div>
           </div>
 
@@ -1247,16 +1417,19 @@ export default function CruiseTimelineClient() {
                 <button className={styles.btn} onClick={() => shiftCalendarMonth(-1)} type="button">
                   ←
                 </button>
-                <div className={styles.calendarHeaderCenter}>Two-month view</div>
+                <div className={styles.calendarHeaderCenter} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontWeight: 800, color: "rgba(0,0,0,0.65)" }}>
+                    {leftMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+                  </span>
+                </div>
                 <button className={styles.btn} onClick={() => shiftCalendarMonth(1)} type="button">
                   →
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <MonthPanel monthStart={leftMonthStart} grid={leftGrid} />
-                <MonthPanel monthStart={rightMonthStart} grid={rightGrid} />
-              </div>
+              <div className="grid grid-cols-1 gap-3">
+                <MonthPanel monthStart={leftMonthStart} grid={leftGrid} onToday={goToTodayMonth} />
+</div>
             </div>
           ) : null}
 
@@ -1291,8 +1464,8 @@ export default function CruiseTimelineClient() {
                           ref={(el) => {
                             taskRefs.current[ct.task.id] = el;
                           }}
-                          className={`rounded-md border border-black/10 bg-white px-3 py-2 border-l-4 ${
-                            completed ? "border-l-emerald-200 opacity-80" : leftAccent(ct.urgency)
+                          className={`rounded-lg border border-black/10 bg-white/60 px-3 py-2 border-l-4 ${
+                            completed ? "border-l-green-200 opacity-90" : leftAccent(ct.urgency)
                           }`}
                           style={{
                             boxShadow: flashTaskId === ct.task.id ? "0 0 0 3px rgba(99,102,241,0.18)" : undefined,
@@ -1301,13 +1474,13 @@ export default function CruiseTimelineClient() {
                           <div className={styles.row} style={{ justifyContent: "space-between" }}>
                             <div style={{ minWidth: 0 }}>
                               <div className={styles.row} style={{ gap: 6, flexWrap: "wrap" }}>
-                                <div style={{ fontSize: 13, fontWeight: 800, color: "rgba(0,0,0,0.82)" }}>
-                                  <span style={{ marginRight: 4 }}>{completed ? "✅" : iconFor(ct.urgency)}</span>
+                                <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(0,0,0,0.82)", lineHeight: "16px" }}>
+                                  <span style={{ marginRight: 4 }}>{completed ? "✅" : <UrgencyDot urgency={ct.urgency} />}</span>
                                   {ct.task.title}
                                 </div>
 
                                 {completed ? (
-                                  <span className="rounded-full border px-2 py-0.5 text-[11px] font-semibold border-emerald-200 bg-emerald-50 text-emerald-700">
+                                  <span className="rounded-full border px-2 py-0.5 text-[11px] font-semibold border-gray-200 bg-emerald-50 text-emerald-700">
                                     Completed
                                   </span>
                                 ) : (
@@ -1334,12 +1507,30 @@ export default function CruiseTimelineClient() {
                               </div>
                             </div>
 
+                            {/* Chevron toggle (compact). Keeps the layout calm and still clearly interactive. */}
                             <button
-                              className={styles.btn + " " + styles.btnSmall}
-                              onClick={() => toggleExpanded(ct.task.id)}
                               type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                toggleExpanded(ct.task.id);
+                              }}
+                              aria-label={expanded ? "Collapse checklist" : "Expand checklist"}
+                              aria-expanded={expanded}
+                              title={expanded ? "Collapse" : "Expand"}
+                              className={styles.btn + " " + styles.btnSmall}
+                              style={{
+                                width: 30,
+                                height: 26,
+                                padding: 0,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 14,
+                                lineHeight: "14px",
+                                opacity: 0.9,
+                              }}
                             >
-                              {expanded ? "Hide" : "Checklist"}
+                              {expanded ? "▾" : "▸"}
                             </button>
                           </div>
 
@@ -1348,48 +1539,64 @@ export default function CruiseTimelineClient() {
                               {ct.task.checklistItems.map((label, idx) => {
                                 const itemId = `${ct.task.id}::${idx}`;
                                 const entry = state.checklist[itemId] || {};
+                                const noteOpen = !!openRemark[itemId] || !!(entry.remark && entry.remark.trim());
                                 return (
-                                  <div
-                                    key={itemId}
-                                    style={{
-                                      display: "grid",
-                                      gridTemplateColumns: "1fr 1fr",
-                                      gap: 8,
-                                      alignItems: "center",
-                                    }}
-                                    className="rounded-md border border-black/10 bg-white px-2 py-2"
-                                  >
-                                    <label
-                                      style={{
-                                        display: "flex",
-                                        gap: 8,
-                                        alignItems: "center",
-                                        fontSize: 12,
-                                        color: "rgba(0,0,0,0.75)",
-                                      }}
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={!!entry.checked}
-                                        onChange={(e) => setChecklistChecked(itemId, e.target.checked)}
-                                      />
-                                      <span
+                                  <div key={itemId} className="py-2 border-t border-black/5 first:border-t-0">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                      <label
                                         style={{
-                                          textDecoration: entry.checked ? "line-through" : "none",
-                                          opacity: entry.checked ? 0.6 : 1,
+                                          display: "flex",
+                                          gap: 8,
+                                          alignItems: "center",
+                                          fontSize: 12,
+                                          color: "rgba(0,0,0,0.78)",
+                                          lineHeight: "16px",
                                         }}
                                       >
-                                        {label}
-                                      </span>
-                                    </label>
+                                        <input
+                                          type="checkbox"
+                                          checked={!!entry.checked}
+                                          onChange={(e) => setChecklistChecked(itemId, e.target.checked)}
+                                        />
+                                        <span
+                                          style={{
+                                            textDecoration: entry.checked ? "line-through" : "none",
+                                            opacity: entry.checked ? 0.6 : 1,
+                                          }}
+                                        >
+                                          {label}
+                                        </span>
+                                      </label>
 
-                                    <input
-                                      value={entry.remark ?? ""}
-                                      onChange={(e) => setChecklistRemark(itemId, e.target.value)}
-                                      placeholder="Remark (optional)"
-                                      className={styles.input}
-                                      style={{ padding: "6px 8px", fontSize: 12 }}
-                                    />
+                                      <button
+                                        type="button"
+                                        className={styles.btn + " " + styles.btnSmall}
+                                        style={{ fontSize: 11, padding: "4px 8px", opacity: 0.85 }}
+                                        onClick={() =>
+                                          setOpenRemark((m) => ({ ...m, [itemId]: !(m[itemId] ?? false) }))
+                                        }
+                                        title={noteOpen ? "Hide note" : "Add a note"}
+                                      >
+                                        {noteOpen ? "Note" : "+ Note"}
+                                      </button>
+                                    </div>
+
+                                    {noteOpen ? (
+                                      <div className="mt-2">
+                                        <input
+                                          value={entry.remark ?? ""}
+                                          onChange={(e) => setChecklistRemark(itemId, e.target.value)}
+                                          placeholder="Short note (optional)"
+                                          className={styles.input}
+                                          style={{
+                                            padding: "6px 8px",
+                                            fontSize: 12,
+                                            height: 30,
+                                            maxWidth: 520,
+                                          }}
+                                        />
+                                      </div>
+                                    ) : null}
                                   </div>
                                 );
                               })}
@@ -1399,18 +1606,76 @@ export default function CruiseTimelineClient() {
                       );
                     })}
                   </div>
-
-                  {!isExportCurrent ? (
-                    <div className={styles.muted} style={{ marginTop: 10 }}>
-                      Tip: export ⬇️ if you want a portable backup of your latest changes.
-                    </div>
-                  ) : null}
                 </div>
               );
             })}
           </div>
         </div>
       </div>
+
+
+
+{/* Cruise basics / FAQ */}
+<div className="mx-auto max-w-5xl">
+  <div className={styles.card} style={{ padding: 14 }}>
+    <div className={styles.sectionTitle}>Cruise basics (FAQ)</div>
+    <div className={styles.muted} style={{ marginTop: 4 }}>
+      Common questions for first-time cruisers. Expand any item.
+    </div>
+
+    <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+      <details className="rounded-lg border border-black/10 bg-white/60 px-3 py-2">
+        <summary style={{ cursor: "pointer", fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.8)" }}>
+          What is a muster drill?
+        </summary>
+        <div className={styles.muted} style={{ marginTop: 6 }}>
+          A mandatory safety briefing required before departure. Many cruise lines now use an app/video + a quick
+          check-in at your muster station.
+        </div>
+      </details>
+
+      <details className="rounded-lg border border-black/10 bg-white/60 px-3 py-2">
+        <summary style={{ cursor: "pointer", fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.8)" }}>
+          What do I need on embarkation day?
+        </summary>
+        <div className={styles.muted} style={{ marginTop: 6 }}>
+          Keep essentials in your carry-on: IDs/passport, boarding docs, medications, chargers, and a change of
+          clothes. Checked bags can arrive later.
+        </div>
+      </details>
+
+      <details className="rounded-lg border border-black/10 bg-white/60 px-3 py-2">
+        <summary style={{ cursor: "pointer", fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.8)" }}>
+          How do gratuities and onboard charges work?
+        </summary>
+        <div className={styles.muted} style={{ marginTop: 6 }}>
+          Most cruises use a cashless onboard account linked to a card on file. Daily gratuities may be auto-added
+          (or prepaid). Specialty dining, drinks, spa, and excursions are usually extra.
+        </div>
+      </details>
+
+      <details className="rounded-lg border border-black/10 bg-white/60 px-3 py-2">
+        <summary style={{ cursor: "pointer", fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.8)" }}>
+          Any simple rules to avoid surprises?
+        </summary>
+        <div className={styles.muted} style={{ marginTop: 6 }}>
+          Don’t miss the ship in port (return early). Check prohibited items for your cruise line. If flying,
+          arriving the day before is the safest default.
+        </div>
+      </details>
+
+      <details className="rounded-lg border border-black/10 bg-white/60 px-3 py-2">
+        <summary style={{ cursor: "pointer", fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.8)" }}>
+          What should I book early?
+        </summary>
+        <div className={styles.muted} style={{ marginTop: 6 }}>
+          Shore excursions, specialty dining, and popular onboard activities can sell out. Book the must-dos early,
+          then fill the rest later.
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
 
       <div ref={infoRef} style={{ scrollMarginTop: 80 }} />
 
