@@ -73,7 +73,7 @@ const LS_KEY = "eventclocks:cruise-plan:v1";
 const LS_EXPORT_SIG_KEY = "eventclocks:cruise-plan:lastExportSig:v1";
 
 const DEFAULT_DESCRIPTION =
-  "Tasks are sorted by Do-by date. Expand tasks to check off items and add remarks. Export for a portable backup.";
+  "Tasks are sorted by Due by date. Expand tasks to check off items and add remarks. Export for a portable backup.";
 
 function startOfToday() {
   const d = new Date();
@@ -136,12 +136,12 @@ function statusBadge(urgency: ComputedTask["urgency"]) {
   switch (urgency) {
     case "overdue":
       // pastel red
-      return { label: "Delayed", cls: "border-gray-200/70 bg-rose-50/70 text-rose-700" };
+      return { label: "Overdue", cls: "border-gray-200/70 bg-rose-50/70 text-rose-700" };
     case "inRange":
       // pastel yellow
-      return { label: "In range", cls: "border-gray-200/70 bg-yellow-50/70 text-yellow-900/80" };
+      return { label: "Due soon", cls: "border-gray-200/70 bg-yellow-50/70 text-yellow-900/80" };
     case "soon":
-      return { label: "Soon", cls: "border-gray-200/70 bg-sky-50/70 text-sky-900/80" };
+      return { label: "Coming up", cls: "border-gray-200/70 bg-sky-50/70 text-sky-900/80" };
     default:
       return { label: "Later", cls: "border-black/10 bg-white text-black/65" };
   }
@@ -1119,7 +1119,7 @@ export default function CruiseTimelineClient() {
               Today
             </button>
           ) : null}
-          <span>Tasks are shown on their Do-by dates.</span>
+          <span>Tasks are shown on their Due by dates.</span>
         </div>
       </div>
     );
@@ -1448,7 +1448,7 @@ export default function CruiseTimelineClient() {
                     <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(0,0,0,0.75)" }}>
                       {formatDateLong(date)}
                     </div>
-                    <div className={styles.muted}>Do-by</div>
+                    <div className={styles.muted}>Due by</div>
                   </div>
 
                   <div className="space-y-2">
@@ -1687,7 +1687,7 @@ export default function CruiseTimelineClient() {
                 <div className={styles.sectionTitle}>How to use</div>
                 <ul className={styles.bullets}>
                 <li>Set sailing date + cruise length.</li>
-                <li>Work top-to-bottom: earliest Do-by dates first.</li>
+                <li>Work top-to-bottom: earliest Due by dates first.</li>
                 <li>Expand tasks to check off items and add remarks.</li>
                 <li>Use calendar items to jump to the task in the list.</li>
                 <li>Export ⬇️ for a portable backup.</li>
