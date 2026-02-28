@@ -91,3 +91,35 @@ a:hover {
   margin-bottom: 14px;
   opacity: 0.75;
 }
+
+input[type="date"],
+input[type="time"],
+select {
+  font-size: 11px !important;
+  line-height: 1 !important;
+  height: 32px;
+}
+
+/* Meeting Overlap: make native form controls respect small text on macOS */
+.meeting-overlap input,
+.meeting-overlap select,
+.meeting-overlap button {
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+/* Hard overrides for native widgets */
+.meeting-overlap input[type="date"],
+.meeting-overlap input[type="time"],
+.meeting-overlap select {
+  font-size: 11px !important;
+  line-height: 1.1 !important;
+  height: 32px;
+  -webkit-appearance: none; /* important for Safari */
+  appearance: none;
+}
+
+/* Keep buttons same height */
+.meeting-overlap button {
+  height: 32px;
+}

@@ -1677,7 +1677,7 @@ export default function WeddingPlanClient() {
                     <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>How to use this planner</summary>
                     <div className={styles.muted} style={{ marginTop: 8, display: "grid", gap: 8 }}>
                       <div><b>1)</b> Pick your <b>Wedding Date</b>. Everything is generated relative to that date.</div>
-                      <div><b>2)</b> Start with <b>red</b> and <b>yellow</b> tasks. Red is overdue. Yellow is “do soon”.</div>
+                      <div><b>2)</b> Start with <b>red</b> and <b>yellow</b> tasks. Red is overdue. Yellow is “due soon”.</div>
                       <div><b>3)</b> Click the <b>chevron</b> (▸) to open a task and check items off.</div>
                       <div><b>4)</b> Use <b>Notes</b> inside checklist items to save names, prices, contact info, and decisions.</div>
                       <div><b>5)</b> Use <b>Export</b> for a portable backup. Use <b>Import</b> to restore it later.</div>
