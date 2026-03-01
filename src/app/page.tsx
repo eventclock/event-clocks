@@ -6,262 +6,266 @@ export const metadata: Metadata = {
   },
 };
 
+function Icon({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-white/60 text-black/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+      {children}
+    </span>
+  );
+}
+
+function ToolCard({
+  href,
+  title,
+  desc,
+  icon,
+  badge,
+}: {
+  href: string;
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+  badge?: string;
+}) {
+  return (
+    <a
+      href={href}
+      className="group relative h-full rounded-2xl border border-black/10 bg-white/55 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/70 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <Icon>{icon}</Icon>
+          <div>
+            <div className="text-lg font-extrabold tracking-tight">{title}</div>
+            <div className="mt-2 text-sm leading-relaxed text-black/60 dark:text-white/60">{desc}</div>
+          </div>
+        </div>
+
+        {badge ? (
+          <span className="shrink-0 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs font-semibold text-black/60 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+            {badge}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mt-6 text-sm font-semibold text-black/55 group-hover:text-black/75 dark:text-white/55 dark:group-hover:text-white/80">
+        Open →
+      </div>
+    </a>
+  );
+}
+
 export default function HomePage() {
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
-      {/* Homepage content header — NOT the site nav */}
+    <main className="relative mx-auto max-w-5xl px-6 py-10">
+      {/* Full-page pale background wash */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-white dark:bg-black" />
+        <div className="absolute -top-40 left-1/2 h-[30rem] w-[60rem] -translate-x-1/2 rounded-full bg-violet-200/20 blur-3xl dark:bg-violet-500/10" />
+        <div className="absolute top-28 -left-40 h-[26rem] w-[26rem] rounded-full bg-sky-200/18 blur-3xl dark:bg-sky-500/10" />
+        <div className="absolute top-72 -right-40 h-[26rem] w-[26rem] rounded-full bg-emerald-200/16 blur-3xl dark:bg-emerald-500/10" />
+      </div>
+
+      {/* Hero (balanced: not too tall, not too empty) */}
       <header className="mb-10">
-        <h1 className="text-4xl font-black tracking-tight">Event Clocks</h1>
-        <p className="mt-2 max-w-2xl text-lg text-black/60 dark:text-white/60">
-          Practical planning tools for time zones, schedules, and deadlines — fast, simple, and no accounts.
+        <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/45 px-3 py-1 text-xs font-semibold text-black/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
+          Fast • Private • No accounts
+        </div>
+<br/><br/>
+        <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Event Clocks</h1>
+
+        <p className="mt-3 max-w-2xl text-lg text-black/60 dark:text-white/60">
+          Practical planning tools for time zones, schedules, and deadlines — calm, quick, and dependable.
         </p>
       </header>
 
-      {/* Tools */}
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Timezone Converter */}
-        <a
-          href="/timezone"
-          className="group rounded-2xl border-2 border-sky-200/70 bg-white/60 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md dark:border-sky-300/20 dark:bg-white/5"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-xl font-extrabold tracking-tight">Timezone Converter</div>
-              <div className="mt-2 text-sm text-black/60 dark:text-white/60">
-                Compare one date/time across multiple time zones — DST-aware, with favorites and share links.
+      {/* Featured (balanced grid) */}
+      <section className="mb-8">
+        <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">Featured</div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="md:col-span-2">
+            <a
+              href="/timezone"
+              className="group relative block h-full overflow-hidden rounded-2xl border border-black/10 bg-white/55 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/70 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8"
+            >
+              {/* extra-subtle glow just for featured */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 opacity-60"
+                style={{
+                  background:
+                    "radial-gradient(800px circle at 10% 10%, rgba(167,139,250,0.18), transparent 45%), radial-gradient(700px circle at 90% 40%, rgba(125,211,252,0.16), transparent 40%)",
+                }}
+              />
+
+              <div className="relative flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <Icon>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                      <path
+                        d="M12 7v5l3 2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  </Icon>
+
+                  <div>
+                    <div className="text-2xl font-extrabold tracking-tight">Timezone Converter</div>
+                    <div className="mt-2 text-sm leading-relaxed text-black/60 dark:text-white/60">
+                      Compare one date/time across multiple zones — DST-aware, favorites, and share links.
+                    </div>
+                  </div>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-xs font-semibold text-black/60 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+                  Most used
+                </span>
               </div>
-            </div>
 
-            <span className="rounded-full border border-emerald-200/70 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-900 dark:border-emerald-300/20 dark:bg-emerald-400/10 dark:text-emerald-200">
-              DST-aware
-            </span>
-          </div>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            <span className="rounded-full border border-violet-200/70 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900 dark:border-violet-300/20 dark:bg-violet-400/10 dark:text-violet-200">
-              Favorites
-            </span>
-            <span className="rounded-full border border-sky-200/70 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-900 dark:border-sky-300/20 dark:bg-sky-400/10 dark:text-sky-200">
-              Multi-timezone
-            </span>
-            <span className="rounded-full border border-amber-200/70 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-200">
-              Share link
-            </span>
-          </div>
-
-          <div className="mt-6 text-sm font-semibold text-black/70 group-hover:text-black dark:text-white/70 dark:group-hover:text-white">
-            Open tool →
-          </div>
-        </a>
-
-        {/* Meeting Overlap */}
-        <a
-          href="/meeting-overlap"
-          className="group rounded-2xl border-2 border-emerald-200/70 bg-white/60 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md dark:border-emerald-300/20 dark:bg-white/5"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-xl font-extrabold tracking-tight">Meeting Overlap</div>
-              <div className="mt-2 text-sm text-black/60 dark:text-white/60">
-                Find times that work for everyone — meeting length, step size, weekends, and holiday hints.
+              <div className="relative mt-6 text-sm font-semibold text-black/55 group-hover:text-black/75 dark:text-white/55 dark:group-hover:text-white/80">
+                Open →
               </div>
-            </div>
-
-            <span className="rounded-full border border-sky-200/70 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-900 dark:border-sky-300/20 dark:bg-sky-400/10 dark:text-sky-200">
-              Planner
-            </span>
+            </a>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
-            <span className="rounded-full border border-emerald-200/70 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 dark:border-emerald-300/20 dark:bg-emerald-400/10 dark:text-emerald-200">
-              Overlap-first
-            </span>
-            <span className="rounded-full border border-violet-200/70 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900 dark:border-violet-300/20 dark:bg-violet-400/10 dark:text-violet-200">
-              Weekday filters
-            </span>
-            <span className="rounded-full border border-amber-200/70 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-200">
-              Holiday badges
-            </span>
-          </div>
-
-          <div className="mt-6 text-sm font-semibold text-black/70 group-hover:text-black dark:text-white/70 dark:group-hover:text-white">
-            Open tool →
-          </div>
-        </a>
-
-        {/* Business Days */}
-        <a
-          href="/business-days"
-          className="group rounded-2xl border-2 border-violet-200/70 bg-white/60 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md dark:border-violet-300/20 dark:bg-white/5"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-xl font-extrabold tracking-tight">Business Days</div>
-              <div className="mt-2 text-sm text-black/60 dark:text-white/60">
-                Count workdays between dates, or add business days — excluding weekends and supported holidays.
-              </div>
-            </div>
-
-            <span className="rounded-full border border-emerald-200/70 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-900 dark:border-emerald-300/20 dark:bg-emerald-400/10 dark:text-emerald-200">
-              Workdays
-            </span>
-          </div>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            <span className="rounded-full border border-sky-200/70 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-900 dark:border-sky-300/20 dark:bg-sky-400/10 dark:text-sky-200">
-              Date range
-            </span>
-            <span className="rounded-full border border-violet-200/70 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900 dark:border-violet-300/20 dark:bg-violet-400/10 dark:text-violet-200">
-              Add days
-            </span>
-            <span className="rounded-full border border-amber-200/70 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-200">
-              Holiday-aware
-            </span>
-          </div>
-
-          <div className="mt-6 text-sm font-semibold text-black/70 group-hover:text-black dark:text-white/70 dark:group-hover:text-white">
-            Open tool →
-          </div>
-        </a>
-
-        {/* Cruise Planner */}
-        <a
-          href="/cruise"
-          className="group rounded-2xl border-2 border-teal-200/70 bg-white/60 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md dark:border-teal-300/20 dark:bg-white/5"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-xl font-extrabold tracking-tight">Cruise Planner</div>
-              <div className="mt-2 text-sm text-black/60 dark:text-white/60">
-                A simple cruise timeline with helpful reminders and a “don’t forget” checklist.
-              </div>
-            </div>
-
-            <span className="rounded-full border border-sky-200/70 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-900 dark:border-sky-300/20 dark:bg-sky-400/10 dark:text-sky-200">
-              Planner
-            </span>
-          </div>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            <span className="rounded-full border border-teal-200/70 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-900 dark:border-teal-300/20 dark:bg-teal-400/10 dark:text-teal-200">
-              Timeline
-            </span>
-            <span className="rounded-full border border-violet-200/70 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900 dark:border-violet-300/20 dark:bg-violet-400/10 dark:text-violet-200">
-              Reminders
-            </span>
-            <span className="rounded-full border border-amber-200/70 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-200">
-              Checklist
-            </span>
-          </div>
-
-          <div className="mt-6 text-sm font-semibold text-black/70 group-hover:text-black dark:text-white/70 dark:group-hover:text-white">
-            Open tool →
-          </div>
-        </a>
-
-        {/* Wedding Plan */}
-        <a
-          href="/wedding-plan"
-          className="group rounded-2xl border-2 border-pink-200/70 bg-white/60 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md dark:border-pink-300/20 dark:bg-white/5"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-xl font-extrabold tracking-tight">Wedding Planner</div>
-              <div className="mt-2 text-sm text-black/60 dark:text-white/60">
-                A wedding prep timeline with sensible checkpoints, reminders, and a clean checklist.
-              </div>
-            </div>
-
-            <span className="rounded-full border border-sky-200/70 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-900 dark:border-sky-300/20 dark:bg-sky-400/10 dark:text-sky-200">
-              Planner
-            </span>
-          </div>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            <span className="rounded-full border border-pink-200/70 bg-pink-50 px-3 py-1 text-xs font-semibold text-pink-900 dark:border-pink-300/20 dark:bg-pink-400/10 dark:text-pink-200">
-              Timeline
-            </span>
-            <span className="rounded-full border border-violet-200/70 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-900 dark:border-violet-300/20 dark:bg-violet-400/10 dark:text-violet-200">
-              Reminders
-            </span>
-            <span className="rounded-full border border-amber-200/70 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-200">
-              Checklist
-            </span>
-          </div>
-
-          <div className="mt-6 text-sm font-semibold text-black/70 group-hover:text-black dark:text-white/70 dark:group-hover:text-white">
-            Open tool →
-          </div>
-        </a>
+          <ToolCard
+            href="/meeting-overlap"
+            title="Meeting Overlap"
+            desc="Find times that work for everyone — meeting length, step size, weekends, and holiday hints."
+            badge="Planner"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                <path d="M4 7h16M7 4v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path d="M9 9h11v11H9V9Z" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            }
+          />
+        </div>
       </section>
 
-      {/* Highlights */}
-      <section className="mt-4 grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
-          <div className="text-sm font-bold text-black/80 dark:text-white/80">Weekend + holiday aware</div>
-          <p className="mt-2 text-sm text-black/60 dark:text-white/60">
-            See weekend hits by person, and spot supported public holidays at a glance.
+      {/* Calculators */}
+      <section className="mb-8">
+        <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">Calculators</div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <ToolCard
+            href="/business-days"
+            title="Business Days"
+            desc="Count workdays between dates, or add business days — excluding weekends and supported holidays."
+            badge="Workdays"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                <path d="M7 3v3M17 3v3M4 8h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path
+                  d="M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+              </svg>
+            }
+          />
+        </div>
+      </section>
+
+      {/* Planners */}
+      <section className="mb-8">
+        <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">Planners</div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <ToolCard
+            href="/cruise"
+            title="Cruise Planner"
+            desc="A simple cruise timeline with helpful reminders and a “don’t forget” checklist."
+            badge="Timeline"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                <path d="M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10Z" stroke="currentColor" strokeWidth="2" />
+                <path
+                  d="M14.5 9.5 10 14l-1 4 4-1 4.5-4.5-3-3Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+          />
+
+          <ToolCard
+            href="/wedding-plan"
+            title="Wedding Planner"
+            desc="A wedding prep timeline with sensible checkpoints, reminders, and a clean checklist."
+            badge="Checklist"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                <path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2Z" stroke="currentColor" strokeWidth="2" />
+                <path
+                  d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2h16l-2-2Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+          />
+
+          <ToolCard
+            href="/tax-document-checklist"
+            title="Tax Document Checklist"
+            desc="Gather the right documents faster — a calm checklist you can work through confidently."
+            badge="Checklist"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                <path
+                  d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-6Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+                <path d="M14 2v6h6" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                <path d="M8 13h8M8 17h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            }
+          />
+        </div>
+      </section>
+
+
+      {/* Quick overview row (adds balance + visual interest without clutter) */}
+      <section className="mb-8 grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-black/10 bg-white/45 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
+          <div className="text-sm font-semibold text-black/75 dark:text-white/75">Weekend + holiday aware</div>
+          <p className="mt-2 text-sm text-black/55 dark:text-white/55">
+            Spot weekend hits and supported public holidays quickly.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
-          <div className="text-sm font-bold text-black/80 dark:text-white/80">Shareable results</div>
-          <p className="mt-2 text-sm text-black/60 dark:text-white/60">
-            Send a link so others can view the same setup without re-entering everything.
+        <div className="rounded-2xl border border-black/10 bg-white/45 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
+          <div className="text-sm font-semibold text-black/75 dark:text-white/75">Shareable results</div>
+          <p className="mt-2 text-sm text-black/55 dark:text-white/55">
+            Send a link so others can view the same setup.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
-          <div className="text-sm font-bold text-black/80 dark:text-white/80">Fast + private</div>
-          <p className="mt-2 text-sm text-black/60 dark:text-white/60">
-            Favorites and selections stay in your browser. No logins, no accounts.
+        <div className="rounded-2xl border border-black/10 bg-white/45 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
+          <div className="text-sm font-semibold text-black/75 dark:text-white/75">Local-first</div>
+          <p className="mt-2 text-sm text-black/55 dark:text-white/55">
+            Preferences stay in your browser. No logins.
           </p>
         </div>
       </section>
 
-      {/* Holiday note */}
-      <section className="mt-4 rounded-2xl border border-amber-200/60 bg-amber-50/60 p-5 text-sm text-amber-950 shadow-sm backdrop-blur dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-100">
-        <div className="font-semibold">Holiday coverage note</div>
-        <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
-          Holiday tags rely on a public dataset. Some regions may be missing or incomplete — you’ll see “No data” when
-          that happens.
-        </p>
-      </section>
 
-      {/* More tools */}
-      <section className="mt-4 rounded-2xl border-2 border-violet-200/70 bg-white/60 p-6 shadow-sm backdrop-blur dark:border-violet-300/20 dark:bg-white/5">
-        <div className="text-xl font-extrabold tracking-tight">More tools coming</div>
-        <p className="mt-2 text-sm text-black/60 dark:text-white/60">
-          Keeping the set small, useful, and quick — with a focus on real planning work.
-        </p>
-
-        <ul className="mt-4 space-y-2 text-sm text-black/75 dark:text-white/75">
-          <li className="flex gap-2">
-            <span className="mt-1 inline-block h-2 w-2 rounded-full bg-sky-300 dark:bg-sky-400" />
-            World clock dashboard (pin multiple cities)
-          </li>
-          <li className="flex gap-2">
-            <span className="mt-1 inline-block h-2 w-2 rounded-full bg-emerald-300 dark:bg-emerald-400" />
-            Calendar-friendly export (ICS + copy to calendar)
-          </li>
-          <li className="flex gap-2">
-            <span className="mt-1 inline-block h-2 w-2 rounded-full bg-amber-300 dark:bg-amber-400" />
-            Shareable “best time to meet” pages (SEO-friendly)
-          </li>
-        </ul>
-
-        <div className="mt-6 flex flex-wrap gap-2">
-          <a
-            className="rounded-xl border border-black/10 bg-white/70 px-3 py-2 text-sm font-semibold text-black/70 shadow-sm hover:bg-white/90 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
-            href="/contact"
-          >
-            Suggest a feature
-          </a>
-        </div>
-      </section>
-
-      {/* Footer note */}
-      <section className="mt-6 rounded-2xl border border-black/10 bg-white/50 p-5 text-sm text-black/60 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+      {/* Calm note */}
+      <section className="rounded-2xl border border-black/10 bg-white/45 p-5 text-sm text-black/55 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/55">
         Tip: Convert the time first, then use Meeting Overlap to pick a slot — and double-check weekends/holidays before
         sending the invite.
       </section>

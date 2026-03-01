@@ -358,14 +358,10 @@ export default function BusinessDaysPage() {
   }
 
   return (
-    <PageShell title="Business Day Calculator">
-      <main className="mx-auto max-w-4xl px-6 py-10">
-        <header className="mb-8">
-            <div className="flex items-start justify-between gap-4">
-                <p className="mt-2 text-black/60 dark:text-white/60">
-                Calculate working days between dates, or add business days — excluding weekends and country holidays.
-                
-
+    <PageShell title="Business Day Calculator" subtitle="Calculate working days between dates, or add business days — excluding weekends and country holidays.">
+      <main className="mx-auto max-w-4xl px-6 py-6">
+        <header className="mb-1">
+            <div className="flex items-start justify-end gap-1">
                 <button
                 type="button"
                 onClick={() => {
@@ -395,7 +391,7 @@ export default function BusinessDaysPage() {
                 >
                 i
                 </button>
-                </p>
+                
             </div>
             </header>
 

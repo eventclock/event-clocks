@@ -43,6 +43,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${BASE}/tax-document-checklist`,
+      lastModified: lastMod,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: `${BASE}/about`,
       lastModified: lastMod,
       changeFrequency: "monthly",
