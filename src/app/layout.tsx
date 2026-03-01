@@ -57,26 +57,38 @@ export default function RootLayout({
       </head>
 
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
         style={{
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
         }}
       >
-
-        <div style={{ width: "100%", padding: "12px 24px 0" }}>
-          <Header />
+        {/* Background wash (outside only) */}
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20">
+          <div className="absolute inset-0 bg-white dark:bg-black" />
+          <div className="absolute -top-40 left-1/2 h-[32rem] w-[60rem] -translate-x-1/2 rounded-full bg-violet-200/15 blur-3xl dark:bg-violet-500/8" />
+          <div className="absolute top-24 -left-40 h-[26rem] w-[26rem] rounded-full bg-sky-200/12 blur-3xl dark:bg-sky-500/8" />
+          <div className="absolute top-72 -right-40 h-[26rem] w-[26rem] rounded-full bg-emerald-200/12 blur-3xl dark:bg-emerald-500/8" />
         </div>
 
-        {/* Page content */}
-        <main style={{ flex: 1 }}>
-          {children}
-        </main>
+        {/* Main Surface Layer */}
+        <div className="relative z-10 flex min-h-screen flex-col">
+          
+          {/* Header */}
+          <div style={{ width: "100%", padding: "12px 24px 0" }}>
+            <Header />
+          </div>
 
-        {/* Footer */}
-        <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px 24px" }}>
-          <Footer />
+          {/* Content container with clean surface */}
+          <main className="flex-1 bg-white dark:bg-black">
+            {children}
+          </main>
+
+          {/* Footer */}
+          <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px 24px" }}>
+            <Footer />
+          </div>
         </div>
       </body>
     </html>
