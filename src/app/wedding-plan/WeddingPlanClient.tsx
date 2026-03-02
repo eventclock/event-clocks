@@ -23,9 +23,6 @@ type WeddingPlanStateV1 = {
     calendarMonthISO: string; // YYYY-MM-01
     showCompleted: boolean;
 
-    showHowTo: boolean;
-    showAbout: boolean;
-
     showCalendar: boolean;
   };
 };
@@ -37,13 +34,7 @@ type WeddingProfileContext = {
   isLargeGuestList: boolean;
 };
 
-type TaskCategory =
-  | "foundation"
-  | "vendors"
-  | "guests"
-  | "legal"
-  | "logistics"
-  | "dayof";
+type TaskCategory = "foundation" | "vendors" | "guests" | "legal" | "logistics" | "dayof";
 
 type PlanTask = {
   id: string;
@@ -69,9 +60,6 @@ type ComputedTask = {
 
 const LS_KEY = "eventclocks:wedding-plan:v1";
 const LS_EXPORT_SIG_KEY = "eventclocks:wedding-plan:lastExportSig:v1";
-
-const DEFAULT_DESCRIPTION =
-  "Tasks are sorted by Due by date. Expand items to check things off and add notes. Export for a portable backup.";
 
 function startOfToday() {
   const d = new Date();
@@ -133,10 +121,8 @@ function computeSignature(state: WeddingPlanStateV1) {
 function statusBadge(urgency: ComputedTask["urgency"]) {
   switch (urgency) {
     case "overdue":
-      // pastel red
       return { label: "Overdue", cls: "border-gray-200/70 bg-rose-50/70 text-rose-700" };
     case "inRange":
-      // pastel yellow
       return { label: "Due soon", cls: "border-gray-200/70 bg-yellow-50/70 text-yellow-900/80" };
     case "soon":
       return { label: "Coming up", cls: "border-gray-200/70 bg-sky-50/70 text-sky-900/80" };
@@ -163,7 +149,7 @@ function UrgencyDot({ urgency }: { urgency: ComputedTask["urgency"] }) {
       : urgency === "inRange"
       ? { background: "rgba(252, 211, 77, 0.22)", border: "1px solid rgba(161, 98, 7, 0.18)" }
       : urgency === "soon"
-      ? { background: "rgba(50, 78, 170, 0.7)", border: "1px solid rgba(37, 99, 235, 0.18)" }
+      ? { background: "rgba(59,130,246,0.28)", border: "1px solid rgba(37, 99, 235, 0.18)" }
       : { background: "rgba(148, 163, 184, 0.22)", border: "1px solid rgba(100, 116, 139, 0.18)" };
 
   return (
@@ -181,11 +167,7 @@ function UrgencyDot({ urgency }: { urgency: ComputedTask["urgency"] }) {
   );
 }
 function sameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 function isBetweenInclusive(d: Date, start: Date, end: Date) {
   const x = new Date(d);
@@ -202,7 +184,6 @@ const DEFAULT_STATE: WeddingPlanStateV1 = {
   tool: "wedding-plan",
   weddingDateISO: toISODate(addDays(startOfToday(), 365)),
 
-  // Profiles
   isFirstTime: true,
   isFaithTraditional: false,
   isDestination: false,
@@ -214,8 +195,6 @@ const DEFAULT_STATE: WeddingPlanStateV1 = {
     expandedTasks: {},
     calendarMonthISO: toMonthISO(new Date()),
     showCompleted: true,
-    showHowTo: false,
-    showAbout: false,
     showCalendar: false,
   },
 };
@@ -224,9 +203,7 @@ function sanitizeState(raw: any): WeddingPlanStateV1 {
   const base = DEFAULT_STATE;
 
   const weddingDateISO =
-    typeof raw?.weddingDateISO === "string" && raw.weddingDateISO
-      ? raw.weddingDateISO
-      : base.weddingDateISO;
+    typeof raw?.weddingDateISO === "string" && raw.weddingDateISO ? raw.weddingDateISO : base.weddingDateISO;
 
   const uiRaw = raw?.ui ?? {};
   return {
@@ -235,13 +212,10 @@ function sanitizeState(raw: any): WeddingPlanStateV1 {
 
     weddingDateISO,
 
-    // Profiles
     isFirstTime: raw?.isFirstTime === undefined ? base.isFirstTime : !!raw.isFirstTime,
-    isFaithTraditional:
-      raw?.isFaithTraditional === undefined ? base.isFaithTraditional : !!raw.isFaithTraditional,
+    isFaithTraditional: raw?.isFaithTraditional === undefined ? base.isFaithTraditional : !!raw.isFaithTraditional,
     isDestination: raw?.isDestination === undefined ? base.isDestination : !!raw.isDestination,
-    isLargeGuestList:
-      raw?.isLargeGuestList === undefined ? base.isLargeGuestList : !!raw.isLargeGuestList,
+    isLargeGuestList: raw?.isLargeGuestList === undefined ? base.isLargeGuestList : !!raw.isLargeGuestList,
 
     checklist: typeof raw?.checklist === "object" && raw?.checklist ? raw.checklist : {},
 
@@ -249,18 +223,10 @@ function sanitizeState(raw: any): WeddingPlanStateV1 {
       ...base.ui,
       ...(typeof uiRaw === "object" && uiRaw ? uiRaw : {}),
       expandedTasks:
-        typeof uiRaw?.expandedTasks === "object" && uiRaw?.expandedTasks
-          ? uiRaw.expandedTasks
-          : base.ui.expandedTasks,
-
+        typeof uiRaw?.expandedTasks === "object" && uiRaw?.expandedTasks ? uiRaw.expandedTasks : base.ui.expandedTasks,
       calendarMonthISO:
-        typeof uiRaw?.calendarMonthISO === "string" && uiRaw.calendarMonthISO
-          ? uiRaw.calendarMonthISO
-          : base.ui.calendarMonthISO,
-
+        typeof uiRaw?.calendarMonthISO === "string" && uiRaw.calendarMonthISO ? uiRaw.calendarMonthISO : base.ui.calendarMonthISO,
       showCompleted: uiRaw?.showCompleted === undefined ? base.ui.showCompleted : !!uiRaw.showCompleted,
-      showHowTo: uiRaw?.showHowTo === undefined ? base.ui.showHowTo : !!uiRaw.showHowTo,
-      showAbout: uiRaw?.showAbout === undefined ? base.ui.showAbout : !!uiRaw.showAbout,
       showCalendar: uiRaw?.showCalendar === undefined ? base.ui.showCalendar : !!uiRaw.showCalendar,
     },
   };
@@ -271,7 +237,6 @@ function sanitizeState(raw: any): WeddingPlanStateV1 {
 ========================= */
 
 const PLAN_TASKS: PlanTask[] = [
-  // ---- Foundation (for complete beginners) ----
   {
     id: "decide-what-matters",
     title: "Decide what matters most",
@@ -320,12 +285,10 @@ const PLAN_TASKS: PlanTask[] = [
     ],
   },
 
-  // ---- Big bookings ----
   {
     id: "choose-venue",
     title: "Choose and book your wedding location",
-    description:
-      "Your venue determines your date, your guest capacity, and many of your major costs. Book this early.",
+    description: "Your venue determines your date, your guest capacity, and many of your major costs. Book this early.",
     category: "vendors",
     recommendedOffsetDays: 300,
     windowStartDays: 365,
@@ -387,7 +350,6 @@ const PLAN_TASKS: PlanTask[] = [
     ],
   },
 
-  // ---- Guest communication ----
   {
     id: "save-the-dates",
     title: "Send save-the-dates (optional but helpful)",
@@ -418,12 +380,10 @@ const PLAN_TASKS: PlanTask[] = [
     ],
   },
 
-  // ---- Legal and ceremony ----
   {
     id: "marriage-license",
     title: "Research marriage license requirements",
-    description:
-      "This is the legal paperwork required to get married. Requirements vary by city/state/country.",
+    description: "This is the legal paperwork required to get married. Requirements vary by city/state/country.",
     category: "legal",
     recommendedOffsetDays: 90,
     windowStartDays: 120,
@@ -451,7 +411,6 @@ const PLAN_TASKS: PlanTask[] = [
     ],
   },
 
-  // ---- Final month ----
   {
     id: "confirm-vendors",
     title: "Confirm all vendors and timing",
@@ -482,7 +441,6 @@ const PLAN_TASKS: PlanTask[] = [
     ],
   },
 
-  // ---- Final week ----
   {
     id: "final-payments",
     title: "Prepare final payments",
@@ -491,11 +449,7 @@ const PLAN_TASKS: PlanTask[] = [
     recommendedOffsetDays: 7,
     windowStartDays: 14,
     windowEndDays: 1,
-    checklistItems: [
-      "Confirm remaining balances",
-      "Prepare envelopes or payment method",
-      "List who hands payments on the day",
-    ],
+    checklistItems: ["Confirm remaining balances", "Prepare envelopes or payment method", "List who hands payments on the day"],
   },
   {
     id: "wedding-kit",
@@ -505,12 +459,7 @@ const PLAN_TASKS: PlanTask[] = [
     recommendedOffsetDays: 7,
     windowStartDays: 14,
     windowEndDays: 1,
-    checklistItems: [
-      "Rings",
-      "Marriage license / paperwork",
-      "Vendor contact list",
-      "Emergency kit (band-aids, safety pins, etc.)",
-    ],
+    checklistItems: ["Rings", "Marriage license / paperwork", "Vendor contact list", "Emergency kit (band-aids, safety pins, etc.)"],
   },
   {
     id: "rehearsal",
@@ -520,11 +469,7 @@ const PLAN_TASKS: PlanTask[] = [
     recommendedOffsetDays: 1,
     windowStartDays: 3,
     windowEndDays: 1,
-    checklistItems: [
-      "Confirm who is attending the rehearsal",
-      "Review ceremony order (who walks when)",
-      "Confirm ceremony timing",
-    ],
+    checklistItems: ["Confirm who is attending the rehearsal", "Review ceremony order (who walks when)", "Confirm ceremony timing"],
   },
   {
     id: "wedding-day",
@@ -537,21 +482,15 @@ const PLAN_TASKS: PlanTask[] = [
     checklistItems: ["Eat something", "Stay hydrated", "Delegate coordination", "Enjoy the day"],
   },
 
-  // ---- Profile add-ons ----
   {
     id: "faith-meet-leader",
     title: "Meet with your ceremony leader (faith/tradition)",
-    description:
-      "If your wedding follows faith or cultural traditions, there may be required steps before the ceremony.",
+    description: "If your wedding follows faith or cultural traditions, there may be required steps before the ceremony.",
     category: "legal",
     recommendedOffsetDays: 270,
     windowStartDays: 330,
     windowEndDays: 180,
-    checklistItems: [
-      "Contact the ceremony leader/institution",
-      "Confirm availability on your wedding date",
-      "Ask about required preparation steps and deadlines",
-    ],
+    checklistItems: ["Contact the ceremony leader/institution", "Confirm availability on your wedding date", "Ask about required preparation steps and deadlines"],
     appliesIf: (ctx) => ctx.isFaithTraditional,
   },
   {
@@ -562,12 +501,7 @@ const PLAN_TASKS: PlanTask[] = [
     recommendedOffsetDays: 240,
     windowStartDays: 300,
     windowEndDays: 150,
-    checklistItems: [
-      "Ask if counseling/classes are required",
-      "Schedule sessions",
-      "Complete all sessions",
-      "Keep proof of completion if needed",
-    ],
+    checklistItems: ["Ask if counseling/classes are required", "Schedule sessions", "Complete all sessions", "Keep proof of completion if needed"],
     appliesIf: (ctx) => ctx.isFaithTraditional,
   },
   {
@@ -578,11 +512,7 @@ const PLAN_TASKS: PlanTask[] = [
     recommendedOffsetDays: 180,
     windowStartDays: 240,
     windowEndDays: 90,
-    checklistItems: [
-      "Ask what documents are required",
-      "Gather required records",
-      "Submit paperwork before deadline",
-    ],
+    checklistItems: ["Ask what documents are required", "Gather required records", "Submit paperwork before deadline"],
     appliesIf: (ctx) => ctx.isFaithTraditional,
   },
 
@@ -594,11 +524,7 @@ const PLAN_TASKS: PlanTask[] = [
     recommendedOffsetDays: 300,
     windowStartDays: 365,
     windowEndDays: 210,
-    checklistItems: [
-      "Check legal requirements for the destination location",
-      "Confirm required documents and timelines",
-      "Check if translations/notarization are needed",
-    ],
+    checklistItems: ["Check legal requirements for the destination location", "Confirm required documents and timelines", "Check if translations/notarization are needed"],
     appliesIf: (ctx) => ctx.isDestination,
   },
   {
@@ -609,11 +535,7 @@ const PLAN_TASKS: PlanTask[] = [
     recommendedOffsetDays: 240,
     windowStartDays: 300,
     windowEndDays: 120,
-    checklistItems: [
-      "Research nearby hotels",
-      "Reserve a room block (optional)",
-      "Share travel info (airport, transport, dates) with guests",
-    ],
+    checklistItems: ["Research nearby hotels", "Reserve a room block (optional)", "Share travel info (airport, transport, dates) with guests"],
     appliesIf: (ctx) => ctx.isDestination,
   },
 
@@ -625,12 +547,7 @@ const PLAN_TASKS: PlanTask[] = [
     recommendedOffsetDays: 180,
     windowStartDays: 240,
     windowEndDays: 90,
-    checklistItems: [
-      "Confirm venue capacity and crowd flow",
-      "Consider guest transportation/parking",
-      "Confirm catering staff count",
-      "Consider a day-of coordinator (optional)",
-    ],
+    checklistItems: ["Confirm venue capacity and crowd flow", "Consider guest transportation/parking", "Confirm catering staff count", "Consider a day-of coordinator (optional)"],
     appliesIf: (ctx) => ctx.isLargeGuestList,
   },
 ];
@@ -647,29 +564,27 @@ function computeTasks(state: WeddingPlanStateV1): ComputedTask[] {
     isLargeGuestList: state.isLargeGuestList,
   };
 
-  const computed = PLAN_TASKS
-    .filter((t) => (t.appliesIf ? t.appliesIf(ctx) : true))
-    .map((t) => {
-      const doBy = addDays(wedding, -t.recommendedOffsetDays);
-      const daysUntil = daysBetween(today, doBy);
+  const computed = PLAN_TASKS.filter((t) => (t.appliesIf ? t.appliesIf(ctx) : true)).map((t) => {
+    const doBy = addDays(wedding, -t.recommendedOffsetDays);
+    const daysUntil = daysBetween(today, doBy);
 
-      const inWindow =
-        typeof t.windowStartDays === "number" && typeof t.windowEndDays === "number"
-          ? (() => {
-              const winStart = addDays(wedding, -t.windowStartDays);
-              const winEnd = addDays(wedding, -t.windowEndDays);
-              return today >= winStart && today <= winEnd;
-            })()
-          : false;
+    const inWindow =
+      typeof t.windowStartDays === "number" && typeof t.windowEndDays === "number"
+        ? (() => {
+            const winStart = addDays(wedding, -t.windowStartDays);
+            const winEnd = addDays(wedding, -t.windowEndDays);
+            return today >= winStart && today <= winEnd;
+          })()
+        : false;
 
-      let urgency: ComputedTask["urgency"] = "later";
-      if (today > doBy) urgency = "overdue";
-      else if (inWindow) urgency = "inRange";
-      else if (daysUntil >= 0 && daysUntil <= 7) urgency = "soon";
-      else urgency = "later";
+    let urgency: ComputedTask["urgency"] = "later";
+    if (today > doBy) urgency = "overdue";
+    else if (inWindow) urgency = "inRange";
+    else if (daysUntil >= 0 && daysUntil <= 7) urgency = "soon";
+    else urgency = "later";
 
-      return { task: t, doBy, daysUntil, inWindow, urgency };
-    });
+    return { task: t, doBy, daysUntil, inWindow, urgency };
+  });
 
   computed.sort((a, b) => a.doBy.getTime() - b.doBy.getTime());
   return computed;
@@ -714,8 +629,6 @@ function getMonthGrid(monthStart: Date) {
   const weeks: Date[][] = [];
   let cursor = gridStart;
 
-  // Build week rows until we've covered the month end.
-  // This yields 4–6 rows depending on the month shape.
   while (true) {
     const week: Date[] = [];
     for (let d = 0; d < 7; d++) {
@@ -732,30 +645,254 @@ function getMonthGrid(monthStart: Date) {
   return { weeks };
 }
 
+/** Always-mounted modal shell: SEO-friendly because content is in the DOM even when closed */
+function ModalShell({
+  open,
+  title,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      aria-hidden={!open}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 60,
+        display: open ? "flex" : "none",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "rgba(0,0,0,0.30)",
+        padding: "16px",
+      }}
+    >
+      <div className="w-full max-w-2xl rounded-3xl border border-black/10 bg-white p-5 shadow-xl">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-sm font-extrabold text-black/85">{title}</div>
+          <button className={styles.btn + " " + styles.btnSmall} onClick={onClose} type="button">
+            Close
+          </button>
+        </div>
+        <div style={{ marginTop: 12 }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function StartHereModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <ModalShell open={open} onClose={onClose} title="Start here & planning basics">
+      <div className={styles.muted} style={{ display: "grid", gap: 12, fontSize: 13 }}>
+        <div>
+          <div className="text-xs font-extrabold text-black/75 uppercase tracking-wide">Quick start</div>
+          <ol style={{ paddingLeft: 18, marginTop: 6, display: "grid", gap: 4 }}>
+            <li>
+              Pick your <b>wedding date</b>.
+            </li>
+            <li>
+              Clear <b>red</b> tasks first, then <b>yellow</b>.
+            </li>
+            <li>Open a task (▸) to check items off and add notes.</li>
+          </ol>
+        </div>
+
+        <div className="rounded-2xl border border-black/10 bg-white/70 p-3">
+          <div className="text-xs font-extrabold text-black/75 uppercase tracking-wide">Common timelines</div>
+          <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+            <div>
+              <b>12+ months:</b> Budget + guest count + venue first. Book photographer early.
+            </div>
+            <div>
+              <b>~6 months:</b> Lock venue/catering/photo fast, then invitations + attire + timeline.
+            </div>
+            <div>
+              <b>~3 months:</b> Focus on venue, food, photo, and legal paperwork.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs font-extrabold text-black/75 uppercase tracking-wide">How this planner works</div>
+          <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+            <div>
+              <b>Colors:</b> Red = overdue. Yellow = due soon. Blue = coming up. Gray = later.
+            </div>
+            <div>
+              <b>Due by:</b> Tasks appear on the date you should aim to finish them. Earlier is always okay.
+            </div>
+            <div>
+              <b>Profiles:</b> Checkboxes add extra tasks for common cases. They don’t remove the core timeline.
+            </div>
+            <div>
+              <b>Export / Import:</b> Export saves a backup file. Import restores it later. Reset clears this device.
+            </div>
+            <div>
+              <b>Short timeline:</b> If your wedding is soon, many early tasks will show as red — that’s expected.
+              Use it as a priority list.
+            </div>
+          </div>
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
+function FaqModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <ModalShell open={open} onClose={onClose} title="Wedding basics (FAQ)">
+      <div className={styles.muted} style={{ display: "grid", gap: 10, fontSize: 13 }}>
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>What should we do first?</summary>
+          <div style={{ marginTop: 6 }}>
+            Start with <b>budget</b>, a rough <b>guest count</b>, and your <b>venue</b>. Those three decisions control most costs and your available dates.
+          </div>
+        </details>
+
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>What are the “big things” to book early?</summary>
+          <div style={{ marginTop: 6 }}>
+            Venue, photographer/videographer, and catering (if not included). If you want a specific date/season, book earlier.
+          </div>
+        </details>
+
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>If our wedding is only 3 months away, is this still usable?</summary>
+          <div style={{ marginTop: 6 }}>
+            Yes. Many early tasks will show as <b>red</b>. That’s not “failure” — it’s a priority filter. Focus on booking venue, catering, and a photographer first.
+          </div>
+        </details>
+
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>When should we get the marriage license?</summary>
+          <div style={{ marginTop: 6 }}>
+            Many locations have a validity window. Check local requirements: IDs, fees, appointments, and waiting periods.
+          </div>
+        </details>
+
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>What’s a realistic RSVP deadline?</summary>
+          <div style={{ marginTop: 6 }}>
+            Typically <b>3–6 weeks</b> before the wedding, so you can finalize headcount and seating. For destination travel, consider earlier.
+          </div>
+        </details>
+
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>How do vendor payments usually work?</summary>
+          <div style={{ marginTop: 6 }}>
+            Many vendors take a deposit upfront and the remaining balance closer to the event. Save the payment schedule in Notes.
+          </div>
+        </details>
+
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>Do we need a coordinator?</summary>
+          <div style={{ marginTop: 6 }}>
+            Not required, but helpful if you have many vendors, a large guest list, or a complex venue. A “day-of coordinator” is often enough.
+          </div>
+        </details>
+
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>What should be in a simple day-of timeline?</summary>
+          <div style={{ marginTop: 6 }}>
+            Hair/makeup start, getting-ready photos, travel time, ceremony start, cocktail hour, reception milestones, and vendor load-out. Share with vendors.
+          </div>
+        </details>
+
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>What should we write in Notes?</summary>
+          <div style={{ marginTop: 6 }}>
+            Vendor name, contact info, quote, deposit paid, due date, contract link, and key decisions. Keep it short and searchable.
+          </div>
+        </details>
+      </div>
+    </ModalShell>
+  );
+}
+
+/** About modal (already good; always mounted when component renders) */
+function AboutModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <ModalShell open={open} onClose={onClose} title="About, privacy, and what gets saved">
+      <div className={styles.muted} style={{ display: "grid", gap: 10, fontSize: 13 }}>
+        <div>
+          <b>Local-only:</b> Your plan is saved in your browser on this device. There is no account and nothing is sent to a server by this page.
+        </div>
+        <div>
+          <b>Reset:</b> Reset clears the saved plan on this device so you can start fresh.
+        </div>
+        <div>
+          <b>Profiles:</b> Profiles add extra tasks for common scenarios. They don’t remove the core timeline.
+        </div>
+        <div>
+          <b>Notes:</b> Keep notes simple (vendor name, quote, due date, link). You can paste URLs too.
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
 export default function WeddingPlanClient() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const taskRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const infoRef = useRef<HTMLDivElement | null>(null);
-  const [pendingInfoScroll, setPendingInfoScroll] = useState(false);
+
   const [flashTaskId, setFlashTaskId] = useState<string>("");
 
   const [state, setState] = useState<WeddingPlanStateV1>(DEFAULT_STATE);
   const [toast, setToast] = useState("");
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [openRemark, setOpenRemark] = useState<Record<string, boolean>>({});
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [startHereOpen, setStartHereOpen] = useState(false);
+  const [faqOpen, setFaqOpen] = useState(false);
+
+
+    const topLinkBtn: React.CSSProperties = {
+    border: "none",
+    background: "transparent",
+    padding: "4px 6px",
+    fontSize: 12,
+    fontWeight: 600,
+    color: "rgba(0,0,0,0.55)",
+    cursor: "pointer",
+    lineHeight: "16px",
+    };
+
+    const topLinkBtnHover: React.CSSProperties = {
+    color: "rgba(0,0,0,0.78)",
+    textDecoration: "underline",
+    textUnderlineOffset: 3,
+    };
+
+    const statusPill: React.CSSProperties = {
+    marginLeft: 2,
+    border: "1px solid rgba(161, 98, 7, 0.18)",
+    background: "rgba(254, 240, 138, 0.22)",
+    color: "rgba(120, 53, 15, 0.78)",
+    padding: "3px 8px",
+    borderRadius: 999,
+    fontSize: 11,
+    fontWeight: 700,
+    lineHeight: "14px",
+    userSelect: "none",
+    };
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        // Keep the page calm on load: never default tasks open.
-        // (Users can still expand manually during this session.)
-        if (parsed?.tool === "wedding-plan")
-          setState(sanitizeState({
-            ...parsed,
-            ui: { ...(parsed.ui ?? {}), expandedTasks: {} },
-          }));
+        if (parsed?.tool === "wedding-plan") {
+          setState(
+            sanitizeState({
+              ...parsed,
+              ui: { ...(parsed.ui ?? {}), expandedTasks: {} }, // keep calm on load
+            })
+          );
+        }
       } else {
         setState(sanitizeState(DEFAULT_STATE));
       }
@@ -786,22 +923,8 @@ export default function WeddingPlanClient() {
     } catch {}
   }, []);
 
-  useEffect(() => {
-    if (!pendingInfoScroll) return;
-    if (!state.ui.showHowTo && !state.ui.showAbout) return; // nothing visible yet
-
-    // wait one frame so the panel is definitely in the DOM
-    requestAnimationFrame(() => {
-        infoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        setPendingInfoScroll(false);
-    });
-    }, [pendingInfoScroll, state.ui.showHowTo, state.ui.showAbout]);
-
   const currentSig = useMemo(() => computeSignature(state), [state]);
-  const isExportCurrent = useMemo(
-    () => !!lastExportSig && lastExportSig === currentSig,
-    [lastExportSig, currentSig]
-  );
+  const isExportCurrent = useMemo(() => !!lastExportSig && lastExportSig === currentSig, [lastExportSig, currentSig]);
 
   function resetEverything() {
     try {
@@ -818,8 +941,6 @@ export default function WeddingPlanClient() {
   const today = useMemo(() => startOfToday(), []);
   const daysToGo = useMemo(() => (wedding ? daysBetween(today, wedding) : 0), [today, wedding]);
   const isShortTimeline = useMemo(() => (wedding ? daysBetween(today, wedding) <= 120 : false), [today, wedding]);
-  const cruiseStart = wedding;
-  const cruiseEnd = wedding;
 
   const computedTasks = useMemo(() => computeTasks(state), [state]);
 
@@ -834,7 +955,6 @@ export default function WeddingPlanClient() {
     return { map, keys };
   }, [computedTasks]);
 
-  // ✅ Legend counts REMAINING tasks only (so it changes when you complete things)
   const statusCounts = useMemo(() => {
     const c = { overdue: 0, inRange: 0, soon: 0, later: 0 };
     for (const ct of computedTasks) {
@@ -875,10 +995,7 @@ export default function WeddingPlanClient() {
     try {
       const parsed = await readJsonFile(file);
       if (parsed?.tool !== "wedding-plan") throw new Error("Invalid plan file.");
-
-      // IMPORTANT: sanitize keeps profile toggles even if older export missing them
       setState(sanitizeState(parsed));
-
       setLastExportSig("");
       try {
         localStorage.setItem(LS_EXPORT_SIG_KEY, "");
@@ -889,7 +1006,7 @@ export default function WeddingPlanClient() {
     }
   }
 
-  // Auto-collapse tasks when they become fully completed (keeps the list slim)
+  // Auto-collapse tasks when they become fully completed
   useEffect(() => {
     setState((s) => {
       const expanded = { ...s.ui.expandedTasks };
@@ -913,8 +1030,6 @@ export default function WeddingPlanClient() {
     next.setHours(0, 0, 0, 0);
     setState((s) => sanitizeState({ ...s, ui: { ...s.ui, calendarMonthISO: toMonthISO(next) } }));
   }
-
-
   function goToTodayMonth() {
     const t = startOfToday();
     const m = new Date(t.getFullYear(), t.getMonth(), 1);
@@ -972,8 +1087,20 @@ export default function WeddingPlanClient() {
   }, [state.ui.calendarMonthISO]);
   const leftGrid = useMemo(() => getMonthGrid(leftMonthStart), [leftMonthStart]);
 
-  function MonthPanel({ monthStart, grid, onToday }: { monthStart: Date; grid: { weeks: Date[][] }; onToday?: () => void }) {
+  function MonthPanel({
+    monthStart,
+    grid,
+    onToday,
+  }: {
+    monthStart: Date;
+    grid: { weeks: Date[][] };
+    onToday?: () => void;
+  }) {
     const title = monthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
+    const eventStart = wedding;
+    const eventEnd = wedding;
+
 
     return (
       <div className={styles.card} style={{ padding: 10 }}>
@@ -1011,22 +1138,22 @@ export default function WeddingPlanClient() {
               const iso = toISODate(d);
               const inThisMonth = d.getMonth() === monthStart.getMonth();
 
-              const tasks = (inThisMonth ? (tasksByDoByISO.get(iso) ?? []) : []).filter((ct) =>
+              const tasks = (inThisMonth ? tasksByDoByISO.get(iso) ?? [] : []).filter((ct) =>
                 state.ui.showCompleted ? true : !isTaskFullyCompleted(state, ct.task)
               );
 
               const hasTasks = tasks.length > 0;
-              const sailDay = wedding ? sameDay(d, wedding) : false;
+              const weddingDay = wedding ? sameDay(d, wedding) : false;
 
               const todayISO = toISODate(startOfToday());
               const isToday = inThisMonth && iso === todayISO;
 
-              const isCruiseDay = inThisMonth && cruiseStart && cruiseEnd ? isBetweenInclusive(d, cruiseStart, cruiseEnd) : false;
+              const isEventDay =
+                inThisMonth && eventStart && eventEnd ? isBetweenInclusive(d, eventStart, eventEnd) : false;
 
               const mostUrgent = hasTasks
                 ? tasks.reduce((acc, cur) => {
                     const order = { overdue: 0, inRange: 1, soon: 2, later: 3 } as const;
-                    // If one is completed, treat it as least urgent
                     const aCompleted = isTaskFullyCompleted(state, acc.task);
                     const cCompleted = isTaskFullyCompleted(state, cur.task);
                     if (aCompleted && !cCompleted) return cur;
@@ -1043,17 +1170,12 @@ export default function WeddingPlanClient() {
                   : mostUrgent?.urgency === "inRange"
                   ? "rgba(217,119,6,0.55)"
                   : mostUrgent?.urgency === "soon"
-                  ? "rgba(59,130,246,0.9)"
+                  ? "rgba(59,130,246,0.7)"
                   : mostUrgent?.urgency === "later"
                   ? "rgba(0,0,0,0.25)"
                   : "transparent";
 
-              const classNames = [
-                styles.dayCell,
-                !inThisMonth ? styles.dayCellMuted : "",
-                isCruiseDay ? styles.cruiseDay : "",
-                sailDay ? styles.sailDay : "",
-              ]
+              const classNames = [styles.dayCell, !inThisMonth ? styles.dayCellMuted : "", isEventDay ? styles.cruiseDay : "", weddingDay ? styles.sailDay : ""]
                 .filter(Boolean)
                 .join(" ");
 
@@ -1064,21 +1186,19 @@ export default function WeddingPlanClient() {
                   style={{
                     background: !inThisMonth
                       ? "rgba(0, 0, 0, 0.11)"
-                      : isCruiseDay
+                      : isEventDay
                       ? "rgba(20, 150, 110, 0.10)"
                       : hasTasks
                       ? (() => {
-                          // Color-coded day highlight based on the most urgent (non-completed) task on that day.
                           const u =
                             mostUrgent && !isTaskFullyCompleted(state, mostUrgent.task) ? mostUrgent.urgency : null;
-                          if (u === "overdue") return "rgba(244, 169, 169, 0.11)"; // matte pale red
-                          if (u === "inRange") return "rgba(254, 240, 138, 0.13)"; // matte pale yellow
-                          return "rgba(191, 219, 254, 0.27)"; // matte pale blue (soon/later)
+                          if (u === "overdue") return "rgba(244, 169, 169, 0.11)";
+                          if (u === "inRange") return "rgba(254, 240, 138, 0.13)";
+                          return "rgba(191, 219, 254, 0.18)";
                         })()
                       : "transparent",
                     border: "none",
                     boxShadow: (() => {
-                      // Slightly darker but thinner-feeling grid lines
                       const u =
                         mostUrgent && !isTaskFullyCompleted(state, mostUrgent.task) ? mostUrgent.urgency : null;
 
@@ -1093,14 +1213,14 @@ export default function WeddingPlanClient() {
                           ? ", inset 0 0 0 0.75px rgba(248, 113, 113, 0.17)"
                           : u === "inRange"
                           ? ", inset 0 0 0 0.75px rgba(217,119,6,0.22)"
-                          : ", inset 0 0 0 0.75px rgba(59,130,246,0.24)";
+                          : ", inset 0 0 0 0.75px rgba(59,130,246,0.20)";
 
-                      const cruise = isCruiseDay && inThisMonth ? ", inset 0 0 0 0.75px rgba(20, 150, 111, 0.14)" : "";
-                      const today = isToday ? ", inset 0 0 0 1px rgba(98, 26, 26, 0.42)" : "";
-                      return baseLine + urgencyRing + cruise + today;
+                      const eventRing = isEventDay && inThisMonth ? ", inset 0 0 0 0.75px rgba(20, 150, 111, 0.14)" : "";
+                      const todayRing = isToday ? ", inset 0 0 0 1px rgba(98, 26, 26, 0.42)" : "";
+                      return baseLine + urgencyRing + eventRing + todayRing;
                     })(),
                   }}
->
+                >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div
                       style={{
@@ -1124,7 +1244,7 @@ export default function WeddingPlanClient() {
                       </span>
                     ) : null}
 
-                    {sailDay && inThisMonth ? (
+                    {weddingDay && inThisMonth ? (
                       <span
                         className={styles.badge}
                         style={{
@@ -1171,9 +1291,7 @@ export default function WeddingPlanClient() {
                         );
                       })}
                       {tasks.length > 2 ? (
-                        <div style={{ fontSize: 11, color: "rgba(0,0,0,0.45)" }}>
-                          +{tasks.length - 2} more
-                        </div>
+                        <div style={{ fontSize: 11, color: "rgba(0,0,0,0.45)" }}>+{tasks.length - 2} more</div>
                       ) : null}
                     </div>
                   ) : null}
@@ -1197,605 +1315,462 @@ export default function WeddingPlanClient() {
 
   return (
     <div className="min-h-screen bg-[#faf9f7]">
-      <PageShell title="Wedding Plan" subtitle="A calm timeline for your big day.">
+      <PageShell
+  title="Wedding Planner"
+  subtitle="A simple wedding timeline built around your actual date."
+>
+        {/* Always-mounted modals (content is in DOM) */}
+        <StartHereModal open={startHereOpen} onClose={() => setStartHereOpen(false)} />
+        <FaqModal open={faqOpen} onClose={() => setFaqOpen(false)} />
+        <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
+
         <div className={styles.wrap}>
           <div className="mx-auto max-w-4xl space-y-6 rounded-3xl border border-[#e9e5df] bg-white px-10 py-12 shadow-[0_18px_60px_rgba(0,0,0,0.06)]">
             <div className="mb-6 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
 
             {/* Top bar */}
-          <div className={styles.row} style={{ justifyContent: "space-between" }}>
-            <div className={styles.row}>
-              <button
-                className={styles.infoBtn}
-                onClick={() => {
-                setState((s) => {
-                    const nextShow = !s.ui.showHowTo;
-                    return sanitizeState({ ...s, ui: { ...s.ui, showHowTo: nextShow } });
-                });
-
-                window.setTimeout(() => {
-                    infoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }, 50);
-                }}
-                type="button"
-                title="How to use"
+            <div className={styles.row} style={{ justifyContent: "space-between" }}>
+              <div className={styles.row} style={{ gap: 10, flexWrap: "wrap" }}>
+                <button
+                  className={styles.infoBtn}
+                  onClick={() => setStartHereOpen(true)}
+                  type="button"
+                  title="Start here"
+                  aria-label="Start here"
                 >
-                i
+                  i
                 </button>
 
-              <button
-                className={styles.btn + " " + styles.btnSmall + " " + "text-xs"}
-                onClick={() => {
-                    setState((s) => sanitizeState({ ...s, ui: { ...s.ui, showAbout: true } }));
-                    window.setTimeout(() => {
-                    infoRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }, 50);
-                }}
-                type="button"
-                title="About"
-                aria-label="About"
+                {/* Link-style buttons */}
+                <button
+                    type="button"
+                    onClick={() => setFaqOpen(true)}
+                    title="FAQ"
+                    aria-label="FAQ"
+                    style={topLinkBtn}
+                    onMouseEnter={(e) => Object.assign((e.currentTarget as HTMLButtonElement).style, topLinkBtnHover)}
+                    onMouseLeave={(e) =>
+                    Object.assign((e.currentTarget as HTMLButtonElement).style, {
+                        color: topLinkBtn.color as string,
+                        textDecoration: "none",
+                    })
+                    }
                 >
-                About
+                    FAQ
                 </button>
-              {/* Left-align the "Not exported" signal so the Export/Import button group stays visually balanced. */}
-              {!isExportCurrent ? (
-                <span
-                  className="ml-2 rounded-full border border-black-200/70 bg-yellow-50/70 px-2 py-0.5 text-[11px] font-semibold text-yellow-900/70"
-                  title="You have changes that haven’t been exported yet"
+
+                <button
+                    type="button"
+                    onClick={() => setAboutOpen(true)}
+                    title="About"
+                    aria-label="About"
+                    style={topLinkBtn}
+                    onMouseEnter={(e) => Object.assign((e.currentTarget as HTMLButtonElement).style, topLinkBtnHover)}
+                    onMouseLeave={(e) =>
+                    Object.assign((e.currentTarget as HTMLButtonElement).style, {
+                        color: topLinkBtn.color as string,
+                        textDecoration: "none",
+                    })
+                    }
                 >
-                  Not exported
-                </span>
-              ) : null}
+                    About
+                </button>
 
-              {toast ? <span className={styles.badge}>{toast}</span> : null}
-            </div>
+                {!isExportCurrent ? (
+                    <span style={statusPill} title="You have changes that haven’t been exported yet" aria-label="Not exported status">
+                    Not exported
+                    </span>
+                ) : null}
 
-            <div className={styles.row}>
-              <label className={`${styles.muted} ${styles.featureLabel}`}>
-                <input
+                {toast ? <span className={styles.badge}>{toast}</span> : null}
+              </div>
+
+              <div className={styles.row}>
+                <label className={`${styles.muted} ${styles.featureLabel}`}>
+                  <input
                     type="checkbox"
                     checked={!!state.ui.showCalendar}
-                    onChange={(e) =>
-                    setState((s) => sanitizeState({ ...s, ui: { ...s.ui, showCalendar: e.target.checked } }))
-                    }
-                />
-                Calendar
-                
-            </label>
+                    onChange={(e) => setState((s) => sanitizeState({ ...s, ui: { ...s.ui, showCalendar: e.target.checked } }))}
+                  />
+                  Calendar
+                </label>
 
-              <button className={styles.btn + " " + styles.btnIcon} onClick={exportPlan} type="button" title="Export">
-               Export ⬇️
-              </button>
+                <button className={styles.btn + " " + styles.btnIcon} onClick={exportPlan} type="button" title="Export">
+                  Export ⬇️
+                </button>
 
-              <button
-                className={styles.btn + " " + styles.btnIcon}
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
-                title="Import"
-              >
-               Import ⬆️
-              </button>
+                <button className={styles.btn + " " + styles.btnIcon} onClick={() => fileInputRef.current?.click()} type="button" title="Import">
+                  Import ⬆️
+                </button>
 
-              <button
-                className={styles.btn + " " + styles.btnIcon}
-                onClick={() => setShowResetConfirm(true)}
-                type="button"
-                title="Reset"
-              >
-                Reset
-              </button>
+                <button className={styles.btn + " " + styles.btnIcon} onClick={() => setShowResetConfirm(true)} type="button" title="Reset">
+                  Reset
+                </button>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/json"
-                className="hidden"
-                onChange={async (e) => {
-                  const f = e.target.files?.[0];
-                  if (!f) return;
-                  await importPlan(f);
-                  e.target.value = "";
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Reset confirmation */}
-          {showResetConfirm ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-              <div className="w-full max-w-md rounded-2xl border border-black/10 bg-white p-4 shadow-xl">
-                <div className="text-sm font-extrabold text-black/85">Reset this wedding plan?</div>
-                <div className="mt-1 text-xs text-black/60">
-                  This clears the saved wedding plan on this device. You can export first if you want a backup.
-                </div>
-                <div className="mt-4 flex justify-end gap-2">
-                  <button
-                    className={styles.btn + " " + styles.btnSmall}
-                    type="button"
-                    onClick={() => setShowResetConfirm(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className={styles.btn + " " + styles.btnSmall}
-                    type="button"
-                    onClick={() => {
-                      setShowResetConfirm(false);
-                      resetEverything();
-                    }}
-                    style={{ borderColor: "rgba(244, 63, 94, 0.35)", background: "rgba(244, 63, 94, 0.08)" }}
-                  >
-                    Yes, reset
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : null}
-
-          {/* Short timeline hint */}
-          {isShortTimeline ? (
-            <div className={styles.card} style={{ padding: 10, background: "rgba(244, 82, 82, 0.02)", fontSize: 11 }}>
-              Your wedding day is approaching. Focus on red and yellow tasks first.
-            </div>
-          ) : null}
-          
-                    {/* Inputs + profiles */}
-          <div className={styles.card}>
-            <div className="grid grid-cols-1 gap-3">
-              <label>
-                <div className={styles.label}>Wedding Date</div>
                 <input
-                  type="date"
-                  value={state.weddingDateISO ?? ""}
-                  onChange={(e) => {
-                    const iso = e.target.value || "";
-                    setState((s) =>
-                      sanitizeState({
-                        ...s,
-                        weddingDateISO: iso,
-                        ui: {
-                          ...s.ui,
-                          calendarMonthISO: parseISODateLocal(iso)
-                            ? toMonthISO(parseISODateLocal(iso)!)
-                            : s.ui.calendarMonthISO,
-                        },
-                      })
-                    );
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/json"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    await importPlan(f);
+                    e.target.value = "";
                   }}
-                  className={styles.input}
                 />
-              </label>
-
-              {/* Profiles (optional) */}
-              <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input
-                    type="checkbox"
-                    checked={!!state.isFaithTraditional}
-                    onChange={(e) =>
-                      setState((s) => sanitizeState({ ...s, isFaithTraditional: e.target.checked }))
-                    }
-                  />
-                  Faith or traditional ceremony
-                </label>
-
-                <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input
-                    type="checkbox"
-                    checked={!!state.isDestination}
-                    onChange={(e) => setState((s) => sanitizeState({ ...s, isDestination: e.target.checked }))}
-                  />
-                  Destination wedding
-                </label>
-
-                <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input
-                    type="checkbox"
-                    checked={!!state.isLargeGuestList}
-                    onChange={(e) =>
-                      setState((s) => sanitizeState({ ...s, isLargeGuestList: e.target.checked }))
-                    }
-                  />
-                  Large guest list (150+)
-                </label>
               </div>
-
-              <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-                <input
-                  type="checkbox"
-                  checked={!!state.isFirstTime}
-                  onChange={(e) => setState((s) => sanitizeState({ ...s, isFirstTime: e.target.checked }))}
-                />
-                First time planning (beginner-friendly hints)
-              </label>
             </div>
 
-            <div className={styles.row} style={{ marginTop: 10, justifyContent: "space-between" }}>
-              <div className={styles.muted}>
-                {wedding ? (
-                  <>
-                    <span style={{ fontWeight: 900, color: "rgba(0,0,0,0.82)", fontSize: 14 }}>Wedding Date:</span>{" "}
-                    {formatDateLong(wedding)} • <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(153,27,27,0.06)", color: "rgba(127,29,29,0.92)", fontWeight: 800 }}>{daysToGo} days to go</span>
-                  </>
-                ) : (
-                  "Enter a valid wedding date."
-                )}
-              </div>
-
-              <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <input
-                  type="checkbox"
-                  checked={!!state.ui.showCompleted}
-                  onChange={(e) =>
-                    setState((s) => sanitizeState({ ...s, ui: { ...s.ui, showCompleted: e.target.checked } }))
-                  }
-                />
-                Show completed
-              </label>
-            </div>
-
-            <div className={styles.row} style={{ marginTop: 10, gap: 6, flexWrap: "wrap" }}>
-              <span className={styles.muted} style={{ fontWeight: 800 }}>
-                Legend:
-              </span>
-              <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
-            <UrgencyDot urgency="overdue" /> Overdue: <b>{statusCounts.overdue}</b>
-            </span>
-
-            <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
-            <UrgencyDot urgency="inRange" /> Due soon: <b>{statusCounts.inRange}</b>
-            </span>
-
-            <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
-            <UrgencyDot urgency="soon" /> Coming up: <b>{statusCounts.soon}</b>
-            </span>
-
-            <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
-            <UrgencyDot urgency="later" /> Later: <b>{statusCounts.later}</b>
-            </span>
-
-              <span className={styles.muted} style={{ marginLeft: 8 }}>
-                Remaining: <b>{remainingCount}</b> • Completed: <b>{completedCount}</b>
-              </span>
-            </div>
-          </div>
-
-          {/* Calendar */}
-          {state.ui.showCalendar ? (
-            <div>
-              <div className={styles.calendarHeader}>
-                <button className={styles.btn} onClick={() => shiftCalendarMonth(-1)} type="button">
-                  ←
-                </button>
-                <div className={styles.calendarHeaderCenter} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontWeight: 800, color: "rgba(0,0,0,0.65)" }}>
-                    {leftMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
-                  </span>
-                </div>
-                <button className={styles.btn} onClick={() => shiftCalendarMonth(1)} type="button">
-                  →
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                <MonthPanel monthStart={leftMonthStart} grid={leftGrid} onToday={goToTodayMonth} />
-</div>
-            </div>
-          ) : null}
-
-          {/* List */}
-          <div className="space-y-3">
-            {tasksByDate.keys.map((dateISO) => {
-              const date = parseISODateLocal(dateISO)!;
-              const items = (tasksByDate.map.get(dateISO) ?? []).filter((ct) =>
-                state.ui.showCompleted ? true : !isTaskFullyCompleted(state, ct.task)
-              );
-              if (items.length === 0) return null;
-
-              return (
-                <div key={dateISO} className={styles.card}>
-                  <div className={styles.row} style={{ justifyContent: "space-between", marginBottom: 8 }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(0,0,0,0.75)" }}>
-                      {formatDateLong(date)}
-                    </div>
-                    <div className={styles.muted}>Due by</div>
+            {/* Reset confirmation */}
+            {showResetConfirm ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+                <div className="w-full max-w-md rounded-2xl border border-black/10 bg-white p-4 shadow-xl">
+                  <div className="text-sm font-extrabold text-black/85">Reset this wedding plan?</div>
+                  <div className="mt-1 text-xs text-black/60">
+                    This clears the saved wedding plan on this device. You can export first if you want a backup.
                   </div>
+                  <div className="mt-4 flex justify-end gap-2">
+                    <button className={styles.btn + " " + styles.btnSmall} type="button" onClick={() => setShowResetConfirm(false)}>
+                      Cancel
+                    </button>
+                    <button
+                      className={styles.btn + " " + styles.btnSmall}
+                      type="button"
+                      onClick={() => {
+                        setShowResetConfirm(false);
+                        resetEverything();
+                      }}
+                      style={{ borderColor: "rgba(244, 63, 94, 0.35)", background: "rgba(244, 63, 94, 0.08)" }}
+                    >
+                      Yes, reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
-                  <div className="space-y-2">
-                    {items.map((ct) => {
-                      const badge = statusBadge(ct.urgency);
-                      const expanded = !!state.ui.expandedTasks[ct.task.id];
-                      const ratio = taskCompletionRatio(state, ct.task);
-                      const completed = isTaskFullyCompleted(state, ct.task);
+            {/* Short timeline hint */}
+            {isShortTimeline ? (
+              <div className={styles.card} style={{ padding: 10, background: "rgba(244, 82, 82, 0.02)", fontSize: 11 }}>
+                Your wedding day is approaching. Focus on red and yellow tasks first.
+              </div>
+            ) : null}
 
-                      return (
-                        <div
-                          key={ct.task.id}
-                          ref={(el) => {
-                            taskRefs.current[ct.task.id] = el;
-                          }}
-                          className={`rounded-lg border border-black/10 bg-white/60 px-3 py-2 border-l-4 ${
-                            completed ? "border-l-green-200 opacity-90" : leftAccent(ct.urgency)
-                          }`}
-                          style={{
-                            boxShadow: flashTaskId === ct.task.id ? "0 0 0 3px rgba(99,102,241,0.18)" : undefined,
-                          }}
-                        >
-                          <div className={styles.row} style={{ justifyContent: "space-between" }}>
-                            <div style={{ minWidth: 0 }}>
-                              <div className={styles.row} style={{ gap: 6, flexWrap: "wrap" }}>
-                                <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(0,0,0,0.82)", lineHeight: "16px" }}>
-                                  <span style={{ marginRight: 4 }}>{completed ? "✅" : <UrgencyDot urgency={ct.urgency} />}</span>
-                                  {ct.task.title}
+            {/* Inputs + profiles */}
+            <div className={styles.card}>
+              <div className="grid grid-cols-1 gap-3">
+                <label>
+                  <div className={styles.label}>Wedding Date</div>
+                  <input
+                    type="date"
+                    value={state.weddingDateISO ?? ""}
+                    onChange={(e) => {
+                      const iso = e.target.value || "";
+                      setState((s) =>
+                        sanitizeState({
+                          ...s,
+                          weddingDateISO: iso,
+                          ui: {
+                            ...s.ui,
+                            calendarMonthISO: parseISODateLocal(iso) ? toMonthISO(parseISODateLocal(iso)!) : s.ui.calendarMonthISO,
+                          },
+                        })
+                      );
+                    }}
+                    className={styles.input}
+                  />
+                </label>
+
+                <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={!!state.isFaithTraditional}
+                      onChange={(e) => setState((s) => sanitizeState({ ...s, isFaithTraditional: e.target.checked }))}
+                    />
+                    Faith or traditional ceremony
+                  </label>
+
+                  <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={!!state.isDestination}
+                      onChange={(e) => setState((s) => sanitizeState({ ...s, isDestination: e.target.checked }))}
+                    />
+                    Destination wedding
+                  </label>
+
+                  <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={!!state.isLargeGuestList}
+                      onChange={(e) => setState((s) => sanitizeState({ ...s, isLargeGuestList: e.target.checked }))}
+                    />
+                    Large guest list (150+)
+                  </label>
+                </div>
+
+                <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+                  <input
+                    type="checkbox"
+                    checked={!!state.isFirstTime}
+                    onChange={(e) => setState((s) => sanitizeState({ ...s, isFirstTime: e.target.checked }))}
+                  />
+                  First time planning (beginner-friendly hints)
+                </label>
+              </div>
+
+              <div className={styles.row} style={{ marginTop: 10, justifyContent: "space-between" }}>
+                <div className={styles.muted}>
+                  {wedding ? (
+                    <>
+                      <span style={{ fontWeight: 900, color: "rgba(0,0,0,0.82)", fontSize: 14 }}>Wedding Date:</span>{" "}
+                      {formatDateLong(wedding)} •{" "}
+                      <span
+                        className={styles.badge}
+                        style={{
+                          borderColor: "rgba(0,0,0,0.20)",
+                          background: "rgba(153,27,27,0.06)",
+                          color: "rgba(127,29,29,0.92)",
+                          fontWeight: 800,
+                        }}
+                      >
+                        {daysToGo} days to go
+                      </span>
+                    </>
+                  ) : (
+                    "Enter a valid wedding date."
+                  )}
+                </div>
+
+                <label className={styles.muted} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <input
+                    type="checkbox"
+                    checked={!!state.ui.showCompleted}
+                    onChange={(e) => setState((s) => sanitizeState({ ...s, ui: { ...s.ui, showCompleted: e.target.checked } }))}
+                  />
+                  Show completed
+                </label>
+              </div>
+
+              <div className={styles.row} style={{ marginTop: 10, gap: 6, flexWrap: "wrap" }}>
+                <span className={styles.muted} style={{ fontWeight: 800 }}>
+                  Legend:
+                </span>
+                <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+                  <UrgencyDot urgency="overdue" /> Overdue: <b>{statusCounts.overdue}</b>
+                </span>
+                <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+                  <UrgencyDot urgency="inRange" /> Due soon: <b>{statusCounts.inRange}</b>
+                </span>
+                <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+                  <UrgencyDot urgency="soon" /> Coming up: <b>{statusCounts.soon}</b>
+                </span>
+                <span className={styles.badge} style={{ borderColor: "rgba(0,0,0,0.20)", background: "rgba(0,0,0,0.02)" }}>
+                  <UrgencyDot urgency="later" /> Later: <b>{statusCounts.later}</b>
+                </span>
+
+                <span className={styles.muted} style={{ marginLeft: 8 }}>
+                  Remaining: <b>{remainingCount}</b> • Completed: <b>{completedCount}</b>
+                </span>
+              </div>
+            </div>
+
+            {/* Calendar */}
+            {state.ui.showCalendar ? (
+              <div>
+                <div className={styles.calendarHeader}>
+                  <button className={styles.btn} onClick={() => shiftCalendarMonth(-1)} type="button">
+                    ←
+                  </button>
+                  <div className={styles.calendarHeaderCenter} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontWeight: 800, color: "rgba(0,0,0,0.65)" }}>
+                      {leftMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+                    </span>
+                  </div>
+                  <button className={styles.btn} onClick={() => shiftCalendarMonth(1)} type="button">
+                    →
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  <MonthPanel monthStart={leftMonthStart} grid={leftGrid} onToday={goToTodayMonth} />
+                </div>
+              </div>
+            ) : null}
+
+            {/* List */}
+            <div className="space-y-3">
+              {tasksByDate.keys.map((dateISO) => {
+                const date = parseISODateLocal(dateISO)!;
+                const items = (tasksByDate.map.get(dateISO) ?? []).filter((ct) =>
+                  state.ui.showCompleted ? true : !isTaskFullyCompleted(state, ct.task)
+                );
+                if (items.length === 0) return null;
+
+                return (
+                  <div key={dateISO} className={styles.card}>
+                    <div className={styles.row} style={{ justifyContent: "space-between", marginBottom: 8 }}>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(0,0,0,0.75)" }}>{formatDateLong(date)}</div>
+                      <div className={styles.muted}>Due by</div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {items.map((ct) => {
+                        const badge = statusBadge(ct.urgency);
+                        const expanded = !!state.ui.expandedTasks[ct.task.id];
+                        const ratio = taskCompletionRatio(state, ct.task);
+                        const completed = isTaskFullyCompleted(state, ct.task);
+
+                        return (
+                          <div
+                            key={ct.task.id}
+                            ref={(el) => {
+                              taskRefs.current[ct.task.id] = el;
+                            }}
+                            className={`rounded-lg border border-black/10 bg-white/60 px-3 py-2 border-l-4 ${
+                              completed ? "border-l-green-200 opacity-90" : leftAccent(ct.urgency)
+                            }`}
+                            style={{
+                              boxShadow: flashTaskId === ct.task.id ? "0 0 0 3px rgba(99,102,241,0.18)" : undefined,
+                            }}
+                          >
+                            <div className={styles.row} style={{ justifyContent: "space-between" }}>
+                              <div style={{ minWidth: 0 }}>
+                                <div className={styles.row} style={{ gap: 6, flexWrap: "wrap" }}>
+                                  <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(0,0,0,0.82)", lineHeight: "16px" }}>
+                                    <span style={{ marginRight: 4 }}>{completed ? "✅" : <UrgencyDot urgency={ct.urgency} />}</span>
+                                    {ct.task.title}
+                                  </div>
+
+                                  {completed ? (
+                                    <span className="rounded-full border px-2 py-0.5 text-[11px] font-semibold border-gray-200 bg-emerald-50 text-emerald-700">
+                                      Completed
+                                    </span>
+                                  ) : (
+                                    <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${badge.cls}`}>
+                                      {badge.label}
+                                    </span>
+                                  )}
+
+                                  <span className={styles.muted}>
+                                    {completed ? "done" : ct.daysUntil >= 0 ? `${ct.daysUntil}d left` : `${Math.abs(ct.daysUntil)}d late`}
+                                  </span>
+
+                                  <span className={styles.muted}>
+                                    • {ratio.done}/{ratio.total}
+                                  </span>
                                 </div>
 
-                                {completed ? (
-                                  <span className="rounded-full border px-2 py-0.5 text-[11px] font-semibold border-gray-200 bg-emerald-50 text-emerald-700">
-                                    Completed
-                                  </span>
-                                ) : (
-                                  <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${badge.cls}`}>
-                                    {badge.label}
-                                  </span>
-                                )}
-
-                                <span className={styles.muted}>
-                                  {completed
-                                    ? "done"
-                                    : ct.daysUntil >= 0
-                                    ? `${ct.daysUntil}d left`
-                                    : `${Math.abs(ct.daysUntil)}d late`}
-                                </span>
-
-                                <span className={styles.muted}>
-                                  • {ratio.done}/{ratio.total}
-                                </span>
+                                <div className={styles.muted} style={{ marginTop: 2 }}>
+                                  {ct.task.description}
+                                </div>
                               </div>
 
-                              <div className={styles.muted} style={{ marginTop: 2 }}>
-                                {ct.task.description}
-                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  toggleExpanded(ct.task.id);
+                                }}
+                                aria-label={expanded ? "Collapse checklist" : "Expand checklist"}
+                                aria-expanded={expanded}
+                                title={expanded ? "Collapse" : "Expand"}
+                                className={styles.btn + " " + styles.btnSmall}
+                                style={{
+                                  width: 30,
+                                  height: 26,
+                                  padding: 0,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: 14,
+                                  lineHeight: "14px",
+                                  opacity: 0.9,
+                                }}
+                              >
+                                {expanded ? "▾" : "▸"}
+                              </button>
                             </div>
 
-                            {/* Chevron toggle (compact). Keeps the layout calm and still clearly interactive. */}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                toggleExpanded(ct.task.id);
-                              }}
-                              aria-label={expanded ? "Collapse checklist" : "Expand checklist"}
-                              aria-expanded={expanded}
-                              title={expanded ? "Collapse" : "Expand"}
-                              className={styles.btn + " " + styles.btnSmall}
-                              style={{
-                                width: 30,
-                                height: 26,
-                                padding: 0,
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 14,
-                                lineHeight: "14px",
-                                opacity: 0.9,
-                              }}
-                            >
-                              {expanded ? "▾" : "▸"}
-                            </button>
-                          </div>
-
-                          {expanded ? (
-                            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
-                              {ct.task.checklistItems.map((label, idx) => {
-                                const itemId = `${ct.task.id}::${idx}`;
-                                const entry = state.checklist[itemId] || {};
-                                const noteOpen = !!openRemark[itemId] || !!(entry.remark && entry.remark.trim());
-                                return (
-                                  <div key={itemId} className="py-2 border-t border-black/5 first:border-t-0">
-                                    <div className="flex flex-wrap items-center justify-between gap-2">
-                                      <label
-                                        style={{
-                                          display: "flex",
-                                          gap: 8,
-                                          alignItems: "center",
-                                          fontSize: 12,
-                                          color: "rgba(0,0,0,0.78)",
-                                          lineHeight: "16px",
-                                        }}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={!!entry.checked}
-                                          onChange={(e) => setChecklistChecked(itemId, e.target.checked)}
-                                        />
-                                        <span
+                            {expanded ? (
+                              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                                {ct.task.checklistItems.map((label, idx) => {
+                                  const itemId = `${ct.task.id}::${idx}`;
+                                  const entry = state.checklist[itemId] || {};
+                                  const noteOpen = !!openRemark[itemId] || !!(entry.remark && entry.remark.trim());
+                                  return (
+                                    <div key={itemId} className="py-2 border-t border-black/5 first:border-t-0">
+                                      <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <label
                                           style={{
-                                            textDecoration: entry.checked ? "line-through" : "none",
-                                            opacity: entry.checked ? 0.6 : 1,
+                                            display: "flex",
+                                            gap: 8,
+                                            alignItems: "center",
+                                            fontSize: 12,
+                                            color: "rgba(0,0,0,0.78)",
+                                            lineHeight: "16px",
                                           }}
                                         >
-                                          {label}
-                                        </span>
-                                      </label>
+                                          <input
+                                            type="checkbox"
+                                            checked={!!entry.checked}
+                                            onChange={(e) => setChecklistChecked(itemId, e.target.checked)}
+                                          />
+                                          <span
+                                            style={{
+                                              textDecoration: entry.checked ? "line-through" : "none",
+                                              opacity: entry.checked ? 0.6 : 1,
+                                            }}
+                                          >
+                                            {label}
+                                          </span>
+                                        </label>
 
-                                      <button
-                                        type="button"
-                                        className={styles.btn + " " + styles.btnSmall}
-                                        style={{ fontSize: 11, padding: "4px 8px", opacity: 0.85 }}
-                                        onClick={() =>
-                                          setOpenRemark((m) => ({ ...m, [itemId]: !(m[itemId] ?? false) }))
-                                        }
-                                        title={noteOpen ? "Hide note" : "Add a note"}
-                                      >
-                                        {noteOpen ? "Note" : "+ Note"}
-                                      </button>
-                                    </div>
-
-                                    {noteOpen ? (
-                                      <div className="mt-2">
-                                        <input
-                                          value={entry.remark ?? ""}
-                                          onChange={(e) => setChecklistRemark(itemId, e.target.value)}
-                                          placeholder="Short note (optional)"
-                                          className={styles.input}
-                                          style={{
-                                            padding: "6px 8px",
-                                            fontSize: 12,
-                                            height: 30,
-                                            maxWidth: 520,
-                                          }}
-                                        />
+                                        <button
+                                          type="button"
+                                          className={styles.btn + " " + styles.btnSmall}
+                                          style={{ fontSize: 11, padding: "4px 8px", opacity: 0.85 }}
+                                          onClick={() => setOpenRemark((m) => ({ ...m, [itemId]: !(m[itemId] ?? false) }))}
+                                          title={noteOpen ? "Hide note" : "Add a note"}
+                                        >
+                                          {noteOpen ? "Note" : "+ Note"}
+                                        </button>
                                       </div>
-                                    ) : null}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : null}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-       
 
-
-
-          {/* Info / About */}
-          <div className="mx-auto max-w-5xl" ref={infoRef}>
-            <div className={styles.card} style={{ padding: 14 }}>
-                <div className={styles.sectionTitle} style={{ fontSize: 14 }}>Info</div>
-                <div className={styles.muted} style={{ marginTop: 4 }}>
-                  Beginner-friendly tips so you know what to do next. (General guidance — always confirm local rules and venue policies.)
-                </div>
-
-                <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                  <details open={state.ui.showHowTo}>
-                    <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>How to use this planner</summary>
-                    <div className={styles.muted} style={{ marginTop: 8, display: "grid", gap: 8 }}>
-                      <div><b>1)</b> Pick your <b>Wedding Date</b>. Everything is generated relative to that date.</div>
-                      <div><b>2)</b> Start with <b>red</b> and <b>yellow</b> tasks. Red is overdue. Yellow is “due soon”.</div>
-                      <div><b>3)</b> Click the <b>chevron</b> (▸) to open a task and check items off.</div>
-                      <div><b>4)</b> Use <b>Notes</b> inside checklist items to save names, prices, contact info, and decisions.</div>
-                      <div><b>5)</b> Use <b>Export</b> for a portable backup. Use <b>Import</b> to restore it later.</div>
-                      <div><b>Short timeline?</b> If your wedding is soon, many early tasks will show as red — that’s expected. Focus on what you can still book or decide now.</div>
+                                      {noteOpen ? (
+                                        <div className="mt-2">
+                                          <input
+                                            value={entry.remark ?? ""}
+                                            onChange={(e) => setChecklistRemark(itemId, e.target.value)}
+                                            placeholder="Short note (optional)"
+                                            className={styles.input}
+                                            style={{
+                                              padding: "6px 8px",
+                                              fontSize: 12,
+                                              height: 30,
+                                              maxWidth: 520,
+                                            }}
+                                          />
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
                     </div>
-                  </details>
-
-                  <details open={state.ui.showAbout}>
-                    <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>About, privacy, and what gets saved</summary>
-                    <div className={styles.muted} style={{ marginTop: 8, display: "grid", gap: 8 }}>
-                      <div><b>Local-only:</b> Your plan is saved in your browser on this device. There is no account and nothing is sent to a server by this page.</div>
-                      <div><b>Reset:</b> The Reset button clears the saved plan on this device so you can start fresh.</div>
-                      <div><b>Profiles:</b> Profiles add extra tasks for common scenarios. They don’t remove the core timeline.</div>
-                      <div><b>Notes:</b> Keep notes simple (vendor name, quote, due date, link). You can paste URLs too.</div>
-                    </div>
-                  </details>
-
-                  <details>
-                    <summary style={{ cursor: "pointer", fontWeight: 700, fontSize: 12 }}>What do the profiles add?</summary>
-                    <div className={styles.muted} style={{ marginTop: 8, display: "grid", gap: 8 }}>
-                      <div><b>Faith or traditional ceremony</b>: preparation steps, documents, and ceremony rules.</div>
-                      <div><b>Destination wedding</b>: location rules, guest travel coordination, and legal recognition checks.</div>
-                      <div><b>Large guest list (150+)</b>: staffing, guest flow, and logistics tasks.</div>
-                    </div>
-                  </details>
-                </div>
-              </div>
-          </div>
-
-          {/* Wedding basics / FAQ */}
-          <div className="mx-auto max-w-5xl">
-            <div className={styles.card} style={{ padding: 14 }}>
-              <div className={styles.sectionTitle} style={{ fontSize: 14 }}>Wedding basics (FAQ)</div>
-              <div className={styles.muted} style={{ marginTop: 4 }}>
-                Quick answers to common beginner questions. Keep it simple: book the big items early, then confirm details closer to the date.
-              </div>
-
-              <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>What should we do first?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Start with <b>budget</b>, a rough <b>guest count</b>, and your <b>venue</b>. Those three decisions control most costs and your available dates.
                   </div>
-                </details>
-
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>What are the “big things” to book early?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Venue, photographer/videographer, and catering (if not included). If you want a specific date/season, book earlier.
-                  </div>
-                </details>
-
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>If our wedding is only 3 months away, is this still usable?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Yes. Many early tasks will show as <b>red</b> (overdue). That’s not “failure” — it’s a priority filter. Focus on booking venue, catering, and a photographer first.
-                  </div>
-                </details>
-
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>When should we get the marriage license?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Many locations have a validity window (it must be used within a certain number of days). Check your local requirements: IDs, fees, appointments, and waiting periods.
-                  </div>
-                </details>
-
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>What’s a realistic RSVP deadline?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Typically <b>3–6 weeks</b> before the wedding, so you can finalize headcount and seating. For destination travel, consider an earlier deadline.
-                  </div>
-                </details>
-
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>How do vendor payments usually work?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Many vendors take a deposit upfront and the remaining balance close to the event. Save your payment schedule in Notes and prepare labeled envelopes if you’ll pay on the day.
-                  </div>
-                </details>
-
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>Do we need a coordinator?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Not required, but helpful if you have many vendors, a large guest list, or a complex venue. A “day-of coordinator” can be enough without becoming a full planning service.
-                  </div>
-                </details>
-
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>What should be in a simple day-of timeline?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Hair/makeup start, getting-ready photos, travel time, ceremony start, cocktail hour, reception milestones (entrance, speeches, first dance, cake), and vendor load-out. Share it with vendors and key helpers.
-                  </div>
-                </details>
-
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>What should we write in Notes?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Vendor name, contact info, quote amount, deposit paid, due date, contract link, and any key decisions (menu chosen, package selected). Keep it short and searchable.
-                  </div>
-                </details>
-
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 12 }}>How do we avoid forgetting something important?</summary>
-                  <div className={styles.muted} style={{ marginTop: 6 }}>
-                    Use the calendar as your “radar”: days with tasks are highlighted. Aim to clear red tasks first, then keep yellow tasks small and steady each week.
-                  </div>
-                </details>
-              </div>
+                );
+              })}
             </div>
           </div>
-
         </div>
-    </div>
-    </PageShell>
+      </PageShell>
     </div>
   );
-
-  
-
-  
 }

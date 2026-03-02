@@ -1,8 +1,25 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  title: "Event Clocks — Time Zone Converter, Meeting Overlap, Business Days",
+  description:
+    "Simple planning tools for time zones, meeting scheduling, and deadlines. Private, fast, and no accounts.",
   alternates: {
     canonical: "https://www.event-clocks.com/",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://www.event-clocks.com/",
+    title: "Event Clocks",
+    description:
+      "Simple planning tools for time zones, meeting scheduling, and deadlines. Private, fast, and no accounts.",
+    siteName: "Event Clocks",
+  },
+  twitter: {
+    card: "summary",
+    title: "Event Clocks",
+    description:
+      "Simple planning tools for time zones, meeting scheduling, and deadlines. Private, fast, and no accounts.",
   },
 };
 
@@ -76,7 +93,7 @@ export default function HomePage() {
         <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Event Clocks</h1>
 
         <p className="mt-3 max-w-2xl text-lg text-black/60 dark:text-white/60">
-          Practical planning tools for time zones, schedules, and deadlines — calm, quick, and dependable.
+          Practical planning tools for time zones, meeting scheduling, and date deadlines — calm, quick, and dependable.
         </p>
       </header>
 
