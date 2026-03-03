@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import React from "react";
 
 export const metadata: Metadata = {
-  title: "Event Clocks — Time Zone Converter, Meeting Overlap, Business Days",
+  title: "Event Clocks — Time Zone Converter, Meeting Overlap, Business Days, Time Since",
   description:
-    "Simple planning tools for time zones, meeting scheduling, and deadlines. Private, fast, and no accounts.",
+    "Simple planning tools for time zones, meeting scheduling, deadlines, and live time counters. Private, fast, and no accounts.",
   alternates: {
     canonical: "https://www.event-clocks.com/",
   },
@@ -12,14 +13,14 @@ export const metadata: Metadata = {
     url: "https://www.event-clocks.com/",
     title: "Event Clocks",
     description:
-      "Simple planning tools for time zones, meeting scheduling, and deadlines. Private, fast, and no accounts.",
+      "Simple planning tools for time zones, meeting scheduling, deadlines, and live time counters. Private, fast, and no accounts.",
     siteName: "Event Clocks",
   },
   twitter: {
     card: "summary",
     title: "Event Clocks",
     description:
-      "Simple planning tools for time zones, meeting scheduling, and deadlines. Private, fast, and no accounts.",
+      "Simple planning tools for time zones, meeting scheduling, deadlines, and live time counters. Private, fast, and no accounts.",
   },
 };
 
@@ -54,7 +55,9 @@ function ToolCard({
           <Icon>{icon}</Icon>
           <div>
             <div className="text-lg font-extrabold tracking-tight">{title}</div>
-            <div className="mt-2 text-sm leading-relaxed text-black/60 dark:text-white/60">{desc}</div>
+            <div className="mt-2 text-sm leading-relaxed text-black/60 dark:text-white/60">
+              {desc}
+            </div>
           </div>
         </div>
 
@@ -89,17 +92,23 @@ export default function HomePage() {
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
           Fast • Private • No accounts
         </div>
-<br/><br/>
-        <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Event Clocks</h1>
+        <br />
+        <br />
+        <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
+          Event Clocks
+        </h1>
 
         <p className="mt-3 max-w-2xl text-lg text-black/60 dark:text-white/60">
-          Practical planning tools for time zones, meeting scheduling, and date deadlines — calm, quick, and dependable.
+          Practical planning tools for time zones, meeting scheduling, and date deadlines — calm,
+          quick, and dependable.
         </p>
       </header>
 
       {/* Featured (balanced grid) */}
       <section className="mb-8">
-        <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">Featured</div>
+        <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">
+          Featured
+        </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="md:col-span-2">
@@ -120,7 +129,13 @@ export default function HomePage() {
               <div className="relative flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <Icon>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="opacity-80"
+                    >
                       <path
                         d="M12 7v5l3 2"
                         stroke="currentColor"
@@ -137,9 +152,12 @@ export default function HomePage() {
                   </Icon>
 
                   <div>
-                    <div className="text-2xl font-extrabold tracking-tight">Timezone Converter</div>
+                    <div className="text-2xl font-extrabold tracking-tight">
+                      Timezone Converter
+                    </div>
                     <div className="mt-2 text-sm leading-relaxed text-black/60 dark:text-white/60">
-                      Compare one date/time across multiple zones — DST-aware, favorites, and share links.
+                      Compare one date/time across multiple zones — DST-aware, favorites, and share
+                      links.
                     </div>
                   </div>
                 </div>
@@ -162,7 +180,12 @@ export default function HomePage() {
             badge="Planner"
             icon={
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
-                <path d="M4 7h16M7 4v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path
+                  d="M4 7h16M7 4v16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
                 <path d="M9 9h11v11H9V9Z" stroke="currentColor" strokeWidth="2" />
               </svg>
             }
@@ -172,7 +195,10 @@ export default function HomePage() {
 
       {/* Calculators */}
       <section className="mb-8">
-        <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">Calculators</div>
+        <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">
+          Calculators
+        </div>
+
         <div className="grid gap-4 md:grid-cols-3">
           <ToolCard
             href="/business-days"
@@ -190,12 +216,44 @@ export default function HomePage() {
               </svg>
             }
           />
+
+          {/* NEW: Time Since */}
+          <ToolCard
+            href="/time-since"
+            title="Time Since"
+            desc="Live counter for time since (or until) a date — years/months/days plus a ticking clock."
+            badge="Live"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                <path
+                  d="M12 7v5l3 2"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M7 2h10"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            }
+          />
         </div>
       </section>
 
       {/* Planners */}
       <section className="mb-8">
-        <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">Planners</div>
+        <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">
+          Planners
+        </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <ToolCard
@@ -255,36 +313,40 @@ export default function HomePage() {
         </div>
       </section>
 
-
       {/* Quick overview row (adds balance + visual interest without clutter) */}
       <section className="mb-8 grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-black/10 bg-white/45 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
-          <div className="text-sm font-semibold text-black/75 dark:text-white/75">Weekend + holiday aware</div>
+          <div className="text-sm font-semibold text-black/75 dark:text-white/75">
+            Weekend + holiday aware
+          </div>
           <p className="mt-2 text-sm text-black/55 dark:text-white/55">
             Spot weekend hits and supported public holidays quickly.
           </p>
         </div>
 
         <div className="rounded-2xl border border-black/10 bg-white/45 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
-          <div className="text-sm font-semibold text-black/75 dark:text-white/75">Shareable results</div>
+          <div className="text-sm font-semibold text-black/75 dark:text-white/75">
+            Shareable results
+          </div>
           <p className="mt-2 text-sm text-black/55 dark:text-white/55">
             Send a link so others can view the same setup.
           </p>
         </div>
 
         <div className="rounded-2xl border border-black/10 bg-white/45 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
-          <div className="text-sm font-semibold text-black/75 dark:text-white/75">Local-first</div>
+          <div className="text-sm font-semibold text-black/75 dark:text-white/75">
+            Local-first
+          </div>
           <p className="mt-2 text-sm text-black/55 dark:text-white/55">
             Preferences stay in your browser. No logins.
           </p>
         </div>
       </section>
 
-
       {/* Calm note */}
       <section className="rounded-2xl border border-black/10 bg-white/45 p-5 text-sm text-black/55 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/55">
-        Tip: Convert the time first, then use Meeting Overlap to pick a slot — and double-check weekends/holidays before
-        sending the invite.
+        Tip: Convert the time first, then use Meeting Overlap to pick a slot — and double-check
+        weekends/holidays before sending the invite.
       </section>
     </main>
   );

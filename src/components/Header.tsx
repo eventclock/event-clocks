@@ -43,6 +43,12 @@ export default function Header() {
 
           <Divider />
 
+          <Section title="Counters">
+            <MenuItem href="/time-since">Time Since</MenuItem>
+          </Section>
+
+          <Divider />
+
           <Section title="Calculators">
             <MenuItem href="/business-days">Business Days</MenuItem>
           </Section>
@@ -132,7 +138,6 @@ function Dropdown({
       const target = e.target as Node | null;
       if (!target) return;
 
-      // If the click is outside the details element, close.
       if (!root.contains(target)) close();
     };
 
@@ -157,15 +162,12 @@ function Dropdown({
     return React.Children.map(children, (child) => {
       if (!React.isValidElement(child)) return child;
 
-      // If it's our MenuItem, add onNavigate
-      // (We detect by displayName to avoid affecting other nodes.)
       const typeAny = child.type as any;
       const isMenuItem = typeAny?.displayName === "MenuItem";
       if (isMenuItem) {
         return React.cloneElement(child as any, { onNavigate: close });
       }
 
-      // If it's a Section, walk one level deeper so MenuItems inside sections also close
       const isSection = typeAny?.displayName === "Section";
       if (isSection) {
         const sectionChildren = (child.props as any).children;
@@ -193,8 +195,6 @@ function Dropdown({
         aria-expanded={open ? "true" : "false"}
         aria-controls={`menu-${id}`}
         onClick={(e) => {
-          // Ensure our state stays synced and avoids weird toggles in some browsers
-          // by controlling open/close based on current state.
           e.preventDefault();
           if (open) close();
           else openMenu();
@@ -249,10 +249,7 @@ function MenuItem({
     <Link
       href={href}
       role="menuitem"
-      onClick={() => {
-        // Close immediately on click (navigation will still happen)
-        onNavigate?.();
-      }}
+      onClick={() => onNavigate?.()}
       style={{
         display: "block",
         padding: "10px 10px",
