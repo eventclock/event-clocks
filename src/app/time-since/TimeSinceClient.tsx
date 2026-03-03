@@ -412,8 +412,8 @@ export default function TimeSinceClient() {
                 type="datetime-local"
                 value={startValue}
                 onChange={(e) => setStartValue(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-black/20 dark:text-white"
-              />
+                className="mt-1 w-full min-w-0 rounded-xl border border-black/15 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-black/20 dark:text-white"
+                />
             </label>
 
             <div className="flex gap-2">
