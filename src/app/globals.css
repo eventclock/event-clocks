@@ -123,3 +123,12 @@ select {
 .meeting-overlap button {
   height: 32px;
 }
+
+.wedding-bg {
+  background:
+    linear-gradient(
+      to bottom,
+      #fcfbf8 0%,
+      #ecf1fc 20%
+    );
+}

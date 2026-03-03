@@ -1314,7 +1314,7 @@ export default function WeddingPlanClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]">
+    <div className="min-h-screen wedding-bg">
       <PageShell
   title="Wedding Planner"
   subtitle="A simple wedding timeline built around your actual date."
