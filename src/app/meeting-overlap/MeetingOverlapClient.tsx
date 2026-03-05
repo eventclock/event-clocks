@@ -732,6 +732,38 @@ export default function MeetingOverlapClient() {
     if (startMin > endMin) setEndMin(startMin);
   }, [startMin, endMin]);
 
+  // Default the first TZ to the user's local timezone (client-only), but only
+  // if the list is still the single default entry.
+  useEffect(() => {
+    if (!mounted) return;
+
+    const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    if (!userTZ || !isValidIanaTz(userTZ)) return;
+
+    setTzList((prev) => {
+      // Only auto-replace when it's still the initial single default.
+      if (prev.length !== 1) return prev;
+
+      const first = prev[0];
+      const firstTz = (first?.tz || "").trim();
+
+      if (firstTz !== defaultTZ) return prev;
+
+      const rememberedCountry = tzCountryMap[userTZ] ?? "";
+      const existingHoliday = (first.holidayCountry || "").trim().toUpperCase();
+
+      return [
+        {
+          ...first,
+          tz: userTZ,
+          // keep any existing holidayCountry if already set; otherwise hydrate from map
+          holidayCountry: existingHoliday ? existingHoliday : rememberedCountry,
+        },
+      ];
+    });
+  }, [mounted, tzCountryMap, defaultTZ]);
+
   // Holidays
   const { getHolidayName, getCountryStatus } = useHolidayIndex(mounted, tzList, baseDateLocal);
 
@@ -1002,7 +1034,7 @@ export default function MeetingOverlapClient() {
         .mo-qual-box {
           border-radius: 4px;
           padding: 6px 8px;
-          border: 1px solid rgba(14, 71, 52, 0.72);
+          border: 1px solid rgba(14, 71, 52, 0.41);
           background: rgba(37, 99, 235, 0.05);
         }
         .mo-noqual-box {
@@ -1431,7 +1463,7 @@ export default function MeetingOverlapClient() {
                             <span
                               className={[
                                 "inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold border",
-                                ok ? "bg-green-800 text-white border-slate-200" : "bg-white text-slate-500 border-slate-200",
+                                ok ? "bg-green-800 text-white border-slate-100" : "bg-white text-slate-500 border-slate-200",
                               ].join(" ")}
                             >
                               {ok ? "OVERLAP" : "—"}
