@@ -34,7 +34,6 @@ export default function Header() {
           letterSpacing: "-0.01em",
         }}
       >
-        {/* One understated entry point */}
         <Dropdown label="Tools">
           <Section title="Time Tools">
             <MenuItem href="/timezone">Timezone Converter</MenuItem>
@@ -45,6 +44,7 @@ export default function Header() {
 
           <Section title="Counters">
             <MenuItem href="/time-since">Time Since</MenuItem>
+            <MenuItem href="/countdown-notes">Countdown Notes</MenuItem>
           </Section>
 
           <Divider />
@@ -97,7 +97,7 @@ const topLinkStyle: React.CSSProperties = {
   transition: "opacity 140ms ease",
 };
 
-/* ---------------- Dropdown (close on click-outside / navigate / Escape) ---------------- */
+/* ---------------- Dropdown ---------------- */
 
 function Dropdown({
   label,
@@ -110,25 +110,21 @@ function Dropdown({
   const detailsRef = useRef<HTMLDetailsElement | null>(null);
   const [open, setOpen] = useState(false);
 
-  // Close helper (keeps <details> and state in sync)
   const close = () => {
     setOpen(false);
     if (detailsRef.current) detailsRef.current.open = false;
   };
 
-  // Open helper
   const openMenu = () => {
     setOpen(true);
     if (detailsRef.current) detailsRef.current.open = true;
   };
 
-  // Toggle via summary click
   const onToggle = () => {
     const nowOpen = !!detailsRef.current?.open;
     setOpen(nowOpen);
   };
 
-  // Click outside to close
   useEffect(() => {
     if (!open) return;
 
@@ -154,10 +150,8 @@ function Dropdown({
       document.removeEventListener("touchstart", onPointerDown as any);
       document.removeEventListener("keydown", onKeyDown);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // Inject close-on-navigate into MenuItem children inside this dropdown
   const enhancedChildren = useMemo(() => {
     return React.Children.map(children, (child) => {
       if (!React.isValidElement(child)) return child;
@@ -234,7 +228,7 @@ const menuAppleStyle: React.CSSProperties = {
   zIndex: 50,
 };
 
-/* ---------------- Menu bits ---------------- */
+/* ---------------- Menu items ---------------- */
 
 function MenuItem({
   href,
