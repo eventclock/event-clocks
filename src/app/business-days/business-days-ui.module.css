@@ -1,0 +1,181 @@
+.controlField {
+  height: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: 12px !important;
+}
+
+.controlCard {
+  height: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+.modeButton {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.primaryButton {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.sectionCard {
+  border-radius: 8px;
+}
+
+.resultCard {
+  border-radius: 8px;
+}
+
+.softCard {
+  border-radius: 8px;
+}
+
+.presetRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.presetChip {
+  appearance: none;
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(167, 139, 250, 0.08) 0%,
+    rgba(236, 233, 254, 0.18) 100%
+  );
+  color: rgba(55, 48, 163, 0.88);
+  padding: 7px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease,
+    background 120ms ease,
+    color 120ms ease;
+  cursor: pointer;
+}
+
+.presetChip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(124, 58, 237, 0.2);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+}
+
+.presetChipActive {
+  border-color: rgba(124, 58, 237, 0.28);
+  background: linear-gradient(
+    180deg,
+    rgba(196, 181, 253, 0.28) 0%,
+    rgba(221, 214, 254, 0.45) 100%
+  );
+  color: rgba(76, 29, 149, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(124, 58, 237, 0.08),
+    0 6px 14px rgba(124, 58, 237, 0.10);
+}
+
+.presetHint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  .presetChip {
+    border-color: rgba(196, 181, 253, 0.16);
+    background: linear-gradient(
+      180deg,
+      rgba(139, 92, 246, 0.16) 0%,
+      rgba(91, 33, 182, 0.12) 100%
+    );
+    color: rgba(233, 213, 255, 0.92);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  }
+
+  .presetChip:hover {
+    border-color: rgba(196, 181, 253, 0.24);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+  }
+
+  .presetChipActive {
+    border-color: rgba(196, 181, 253, 0.34);
+    background: linear-gradient(
+      180deg,
+      rgba(167, 139, 250, 0.30) 0%,
+      rgba(109, 40, 217, 0.24) 100%
+    );
+    color: rgba(245, 243, 255, 0.96);
+    box-shadow:
+      0 0 0 1px rgba(196, 181, 253, 0.08),
+      0 6px 14px rgba(139, 92, 246, 0.18);
+  }
+
+  .presetHint {
+    color: rgba(255, 255, 255, 0.55);
+  }
+}
+
+.relatedTool {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+
+  border-radius: 999px;
+
+  border: 1px solid rgba(124, 58, 237, 0.12);
+
+  background: linear-gradient(
+    180deg,
+    rgba(167, 139, 250, 0.12),
+    rgba(236, 233, 254, 0.25)
+  );
+
+  color: rgba(55, 48, 163, 0.9);
+
+  text-decoration: none !important;
+}
+
+.relatedTool:hover {
+  transform: translateY(-1px);
+
+  border-color: rgba(124, 58, 237, 0.22);
+
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.08);
+
+  background: linear-gradient(
+    180deg,
+    rgba(196, 181, 253, 0.25),
+    rgba(221, 214, 254, 0.35)
+  );
+}
+
+.resultSummary {
+  font-size: 13px;
+  font-style: italic;
+  opacity: 0.65;
+  margin-top: 6px;
+}
+
+/* make the numeric value bigger */
+.valueField {
+  font-size: 20px !important;
+  font-weight: 500;
+}
