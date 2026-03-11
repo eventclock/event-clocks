@@ -45,6 +45,7 @@ export default function Header() {
           <Section title="Counters">
             <MenuItem href="/time-since">Time Since</MenuItem>
             <MenuItem href="/countdown-notes">Countdown Notes</MenuItem>
+            <MenuItem href="/countdown-tasks">Countdown Tasks</MenuItem>
           </Section>
 
           <Divider />

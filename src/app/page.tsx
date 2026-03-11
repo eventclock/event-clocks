@@ -3,9 +3,9 @@ import React from "react";
 
 export const metadata: Metadata = {
   title:
-    "Event Clocks — Time Zone Converter, Meeting Overlap, Business Days, Countdown Notes, Time Since",
+    "Event Clocks — Time Zone Converter, Meeting Overlap, Business Days, Countdown Notes, Countdown Tasks, Time Since",
   description:
-    "Simple planning tools for time zones, meeting scheduling, deadlines, live countdowns, and time counters. Private, fast, and no accounts.",
+    "Simple planning tools for time zones, meeting scheduling, deadlines, live countdowns, task tracking, and time counters. Private, fast, and no accounts.",
   alternates: {
     canonical: "https://www.event-clocks.com/",
   },
@@ -14,14 +14,14 @@ export const metadata: Metadata = {
     url: "https://www.event-clocks.com/",
     title: "Event Clocks",
     description:
-      "Simple planning tools for time zones, meeting scheduling, deadlines, live countdowns, and time counters. Private, fast, and no accounts.",
+      "Simple planning tools for time zones, meeting scheduling, deadlines, live countdowns, task tracking, and time counters. Private, fast, and no accounts.",
     siteName: "Event Clocks",
   },
   twitter: {
     card: "summary",
     title: "Event Clocks",
     description:
-      "Simple planning tools for time zones, meeting scheduling, deadlines, live countdowns, and time counters. Private, fast, and no accounts.",
+      "Simple planning tools for time zones, meeting scheduling, deadlines, live countdowns, task tracking, and time counters. Private, fast, and no accounts.",
   },
 };
 
@@ -79,7 +79,6 @@ function ToolCard({
 export default function HomePage() {
   return (
     <main className="relative mx-auto max-w-5xl px-6 py-10">
-      {/* Full-page pale background wash */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-white dark:bg-black" />
         <div className="absolute -top-40 left-1/2 h-[30rem] w-[60rem] -translate-x-1/2 rounded-full bg-violet-200/20 blur-3xl dark:bg-violet-500/10" />
@@ -87,9 +86,9 @@ export default function HomePage() {
         <div className="absolute top-72 -right-40 h-[26rem] w-[26rem] rounded-full bg-emerald-200/16 blur-3xl dark:bg-emerald-500/10" />
       </div>
 
-      {/* Hero */}
       <header className="mb-14 pt-4 sm:pt-6">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/45 px-4 py-1 text-xs font-semibold text-black/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/60">  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/45 px-4 py-1 text-xs font-semibold text-black/60 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
           Fast • Private • No accounts
         </div>
 
@@ -97,13 +96,12 @@ export default function HomePage() {
           Event Clocks
         </h1>
 
-        <p className="mt-5 max-w-3xl text-lg leading-relaxed text-black/60 dark:text-white/60 sm:text-[1.7rem] sm:leading-[1.45]">
-          Practical planning tools for time zones, meeting scheduling, countdowns, and date
-          deadlines — calm, quick, and dependable.
+        <p className="mt-4 max-w-3xl text-lg leading-relaxed text-black/60 dark:text-white/60 sm:text-[1.00rem] sm:leading-[1.4]">
+          Practical planning tools for time zones, meeting scheduling, countdowns, task tracking,
+          and date deadlines — calm, quick, and dependable.
         </p>
       </header>
 
-      {/* Featured */}
       <section className="mb-8">
         <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">
           Featured
@@ -115,7 +113,6 @@ export default function HomePage() {
               href="/timezone"
               className="group relative block h-full overflow-hidden rounded-2xl border border-black/10 bg-white/55 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/70 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8"
             >
-              {/* keep gradient glow */}
               <div
                 aria-hidden="true"
                 className="absolute inset-0 opacity-60"
@@ -192,7 +189,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Counters */}
       <section className="mb-8">
         <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">
           Counters
@@ -232,7 +228,7 @@ export default function HomePage() {
             href="/countdown-notes"
             title="Countdown Notes"
             desc="Attach notes to dates and times, keep upcoming and expired items separate, and watch each countdown live."
-            badge="New"
+            badge="Live"
             icon={
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
                 <path
@@ -257,10 +253,41 @@ export default function HomePage() {
               </svg>
             }
           />
+
+          <ToolCard
+            href="/countdown-tasks"
+            title="Countdown Tasks"
+            desc="Track tasks with start dates, end deadlines, delayed status, and a live countdown once the task begins."
+            badge="New"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                <path
+                  d="M9 11.5 11 13.5 15.5 9"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M20 12a8 8 0 1 1-4-6.93"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M16 3v4h4"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+          />
         </div>
       </section>
 
-      {/* Calculators */}
       <section className="mb-8">
         <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">
           Calculators
@@ -286,7 +313,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Planners */}
       <section className="mb-8">
         <div className="mb-3 text-sm font-semibold tracking-tight text-black/60 dark:text-white/60">
           Planners
@@ -350,7 +376,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Quick overview row */}
       <section className="mb-8 grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-black/10 bg-white/45 p-5 backdrop-blur dark:border-white/10 dark:bg-white/5">
           <div className="text-sm font-semibold text-black/75 dark:text-white/75">
@@ -380,10 +405,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Calm note */}
       <section className="rounded-2xl border border-black/10 bg-white/45 p-5 text-sm text-black/55 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-white/55">
         Tip: Convert the time first, then use Meeting Overlap to pick a slot — or use Countdown
-        Notes and Time Since when you want a live timer tied to a date.
+        Notes, Countdown Tasks, and Time Since when you want a live timer tied to a date or
+        deadline.
       </section>
     </main>
   );
