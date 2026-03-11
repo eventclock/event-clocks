@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 const BASE = "https://www.event-clocks.com";
-const lastMod = new Date("2026-03-06");
+const lastMod = new Date("2026-03-11");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -38,6 +38,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${BASE}/countdown-notes`,
+      lastModified: lastMod,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE}/countdown-tasks`,
       lastModified: lastMod,
       changeFrequency: "monthly",
       priority: 0.8,
