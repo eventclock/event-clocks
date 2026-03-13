@@ -196,8 +196,17 @@ export function buildExpectedForms(ans: TaxProfileAnswers): ExpectedForm[] {
     push("1099-B", "1099-B (Proceeds From Broker Transactions)", "Brokerage / exchange", "Online", "You indicated stock sales or crypto activity (often via brokerage/exchange tax docs).");
   }
 
+  // if (ans.retirementDistribution) {
+  //   push("1099-R", "1099-R (Distributions From Pensions/IRAs)", "Retirement account provider", "Either", "You indicated retirement distributions.");
+  // }
   if (ans.retirementDistribution) {
-    push("1099-R", "1099-R (Distributions From Pensions/IRAs)", "Retirement account provider", "Either", "You indicated retirement distributions.");
+    push(
+      "1099-R",
+      "1099-R (Distributions From Retirement Plans, Annuities, or Life Insurance)",
+      "Retirement account provider / insurance company",
+      "Either",
+      "Issued when money is distributed from retirement plans, annuities, or certain life insurance policies. Some 1099-R forms report internal policy charges or withdrawals and may show $0 taxable amount."
+    );
   }
 
   if (ans.unemployment) {
@@ -241,6 +250,7 @@ export function buildExpectedForms(ans: TaxProfileAnswers): ExpectedForm[] {
   if (ans.iraContrib) {
     push("5498", "5498 (IRA Contribution Information)", "IRA custodian", "Online", "You indicated IRA contributions (often issued later in spring).");
   }
+
 
   // De-dupe and stable sort by “typical end date”
   const seen = new Set<TaxFormId>();

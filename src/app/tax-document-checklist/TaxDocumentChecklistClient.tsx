@@ -678,7 +678,13 @@ export default function TaxDocumentChecklistClient() {
                 tip="Exchanges/brokerages may provide tax documents if you sold, traded, or had reportable activity."
               />
 
-              <Q checked={state.answers.retirementDistribution} onChange={(v) => setAnswer("retirementDistribution", v)} label="I withdrew from retirement (1099-R)" />
+              {/* <Q checked={state.answers.retirementDistribution} onChange={(v) => setAnswer("retirementDistribution", v)} label="I withdrew from retirement (1099-R)" /> */}
+              <QWithTip
+                checked={state.answers.retirementDistribution}
+                onChange={(v) => setAnswer("retirementDistribution", v)}
+                label="I received a 1099-R (retirement, annuity, or life insurance)"
+                tip="1099-R can be issued for retirement withdrawals, annuity payments, or certain life-insurance policy distributions."
+              />
               <Q checked={state.answers.unemployment} onChange={(v) => setAnswer("unemployment", v)} label="I received unemployment (1099-G)" />
               <Q checked={state.answers.socialSecurity} onChange={(v) => setAnswer("socialSecurity", v)} label="I received Social Security (SSA-1099)" />
               <Q checked={state.answers.partnershipK1} onChange={(v) => setAnswer("partnershipK1", v)} label="I expect a K-1" />
@@ -817,7 +823,16 @@ export default function TaxDocumentChecklistClient() {
                           ) : null}
                         </div>
 
-                        <div className="mt-2 text-sm text-black/70 dark:text-white/70">{f.why}</div>
+                        <div className="mt-2 text-sm text-black/70 dark:text-white/70">
+                          {f.why}
+
+                          {f.id === "1099-R" ? (
+                            <div className="mt-2 rounded-xl border border-amber-200/70 bg-amber-50/70 px-3 py-2 text-xs text-amber-900/80">
+                              Common confusion: 1099-R is not always a retirement cash-out. Some annuities and certain life insurance
+                              policies can also issue a 1099-R. In some cases, the taxable amount may be $0.
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2">
