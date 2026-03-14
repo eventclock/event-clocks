@@ -438,18 +438,18 @@ function PostItIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={styles.postItSvg}
+      width="16"
+      height="16"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.7"
+      strokeWidth="1.9"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M7 4.5h7.5l3 3V19.5H7z" />
-      <path d="M14.5 4.5V7.5h3" />
-      <path d="M9.5 11h5" />
-      <path d="M9.5 14h5" />
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M4 9h16" />
+      <path d="M8 7h.01" />
+      <path d="M11 7h.01" />
     </svg>
   );
 }
