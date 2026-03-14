@@ -1,0 +1,308 @@
+.viewport {
+  min-height: 100vh;
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(255, 244, 170, 0.18),
+      rgba(24, 23, 15, 0.22)
+    ),
+    radial-gradient(
+      circle at bottom,
+      rgba(255, 244, 170, 0.18),
+      rgba(65, 62, 40, 0.22)
+    );
+}
+
+.note {
+  position: relative;
+  width: min(100%, 360px);
+  border-radius: 18px;
+  box-shadow:
+    0 14px 28px rgba(16, 24, 40, 0.10),
+    0 1px 0 rgba(255, 255, 255, 0.55) inset;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.inner {
+  position: relative;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.floatingActions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.closeFloating {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.iconButton {
+  height: 30px;
+  width: 30px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.55);
+  color: rgba(15, 23, 42, 0.62);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(15, 23, 42, 0.82);
+}
+
+.iconButtonActive {
+  background: rgba(253, 230, 138, 0.2);
+  color: rgba(15, 23, 42, 0.88);
+}
+
+.actionSvg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.title {
+  margin: 10px 76px 0 0;
+  font-size: 16px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  color: rgba(15, 23, 42, 0.92);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.noteText {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(15, 23, 42, 0.68);
+  white-space: pre-wrap;
+}
+
+.statusBlock {
+  display: grid;
+  gap: 3px;
+  margin-top: 0;
+}
+
+.headline {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.5);
+}
+
+.subline {
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.72);
+}
+
+.clockWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.clockWrapDelayed .tile {
+  /* background: rgba(127, 29, 29, 0.92); */
+  border-color: rgba(69, 10, 10, 0.6);
+}
+
+.clockWrapDone .tile {
+  background: rgba(55, 65, 81, 0.78);
+}
+
+.clockLabelsInline {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.42);
+}
+
+.clockLabelsInlineDelayed {
+  color: rgba(127, 29, 29, 0.78);
+}
+
+.clockRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.unitDigits {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
+}
+
+.unitDigitsFixed {
+  min-width: 68px;
+}
+
+.unitDigitsDays {
+  min-width: 0;
+  justify-content: flex-start;
+}
+
+.tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  width: 26px;
+  height: 34px;
+  background: rgba(0, 0, 0, 0.78);
+  border: 1px solid rgba(0, 0, 0, 0.24);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.tile::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.tilePlaceholder {
+  background: rgba(0, 0, 0, 0.22);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.colon {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-weight: 900;
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.34);
+}
+
+.metaStack {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  color: rgba(15, 23, 42, 0.66);
+  margin-top: 0;
+}
+
+.blue {
+ background:
+    linear-gradient(135deg, rgba(191, 219, 254, 0.22), rgba(255, 255, 255, 0) 72%),
+    rgba(255, 255, 255, 0.74);
+}
+
+.pink {
+  background:
+    linear-gradient(135deg, rgba(251, 207, 232, 0.22), rgba(255, 255, 255, 0) 72%),
+    rgba(255, 255, 255, 0.74);
+}
+
+.mint {
+  background:
+    linear-gradient(135deg, rgba(187, 247, 208, 0.2), rgba(255, 255, 255, 0) 72%),
+    rgba(255, 255, 255, 0.74);
+}
+
+.gold {
+  background:
+    linear-gradient(135deg, rgba(253, 230, 138, 0.2), rgba(255, 255, 255, 0) 72%),
+    rgba(255, 255, 255, 0.74);
+}
+
+.lavender {
+  background:
+    linear-gradient(135deg, rgba(221, 214, 254, 0.309), rgba(255, 255, 255, 0) 72%),
+    rgba(255, 255, 255, 0.74);
+}
+
+.noteEnded {
+ border-color: rgba(127, 29, 29, 0.55);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(127, 29, 29, 0.12);
+}
+
+.noteDone {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.1)),
+    linear-gradient(135deg, rgba(226, 232, 240, 0.96), rgba(248, 250, 252, 0.9));
+}
+
+@media (max-width: 420px) {
+  .viewport {
+    padding: 6px;
+  }
+
+  .note {
+    width: 100%;
+    border-radius: 14px;
+  }
+
+  .inner {
+    padding: 10px 12px 12px;
+  }
+
+  .tile {
+    width: 24px;
+    height: 32px;
+    font-size: 17px;
+  }
+
+  .unitDigitsFixed {
+    min-width: 62px;
+  }
+
+  .colon {
+    font-size: 16px;
+  }
+
+  .title {
+    margin-right: 72px;
+    font-size: 15px;
+  }
+}
+
+.iconButton:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}

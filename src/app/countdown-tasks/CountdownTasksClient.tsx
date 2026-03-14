@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import PageShell from "@/components/PageShell";
 import styles from "./CountdownTasks.module.css";
 
@@ -269,7 +269,7 @@ function getPrimaryCountdown(item: CountdownTask, nowMs: number) {
     return {
       label: `Starts ${relativeFromNow(item.startISO, nowMs)}`,
       parts: {
-        days: "--",
+        days: "-",
         hours: "--",
         minutes: "--",
         seconds: "--",
@@ -300,7 +300,7 @@ function getPrimaryCountdown(item: CountdownTask, nowMs: number) {
   return {
     label: "Completed",
     parts: {
-      days: "00",
+      days: "0",
       hours: "00",
       minutes: "00",
       seconds: "00",
@@ -393,6 +393,26 @@ async function readJsonFile(file: File): Promise<any> {
   return JSON.parse(text);
 }
 
+function encodeTaskForFocus(item: CountdownTask) {
+  const payload = {
+    id: item.id,
+    title: item.title,
+    note: item.note,
+    startISO: item.startISO,
+    endISO: item.endISO,
+    done: item.done,
+    color: item.color,
+  };
+
+  const json = JSON.stringify(payload);
+
+  if (typeof window !== "undefined" && "btoa" in window) {
+    return window.btoa(unescape(encodeURIComponent(json)));
+  }
+
+  return "";
+}
+
 function TrashIcon() {
   return (
     <svg
@@ -410,6 +430,26 @@ function TrashIcon() {
       <path d="M19 6l-1 13.2c-.1.8-.7 1.3-1.5 1.3H7.5c-.8 0-1.4-.5-1.5-1.3L5 6" />
       <path d="M10 10.2v6.5" />
       <path d="M14 10.2v6.5" />
+    </svg>
+  );
+}
+
+function PostItIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={styles.postItSvg}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M7 4.5h7.5l3 3V19.5H7z" />
+      <path d="M14.5 4.5V7.5h3" />
+      <path d="M9.5 11h5" />
+      <path d="M9.5 14h5" />
     </svg>
   );
 }
@@ -597,37 +637,27 @@ function EditModal({
             </div>
           </div>
 
-          <label
-            className={styles.label}
-            style={{ display: "flex", alignItems: "center", gap: 8 }}
-          >
+          <label className={`${styles.label} ${styles.checkboxRow}`}>
             <input
               type="checkbox"
               checked={draft.pinned}
               onChange={(e) => setDraft((d) => ({ ...d, pinned: e.target.checked }))}
             />
-            <div className={styles.labelText} style={{ margin: 0 }}>
-              Pin in its section
-            </div>
+            <div className={styles.labelText}>Pin in its section</div>
           </label>
 
-          <label
-            className={styles.label}
-            style={{ display: "flex", alignItems: "center", gap: 8 }}
-          >
+          <label className={`${styles.label} ${styles.checkboxRow}`}>
             <input
               type="checkbox"
               checked={draft.done}
               onChange={(e) => setDraft((d) => ({ ...d, done: e.target.checked }))}
             />
-            <div className={styles.labelText} style={{ margin: 0 }}>
-              Mark as done
-            </div>
+            <div className={styles.labelText}>Mark as done</div>
           </label>
 
           <div className={styles.helper}>
-            Countdown starts when the start date is reached. If the end date passes
-            before the task is done, it becomes delayed and stays at the top.
+            Keep the main page simple, then use a focus window for the tasks you want
+            to watch closely.
           </div>
 
           <div className={styles.actions}>
@@ -672,27 +702,33 @@ function InfoModal({
         </div>
 
         <div className={styles.aboutContent}>
-          <p>
-            <strong>Countdown Tasks</strong> helps track tasks that have a
-            start window and an end deadline.
-          </p>
+        <p>
+            <strong>Countdown Tasks</strong> helps you track tasks with a start time and an
+            end deadline.
+        </p>
 
-          <p>
-            Before a task starts, you see how long until it begins. Once the start
-            time is reached, the live countdown switches to time remaining until
-            the end.
-          </p>
+        <p>
+            Before a task begins, the timer shows how long until it starts. Once the
+            start time is reached, the countdown automatically switches to time
+            remaining until the end.
+        </p>
 
-          <p>
-            If a task reaches zero and is still not completed, it becomes
-            <strong> delayed</strong> and stays at the top until you mark it done
-            or delete it.
-          </p>
+        <p>
+            If the timer reaches zero and the task is not marked complete, it becomes
+            <strong> delayed</strong> and stays at the top until you mark it done or
+            delete it.
+        </p>
 
-          <p>
-            Your data is stored locally in your browser on this device. You can
-            export and import your tasks as JSON.
-          </p>
+        <p>
+            For tasks you want to monitor more closely, you can open a detached
+            <strong> Focus Window</strong>. It keeps a single countdown visible in a
+            clean sticky-note style view using the same task color.
+        </p>
+
+        <p>
+            Your tasks are stored locally in your browser on this device. You can export
+            and import them as JSON.
+        </p>
         </div>
       </div>
     </div>
@@ -750,6 +786,7 @@ function Section({
   onToggleDone,
   onEdit,
   onAskDelete,
+  onOpenFocusWindow,
 }: {
   title: string;
   items: CountdownTask[];
@@ -760,6 +797,7 @@ function Section({
   onToggleDone: (id: string) => void;
   onEdit: (item: CountdownTask) => void;
   onAskDelete: (item: CountdownTask) => void;
+  onOpenFocusWindow: (item: CountdownTask) => void;
 }) {
   if (items.length === 0) return null;
 
@@ -777,6 +815,7 @@ function Section({
         const expanded = !!expandedIds[item.id];
         const phase = getTaskPhase(item, nowMs);
         const statusClass = getStatusClass(item, nowMs);
+        const focusDisabled = phase === "delayed";
 
         return (
           <div
@@ -838,8 +877,21 @@ function Section({
                 </div>
               </div>
 
-              <div className={styles.rowRight}>
+              <div className={styles.clockCol}>
                 <CountdownClock item={item} nowMs={nowMs} />
+              </div>
+
+              <div className={styles.iconCol}>
+                <button
+                    type="button"
+                    className={styles.postItButton}
+                    onClick={() => onOpenFocusWindow(item)}
+                    aria-label={`Open focus window for ${item.title}`}
+                    title={focusDisabled ? "Focus window is only available before or during the task" : "Open focus window"}
+                    disabled={focusDisabled}
+                    >
+                    <PostItIcon />
+                </button>
 
                 <button
                   type="button"
@@ -871,18 +923,21 @@ function Section({
                   <div>
                     <strong>Status:</strong> {getStatusText(item, nowMs)}
                   </div>
-                  {item.completedAtISO ? (
-                    <div>
-                      <strong>Completed:</strong>{" "}
-                      {formatDateTimeExact(item.completedAtISO)}
-                    </div>
-                  ) : null}
                 </div>
 
                 <div className={styles.detailActions}>
                   <button className={styles.btn} type="button" onClick={() => onEdit(item)}>
                     Edit
                   </button>
+                    <button
+                    className={styles.btn}
+                    type="button"
+                    onClick={() => onOpenFocusWindow(item)}
+                    disabled={focusDisabled}
+                    title={focusDisabled ? "Focus window is only available before or during the task" : "Open Focus Window"}
+                    >
+                    Open Focus Window
+                    </button>
                 </div>
               </div>
             ) : null}
@@ -894,8 +949,6 @@ function Section({
 }
 
 export default function CountdownTasksClient() {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
   const [state, setState] = useState<CountdownTasksStateV1>(DEFAULT_STATE);
   const [mounted, setMounted] = useState(false);
   const [nowMs, setNowMs] = useState(0);
@@ -964,7 +1017,7 @@ export default function CountdownTasksClient() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = window.setTimeout(() => setToast(""), 1600);
+    const t = window.setTimeout(() => setToast(""), 2200);
     return () => window.clearTimeout(t);
   }, [toast]);
 
@@ -984,6 +1037,34 @@ export default function CountdownTasksClient() {
       date.getDate()
     )}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
   }
+
+    function openFocusWindow(item: CountdownTask) {
+    const phase = getTaskPhase(item, Date.now());
+
+    if (phase === "delayed") {
+        setToast("Focus window is only available before or during the task.");
+        return;
+    }
+
+    try {
+        const encoded = encodeTaskForFocus(item);
+        const url = `/countdown-tasks/focus?payload=${encodeURIComponent(encoded)}`;
+        const win = window.open(
+        url,
+        "_blank",
+        "popup=yes,width=380,height=230,resizable=yes,scrollbars=no"
+        );
+
+        if (!win) {
+        setToast("Popup blocked. Please allow popups for this site.");
+        return;
+        }
+
+        win.focus();
+    } catch {
+        setToast("Could not open focus window.");
+    }
+    }
 
   function openAdd() {
     setModalError("");
@@ -1209,7 +1290,7 @@ export default function CountdownTasksClient() {
   return (
     <PageShell
       title="Countdown Tasks"
-      subtitle="Track tasks with start windows, deadlines, live countdowns, and delayed status."
+      subtitle="Track tasks with start windows, deadlines, live countdowns, delayed status, and optional detached focus windows."
     >
       <main className="mx-auto max-w-5xl px-6 py-6">
         <section aria-hidden="true" className="sr-only">
@@ -1223,7 +1304,7 @@ export default function CountdownTasksClient() {
             <li>After the task starts, it shows time remaining until the deadline.</li>
             <li>If the deadline passes before completion, the task becomes delayed.</li>
             <li>Delayed tasks stay at the top until marked done or deleted.</li>
-            <li>Data is stored locally and can be exported or imported as JSON.</li>
+            <li>Focus windows open in separate draggable popup windows.</li>
           </ul>
         </section>
 
@@ -1241,7 +1322,9 @@ export default function CountdownTasksClient() {
               <button
                 className={styles.btn}
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() =>
+                  document.getElementById("countdown-import-input")?.click()
+                }
               >
                 Import
               </button>
@@ -1255,7 +1338,7 @@ export default function CountdownTasksClient() {
               </button>
 
               <input
-                ref={fileInputRef}
+                id="countdown-import-input"
                 type="file"
                 accept="application/json"
                 className="hidden"
@@ -1263,7 +1346,7 @@ export default function CountdownTasksClient() {
                   const f = e.target.files?.[0];
                   if (!f) return;
                   await importTasks(f);
-                  e.target.value = "";
+                  e.currentTarget.value = "";
                 }}
               />
             </div>
@@ -1287,6 +1370,11 @@ export default function CountdownTasksClient() {
             </div>
           </div>
 
+          {/* <div className={styles.helperBanner}>
+            Keep the main page simple. Open a Focus Window for tasks you want to
+            watch on another screen.
+          </div> */}
+
           {state.items.length === 0 ? (
             <div className={styles.card}>
               <div className={styles.empty}>
@@ -1305,6 +1393,7 @@ export default function CountdownTasksClient() {
                 onToggleDone={toggleDone}
                 onEdit={openEdit}
                 onAskDelete={setDeleteTarget}
+                onOpenFocusWindow={openFocusWindow}
               />
 
               <Section
@@ -1317,6 +1406,7 @@ export default function CountdownTasksClient() {
                 onToggleDone={toggleDone}
                 onEdit={openEdit}
                 onAskDelete={setDeleteTarget}
+                onOpenFocusWindow={openFocusWindow}
               />
             </>
           )}

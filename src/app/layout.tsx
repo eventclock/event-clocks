@@ -1,11 +1,8 @@
-
-
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
+import LayoutChrome from "./LayoutChrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -64,7 +61,6 @@ export default function RootLayout({
           flexDirection: "column",
         }}
       >
-        {/* Background wash (outside only) */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-20">
           <div className="absolute inset-0 bg-white dark:bg-black" />
           <div className="absolute -top-40 left-1/2 h-[32rem] w-[60rem] -translate-x-1/2 rounded-full bg-violet-200/15 blur-3xl dark:bg-violet-500/8" />
@@ -72,24 +68,7 @@ export default function RootLayout({
           <div className="absolute top-72 -right-40 h-[26rem] w-[26rem] rounded-full bg-emerald-200/12 blur-3xl dark:bg-emerald-500/8" />
         </div>
 
-        {/* Main Surface Layer */}
-        <div className="relative z-10 flex min-h-screen flex-col">
-          
-          {/* Header */}
-          <div style={{ width: "100%", padding: "12px 24px 0" }}>
-            <Header />
-          </div>
-
-          {/* Content container with clean surface */}
-          <main className="flex-1 bg-white dark:bg-black">
-            {children}
-          </main>
-
-          {/* Footer */}
-          <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 24px 24px" }}>
-            <Footer />
-          </div>
-        </div>
+        <LayoutChrome>{children}</LayoutChrome>
       </body>
     </html>
   );

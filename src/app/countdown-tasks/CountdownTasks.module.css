@@ -72,6 +72,16 @@
   color: rgba(0, 0, 0, 0.82);
 }
 
+.helperBanner {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.68);
+  color: rgba(0, 0, 0, 0.58);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.04);
+}
+
 .card {
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 8px;
@@ -86,7 +96,7 @@
     0 14px 34px rgba(0, 0, 0, 0.05),
     0 0 0 1px rgba(127, 29, 29, 0.12);
   background:
-    linear-gradient(135deg, rgba(127, 29, 29, 0.08), rgba(255,255,255,0) 72%),
+    linear-gradient(135deg, rgba(127, 29, 29, 0.08), rgba(255, 255, 255, 0) 72%),
     rgba(255, 255, 255, 0.75);
 }
 
@@ -96,7 +106,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 18px;
   align-items: center;
   padding: 14px 16px;
@@ -137,7 +147,7 @@
   height: 26px;
   flex: 0 0 26px;
   border-radius: 4px;
-  border: 1px solid rgba(0, 0, 0, 0.10);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   background: rgba(255, 255, 255, 0.78);
   font-size: 14px;
   line-height: 1;
@@ -188,12 +198,18 @@
   color: rgba(22, 101, 52, 0.9);
 }
 
-.rowRight {
+.clockCol {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+.iconCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 .clockWrap {
@@ -291,27 +307,30 @@
   color: rgba(0, 0, 0, 0.34);
 }
 
+.postItButton,
 .trashButton {
   height: 34px;
-  min-width: 34px;
-  padding: 0 8px;
-  border-radius: 4px;
+  width: 34px;
+  padding: 0;
+  border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.12);
-  background: transparent;
-  color: rgba(0, 0, 0, 0.34);
-  line-height: 1;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(0, 0, 0, 0.42);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
 }
 
+.postItButton:hover,
 .trashButton:hover {
-  background: transparent;
-  border-color: rgba(0, 0, 0, 0.22);
-  color: rgba(0, 0, 0, 0.56);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.62);
 }
 
+.postItSvg,
 .trashSvg {
   width: 18px;
   height: 18px;
@@ -386,6 +405,16 @@
   color: rgba(0, 0, 0, 0.7);
 }
 
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkboxRow input[type="checkbox"] {
+  margin-top: 1px;
+}
+
 .modalBack {
   position: fixed;
   inset: 0;
@@ -449,31 +478,31 @@
 
 .pastelBlue {
   background:
-    linear-gradient(135deg, rgba(191, 219, 254, 0.22), rgba(255,255,255,0) 72%),
+    linear-gradient(135deg, rgba(191, 219, 254, 0.22), rgba(255, 255, 255, 0) 72%),
     rgba(255, 255, 255, 0.74);
 }
 
 .pastelPink {
   background:
-    linear-gradient(135deg, rgba(251, 207, 232, 0.22), rgba(255,255,255,0) 72%),
+    linear-gradient(135deg, rgba(251, 207, 232, 0.22), rgba(255, 255, 255, 0) 72%),
     rgba(255, 255, 255, 0.74);
 }
 
 .pastelMint {
   background:
-    linear-gradient(135deg, rgba(187, 247, 208, 0.20), rgba(255,255,255,0) 72%),
+    linear-gradient(135deg, rgba(187, 247, 208, 0.2), rgba(255, 255, 255, 0) 72%),
     rgba(255, 255, 255, 0.74);
 }
 
 .pastelGold {
   background:
-    linear-gradient(135deg, rgba(253, 230, 138, 0.20), rgba(255,255,255,0) 72%),
+    linear-gradient(135deg, rgba(253, 230, 138, 0.2), rgba(255, 255, 255, 0) 72%),
     rgba(255, 255, 255, 0.74);
 }
 
 .pastelLavender {
   background:
-    linear-gradient(135deg, rgba(221, 214, 254, 0.22), rgba(255,255,255,0) 72%),
+    linear-gradient(135deg, rgba(221, 214, 254, 0.22), rgba(255, 255, 255, 0) 72%),
     rgba(255, 255, 255, 0.74);
 }
 
@@ -506,14 +535,14 @@
   flex: 1;
   background: linear-gradient(
     to right,
-    rgba(0, 0, 0, 0.10),
+    rgba(0, 0, 0, 0.1),
     rgba(0, 0, 0, 0.03)
   );
 }
 
 .sectionBadge {
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  background: rgba(255, 255, 255, 0.70);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.7);
   color: rgba(0, 0, 0, 0.58);
   border-radius: 999px;
   min-width: 34px;
@@ -570,7 +599,7 @@
   width: 34px;
   height: 34px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.10);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   padding: 0;
   cursor: pointer;
   position: relative;
@@ -650,7 +679,13 @@
     grid-template-columns: 1fr;
   }
 
-  .rowRight {
+  .clockCol {
+    justify-content: flex-start;
+  }
+
+  .iconCol {
+    flex-direction: row;
+    align-items: center;
     justify-content: flex-start;
   }
 
@@ -691,4 +726,11 @@
     height: 30px;
     font-size: 11px;
   }
+}
+
+
+.postItButton:disabled,
+.btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
 }
