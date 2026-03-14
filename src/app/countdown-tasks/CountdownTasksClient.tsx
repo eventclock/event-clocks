@@ -815,7 +815,7 @@ function Section({
         const expanded = !!expandedIds[item.id];
         const phase = getTaskPhase(item, nowMs);
         const statusClass = getStatusClass(item, nowMs);
-        const focusDisabled = phase === "delayed";
+        const focusDisabled = phase === "delayed" || phase === "done";;
 
         return (
           <div
