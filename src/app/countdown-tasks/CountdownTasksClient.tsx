@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef} from "react";
 import PageShell from "@/components/PageShell";
 import styles from "./CountdownTasks.module.css";
 
@@ -726,8 +726,8 @@ function InfoModal({
         </p>
 
         <p>
-            Your tasks are stored locally in your browser on this device. You can export
-            and import them as JSON.
+            Your tasks are stored locally in your browser on this device. To keep a
+  copy, you can <strong>save a backup</strong> or restore tasks using JSON.
         </p>
         </div>
       </div>
@@ -1258,23 +1258,31 @@ export default function CountdownTasksClient() {
     try {
       localStorage.setItem(LS_EXPORT_SIG_KEY, sig);
     } catch {}
-    setToast("Exported.");
+    setToast("Saved.");
   }
 
   async function importTasks(file: File) {
     try {
-      const parsed = await readJsonFile(file);
-      if (parsed?.tool !== "countdown-tasks") throw new Error("Invalid file.");
-      setState(sanitizeState(parsed));
-      setLastExportSig("");
-      try {
+        const parsed = await readJsonFile(file);
+
+        if (parsed?.tool !== "countdown-tasks") {
+        throw new Error("Invalid backup file.");
+        }
+
+        const nextState = sanitizeState(parsed);
+        setState(nextState);
+
+        setLastExportSig("");
+        try {
         localStorage.setItem(LS_EXPORT_SIG_KEY, "");
-      } catch {}
-      setToast("Imported.");
+        } catch {}
+
+        setToast("Backup restored.");
     } catch (err: any) {
-      setToast(err?.message || "Import failed.");
+        console.error("Import error:", err);
+        setToast(err?.message || "Restore failed.");
     }
-  }
+    }
 
   function resetEverything() {
     try {
@@ -1286,6 +1294,7 @@ export default function CountdownTasksClient() {
     setShowResetConfirm(false);
     setToast("Reset.");
   }
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <PageShell
@@ -1316,17 +1325,15 @@ export default function CountdownTasksClient() {
               </button>
 
               <button className={styles.btn} type="button" onClick={exportTasks}>
-                Export
+                Save Backup
               </button>
 
               <button
                 className={styles.btn}
                 type="button"
-                onClick={() =>
-                  document.getElementById("countdown-import-input")?.click()
-                }
-              >
-                Import
+                onClick={() => fileInputRef.current?.click()}
+                >
+                Restore Backup
               </button>
 
               <button
@@ -1338,17 +1345,28 @@ export default function CountdownTasksClient() {
               </button>
 
               <input
+                ref={fileInputRef}
                 id="countdown-import-input"
                 type="file"
                 accept="application/json"
                 className="hidden"
                 onChange={async (e) => {
-                  const f = e.target.files?.[0];
-                  if (!f) return;
-                  await importTasks(f);
-                  e.currentTarget.value = "";
+                    const input = e.target as HTMLInputElement;
+                    const file = input.files?.[0] ?? null;
+
+                    // Clear immediately so the same file can be selected again later
+                    input.value = "";
+
+                    if (!file) return;
+
+                    try {
+                    await importTasks(file);
+                    } catch (err) {
+                    console.error("Restore failed:", err);
+                    setToast("Restore failed.");
+                    }
                 }}
-              />
+                />
             </div>
 
             <div className={styles.actions}>
@@ -1363,7 +1381,7 @@ export default function CountdownTasksClient() {
               </button>
 
               {!isExportCurrent && state.items.length > 0 ? (
-                <span className={styles.badge}>Not exported</span>
+                <span className={styles.badge}>Not saved</span>
               ) : null}
 
               {toast ? <span className={styles.badge}>{toast}</span> : null}
