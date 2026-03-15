@@ -666,12 +666,15 @@ export default function CruiseTimelineClient() {
   const [flashTaskId, setFlashTaskId] = useState<string>("");
 
   const [state, setState] = useState<CruisePlanStateV1>(DEFAULT_STATE);
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
   const [toast, setToast] = useState("");
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [openRemark, setOpenRemark] = useState<Record<string, boolean>>({});
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     try {
@@ -744,7 +747,7 @@ export default function CruiseTimelineClient() {
   }
 
   const sailing = useMemo(() => parseISODateLocal(state.sailingDateISO), [state.sailingDateISO]);
-  const today = useMemo(() => (mounted ? startOfToday() : new Date(2000,0,1)), [mounted]);
+  const today = useMemo(() => startOfToday(), []);
   const daysToGo = useMemo(() => (sailing ? daysBetween(today, sailing) : 0), [today, sailing]);
 
   const cruiseStart = sailing;
@@ -901,10 +904,7 @@ export default function CruiseTimelineClient() {
 
   const leftMonthStart = useMemo(() => {
     const m = parseMonthISO(state.ui.calendarMonthISO);
-    if (m) return m;
-    if (!mounted) return new Date(2000,0,1);
-    const t0=startOfToday();
-    return new Date(t0.getFullYear(), t0.getMonth(), 1);
+    return m ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   }, [state.ui.calendarMonthISO]);
   const leftGrid = useMemo(() => getMonthGrid(leftMonthStart), [leftMonthStart]);
 
@@ -1133,6 +1133,17 @@ export default function CruiseTimelineClient() {
 
   return (
     <PageShell title="Cruise Plan" subtitle="A timeline to keep everything on track before you sail.">
+      {!mounted ? (
+        <div className={styles.wrap}>
+          <div className="mx-auto max-w-5xl space-y-4">
+            <div className={styles.card}>
+              <div className={styles.sectionTitle}>Loading cruise planner…</div>
+              <div className={styles.muted}>Preparing your timeline and calendar.</div>
+            </div>
+          </div>
+        </div>
+      ) : (
+      <>
       <div className={styles.wrap}>
         <div className="mx-auto max-w-5xl space-y-4">
           {/* Top bar */}
@@ -1708,6 +1719,8 @@ export default function CruiseTimelineClient() {
             ) : null}
         </div>
         ) : null}
+      </>
+      )}
     </PageShell>
     
     
