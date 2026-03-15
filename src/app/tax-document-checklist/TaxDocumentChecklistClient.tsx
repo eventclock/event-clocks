@@ -202,8 +202,9 @@ function Pill({ tone, children }: { tone: Tone; children: React.ReactNode }) {
   );
 }
 
-function statusToneForForm(received: boolean, endISO: string) {
+function statusToneForForm(received: boolean, endISO: string, mounted: boolean) {
   if (received) return "ok" as const;
+  if (!mounted) return "neutral" as const;
 
   const today = startOfToday();
   const end = parseISODateLocal(endISO);
@@ -211,11 +212,8 @@ function statusToneForForm(received: boolean, endISO: string) {
 
   const ms = 24 * 60 * 60 * 1000;
   const days = Math.round((end.getTime() - today.getTime()) / ms);
-  // If past typical end date, it’s likely already available.
-  if (days < 0) return "late" as const;
 
-  // We intentionally *do not* show a separate “coming soon” label anymore.
-  // We keep a softer "warn" tone for <= 7 days if you want subtle visual hinting.
+  if (days < 0) return "late" as const;
   if (days <= 7) return "warn" as const;
 
   return "neutral" as const;
@@ -296,6 +294,7 @@ export default function TaxDocumentChecklistClient() {
 
   const [state, setState] = useState<TaxDocChecklistStateV1>(DEFAULT_STATE);
   const [toast, setToast] = useState("");
+  const [mounted, setMounted] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [importYearNote, setImportYearNote] = useState<string>("");
   const [search, setSearch] = useState("");
@@ -313,6 +312,10 @@ export default function TaxDocumentChecklistClient() {
     } catch {
       setState(sanitizeState(DEFAULT_STATE));
     }
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -422,12 +425,16 @@ export default function TaxDocumentChecklistClient() {
     return expectedForms.reduce((acc, f) => {
       const received = !!state.checklist[f.id]?.received;
       if (received) return acc;
-      const tone = statusToneForForm(false, f.availability.endISO);
+      const tone = statusToneForForm(false, f.availability.endISO, mounted);
       return acc + (tone === "late" ? 1 : 0);
     }, 0);
-  }, [expectedForms, state.checklist]);
+  }, [expectedForms, state.checklist, mounted]);
 
-  const deadlineDays = useMemo(() => daysUntil(FILING_DEADLINE_ISO), []);
+  // const deadlineDays = useMemo(() => daysUntil(FILING_DEADLINE_ISO), []);
+  const deadlineDays = useMemo(() => {
+    if (!mounted) return null;
+    return daysUntil(FILING_DEADLINE_ISO);
+  }, [mounted]);
   const deadlineTone: Tone = useMemo(() => {
     if (deadlineDays === null) return "neutral";
     if (deadlineDays < 0) return "late";
@@ -787,7 +794,7 @@ export default function TaxDocumentChecklistClient() {
             ) : (
               filteredForms.map((f) => {
                 const received = !!state.checklist[f.id]?.received;
-                const tone = statusToneForForm(received, f.availability.endISO);
+                const tone = statusToneForForm(received, f.availability.endISO, mounted);
 
                 const statusLabel = received
                   ? "Received"
