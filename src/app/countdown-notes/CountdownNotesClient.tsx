@@ -318,8 +318,8 @@ function CountdownClock({
 
   return (
     <div
-      className={styles.clockWrap}
-      aria-label={parts.isPast ? "Time since target" : "Time until target"}
+    className={`${styles.clockWrap} ${parts.isPast ? styles.clockWrapPast : ""}`}
+    aria-label={parts.isPast ? "Time since target" : "Time until target"}
     >
       <div className={styles.clockLabelsInline}>
         DAYS : HOURS : MINUTES : SECONDS
@@ -502,7 +502,7 @@ function InfoModal({
           </p>
 
           <p>
-            Your data is stored locally in your browser on this device. You can export your countdown notes as a JSON backup and import them later.
+            Your data is stored locally in your browser on this device. You can save a backup of your countdown notes and restore them later.
           </p>
         </div>
       </div>
@@ -855,7 +855,7 @@ export default function CountdownNotesClient() {
     try {
       localStorage.setItem(LS_EXPORT_SIG_KEY, sig);
     } catch {}
-    setToast("Exported.");
+    setToast("Saved.");
   }
 
   async function importNotes(file: File) {
@@ -867,9 +867,9 @@ export default function CountdownNotesClient() {
       try {
         localStorage.setItem(LS_EXPORT_SIG_KEY, "");
       } catch {}
-      setToast("Imported.");
+      setToast("Restored.");
     } catch (err: any) {
-      setToast(err?.message || "Import failed.");
+      setToast(err?.message || "Restore failed.");
     }
   }
 
@@ -906,7 +906,7 @@ export default function CountdownNotesClient() {
             <li>Upcoming countdown notes are shown separately from expired ones.</li>
             <li>Pinned items stay first within their section.</li>
             <li>Each note shows a live days, hours, minutes, and seconds countdown.</li>
-            <li>Data is stored locally in the browser and can be exported or imported as JSON.</li>
+            <li>Data is stored locally in the browser and can be saved or restored as JSON.</li>
           </ul>
         </section>
 
@@ -918,7 +918,7 @@ export default function CountdownNotesClient() {
               </button>
 
               <button className={styles.btn} type="button" onClick={exportNotes}>
-                Export
+                Save Backup
               </button>
 
               <button
@@ -926,7 +926,7 @@ export default function CountdownNotesClient() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
               >
-                Import
+                Restore Backup
               </button>
 
               <button
@@ -976,7 +976,7 @@ export default function CountdownNotesClient() {
             </button>
 
               {!isExportCurrent && state.items.length > 0 ? (
-                <span className={styles.badge}>Not exported</span>
+                <span className={styles.badge}>Not saved</span>
               ) : null}
               {toast ? <span className={styles.badge}>{toast}</span> : null}
 
@@ -1036,7 +1036,7 @@ export default function CountdownNotesClient() {
 
               <div className={styles.formGrid}>
                 <div className={styles.helper}>
-                  This clears the saved countdown notes on this device. Export first
+                  This clears the saved countdown notes on this device. Save first
                   if you want a backup.
                 </div>
 

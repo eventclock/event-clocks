@@ -206,6 +206,22 @@
   background: rgba(255, 255, 255, 0.11);
 }
 
+.clockWrapPast .tile {
+  background: rgba(127, 29, 29, 0.92);
+  border-color: rgba(69, 10, 10, 0.6);
+  box-shadow:
+    0 8px 18px rgba(127, 29, 29, 0.16),
+    0 0 0 1px rgba(127, 29, 29, 0.1);
+}
+
+.clockWrapPast .colon {
+  color: rgba(127, 29, 29, 0.48);
+}
+
+.clockWrapPast .clockLabelsInline {
+  color: rgba(127, 29, 29, 0.72);
+}
+
 .colon {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
