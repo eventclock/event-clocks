@@ -79,6 +79,19 @@ function ToolCard({
 export default function HomePage() {
   return (
     <main className="relative mx-auto max-w-5xl px-6 py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Event Clocks",
+            url: "https://www.event-clocks.com",
+            description:
+              "Planning tools for time zones, meetings, countdowns, deadlines, and date calculations.",
+          }),
+        }}
+      />
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-white dark:bg-black" />
         <div className="absolute -top-40 left-1/2 h-[30rem] w-[60rem] -translate-x-1/2 rounded-full bg-violet-200/20 blur-3xl dark:bg-violet-500/10" />

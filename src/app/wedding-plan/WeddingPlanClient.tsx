@@ -729,7 +729,7 @@ function StartHereModal({ open, onClose }: { open: boolean; onClose: () => void 
               <b>Profiles:</b> Checkboxes add extra tasks for common cases. They don’t remove the core timeline.
             </div>
             <div>
-              <b>Export / Import:</b> Export saves a backup file. Import restores it later. Reset clears this device.
+              <b>Save / Restore:</b> Save a backup file and restore it later. Reset clears this device.
             </div>
             <div>
               <b>Short timeline:</b> If your wedding is soon, many early tasks will show as red — that’s expected.
@@ -988,7 +988,7 @@ export default function WeddingPlanClient() {
     try {
       localStorage.setItem(LS_EXPORT_SIG_KEY, sig);
     } catch {}
-    setToast("Exported.");
+    setToast("Saved.");
   }
 
   async function importPlan(file: File) {
@@ -1000,9 +1000,9 @@ export default function WeddingPlanClient() {
       try {
         localStorage.setItem(LS_EXPORT_SIG_KEY, "");
       } catch {}
-      setToast("Imported.");
+      setToast("Restored.");
     } catch (err: any) {
-      setToast(err?.message || "Import failed.");
+      setToast(err?.message || "Restore failed.");
     }
   }
 
@@ -1316,7 +1316,7 @@ export default function WeddingPlanClient() {
   return (
     <div className="min-h-screen wedding-bg">
       <PageShell
-  title="Wedding Planner"
+  title="Wedding Plan"
   subtitle="A simple wedding timeline built around your actual date."
 >
         {/* Always-mounted modals (content is in DOM) */}
@@ -1377,8 +1377,8 @@ export default function WeddingPlanClient() {
                 </button>
 
                 {!isExportCurrent ? (
-                    <span style={statusPill} title="You have changes that haven’t been exported yet" aria-label="Not exported status">
-                    Not exported
+                    <span style={statusPill} title="You have changes that haven’t been saved yet" aria-label="Not saved status">
+                    Not saved
                     </span>
                 ) : null}
 
@@ -1396,11 +1396,11 @@ export default function WeddingPlanClient() {
                 </label>
 
                 <button className={styles.btn + " " + styles.btnIcon} onClick={exportPlan} type="button" title="Export">
-                  Export ⬇️
+                  Save Backup ⬇️
                 </button>
 
-                <button className={styles.btn + " " + styles.btnIcon} onClick={() => fileInputRef.current?.click()} type="button" title="Import">
-                  Import ⬆️
+                <button className={styles.btn + " " + styles.btnIcon} onClick={() => fileInputRef.current?.click()} type="button" title="Restore">
+                  Restore Backup ⬆️
                 </button>
 
                 <button className={styles.btn + " " + styles.btnIcon} onClick={() => setShowResetConfirm(true)} type="button" title="Reset">

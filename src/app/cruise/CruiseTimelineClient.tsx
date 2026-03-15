@@ -73,7 +73,7 @@ const LS_KEY = "eventclocks:cruise-plan:v1";
 const LS_EXPORT_SIG_KEY = "eventclocks:cruise-plan:lastExportSig:v1";
 
 const DEFAULT_DESCRIPTION =
-  "Tasks are sorted by Due by date. Expand tasks to check off items and add remarks. Export for a portable backup.";
+  "Tasks are sorted by Due by date. Expand tasks to check off items and add remarks. Save for a portable backup.";
 
 function startOfToday() {
   const d = new Date();
@@ -798,7 +798,7 @@ export default function CruiseTimelineClient() {
     try {
       localStorage.setItem(LS_EXPORT_SIG_KEY, sig);
     } catch {}
-    setToast("Exported.");
+    setToast("Saved.");
   }
 
   async function importPlan(file: File) {
@@ -813,9 +813,9 @@ export default function CruiseTimelineClient() {
       try {
         localStorage.setItem(LS_EXPORT_SIG_KEY, "");
       } catch {}
-      setToast("Imported.");
+      setToast("Restored.");
     } catch (err: any) {
-      setToast(err?.message || "Import failed.");
+      setToast(err?.message || "Restore failed.");
     }
   }
 
@@ -1167,9 +1167,9 @@ export default function CruiseTimelineClient() {
               {!isExportCurrent ? (
                 <span
                   className="ml-2 rounded-full border border-black-200/70 bg-yellow-50/70 px-2 py-0.5 text-[11px] font-semibold text-yellow-900/70"
-                  title="You have changes that haven’t been exported yet"
+                  title="You have changes that haven’t been saved yet"
                 >
-                  Not exported
+                  Not saved
                 </span>
               ) : null}
 
@@ -1189,17 +1189,17 @@ export default function CruiseTimelineClient() {
                 
             </label>
 
-              <button className={styles.btn + " " + styles.btnIcon} onClick={exportPlan} type="button" title="Export">
-               Export ⬇️
+              <button className={styles.btn + " " + styles.btnIcon} onClick={exportPlan} type="button" title="Save">
+               Save Backup ⬇️
               </button>
 
               <button
                 className={styles.btn + " " + styles.btnIcon}
                 onClick={() => fileInputRef.current?.click()}
                 type="button"
-                title="Import"
+                title="Restore"
               >
-               Import ⬆️
+               Restore Backup ⬆️
               </button>
 
               <button
@@ -1690,7 +1690,7 @@ export default function CruiseTimelineClient() {
                 <li>Work top-to-bottom: earliest Due by dates first.</li>
                 <li>Expand tasks to check off items and add remarks.</li>
                 <li>Use calendar items to jump to the task in the list.</li>
-                <li>Export ⬇️ for a portable backup.</li>
+                <li>Save ⬇️ for a portable backup.</li>
                 </ul>
             </div>
             ) : null}

@@ -1045,7 +1045,7 @@ export default function MeetingOverlapClient() {
         }
         .pastelMint {
           background:
-            linear-gradient(135deg, rgba(187, 247, 208, 0.2), rgba(187, 247, 208, 0.1) 72%),
+            linear-gradient(135deg, rgba(187, 247, 208, 0.2), rgba(187, 247, 208, 0.05) 72%),
             rgba(255, 255, 255, 0.41);
         }
       `}</style>
