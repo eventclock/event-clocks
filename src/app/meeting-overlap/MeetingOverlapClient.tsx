@@ -1043,6 +1043,11 @@ export default function MeetingOverlapClient() {
           border: 1px solid rgba(0, 0, 0, 0.06);
           background: transparent;
         }
+        .pastelMint {
+          background:
+            linear-gradient(135deg, rgba(187, 247, 208, 0.2), rgba(187, 247, 208, 0.1) 72%),
+            rgba(255, 255, 255, 0.41);
+        }
       `}</style>
 
       <div className="space-y-3">
@@ -1435,12 +1440,12 @@ export default function MeetingOverlapClient() {
                         key={r.utcISO}
                         className={[
                           "border-b border-slate-100",
-                          ok ? "bg-green-50/75" : zebra,
-                          ok ? "shadow-[inset_5px_0_0_0_rgba(20,83,45,0.95)]" : "",
+                          ok ? "pastelMint" : zebra,
+                          // ok ? "shadow-[inset_5px_0_0_0_rgba(20,83,45,0.95)]" : "",
                           ok ? "text-slate-900" : "text-slate-600",
                         ].join(" ")}
                       >
-                        {tzList.map((t) => {
+                        {tzList.map((t, colIdx) => {
                           const tzName = (t.tz || "").trim();
                           const local = r.locals.find((x) => x.tz === tzName);
                           const showWeekend = !!local?.isWeekend;
@@ -1448,7 +1453,14 @@ export default function MeetingOverlapClient() {
                           const qualifies = !!local?.qualifies;
 
                           return (
-                            <td key={t.id} className={["px-2.5 py-2 whitespace-nowrap", ok ? "font-semibold" : ""].join(" ")}>
+                            <td
+                              key={t.id}
+                              className={[
+                                "px-2.5 py-2 whitespace-nowrap",
+                                ok ? "font-semibold" : "",
+                                ok && colIdx === 0 ? "border-l-[6px] border-l-green-900" : "",
+                              ].join(" ")}
+                            >
                               <div className={qualifies ? "mo-qual-box" : "mo-noqual-box"}>
                                 <span>{local?.localLabel ?? "—"}</span>
                                 {showWeekend && <span className={weekendBadge}>{local?.weekdayShort}</span>}
