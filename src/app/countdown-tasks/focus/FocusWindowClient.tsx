@@ -502,8 +502,8 @@ async function toggleAlarm() {
 
   if (!task) {
     return (
-      <main className={styles.viewport}>
-        <div className={`${styles.note} ${styles.blue}`}>
+      <main className={`${styles.viewport} ${styles.blue}`}>
+        <div className={`${styles.note} `}>
           <div className={styles.inner}>
             <button
               className={`${styles.iconButton} ${styles.closeFloating}`}

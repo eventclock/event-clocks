@@ -1,32 +1,25 @@
 .viewport {
-  min-height: 100vh;
-  margin: 0;
-  padding: 10px;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(
-      circle at top,
-      rgba(255, 244, 170, 0.18),
-      rgba(24, 23, 15, 0.22)
-    ),
-    radial-gradient(
-      circle at bottom,
-      rgba(255, 244, 170, 0.18),
-      rgba(65, 62, 40, 0.22)
-    );
+
+  padding: 24px;
 }
 
 .note {
-  position: relative;
-  width: min(100%, 360px);
-  border-radius: 18px;
+  width: min(420px, 100%);
+  padding: 24px;
+  border-radius: 20px;
+
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(6px);
+
   box-shadow:
-    0 14px 28px rgba(16, 24, 40, 0.10),
-    0 1px 0 rgba(255, 255, 255, 0.55) inset;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  overflow: hidden;
+    0 20px 40px rgba(0,0,0,0.15);
 }
 
 .inner {
@@ -130,13 +123,13 @@
 }
 
 .clockWrapDelayed .tile {
-  /* background: rgba(127, 29, 29, 0.92); */
+  background: rgba(127, 29, 29, 0.92);
   border-color: rgba(69, 10, 10, 0.6);
 }
 
-.clockWrapDone .tile {
+/* .clockWrapDone .tile {
   background: rgba(55, 65, 81, 0.78);
-}
+} */
 
 .clockLabelsInline {
   font-size: 9px;
@@ -256,10 +249,23 @@
 }
 
 .noteEnded {
- border-color: rgba(127, 29, 29, 0.55);
+  border-color: rgba(127, 29, 29, 0.62);
   box-shadow:
-    0 14px 34px rgba(0, 0, 0, 0.05),
-    0 0 0 1px rgba(127, 29, 29, 0.12);
+    0 18px 40px rgba(127, 29, 29, 0.497),
+    0 0 0 2px rgba(127, 29, 29, 0.445);
+}
+
+.noteEnded .headline {
+  color: rgba(127, 29, 29, 0.9);
+}
+
+.noteEnded .subline {
+  color: rgba(127, 29, 29, 0.88);
+  font-weight: 700;
+}
+
+.noteEnded .metaStack {
+  color: rgba(127, 29, 29, 0.78);
 }
 
 .noteDone {

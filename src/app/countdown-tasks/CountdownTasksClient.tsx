@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, useRef} from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import PageShell from "@/components/PageShell";
 import styles from "./CountdownTasks.module.css";
 
@@ -35,6 +35,7 @@ type EditDraft = {
   note: string;
   startISO: string;
   endISO: string;
+  durationMinutes: string;
   done: boolean;
   pinned: boolean;
   color: TaskColor;
@@ -91,9 +92,7 @@ function sanitizeState(raw: any): CountdownTasksStateV1 {
           completedAtISO:
             typeof it?.completedAtISO === "string" ? it.completedAtISO : undefined,
         }))
-        .filter(
-          (it: CountdownTask) => it.title.trim() && it.startISO && it.endISO
-        )
+        .filter((it: CountdownTask) => it.title.trim() && it.startISO && it.endISO)
     : [];
 
   return {
@@ -152,6 +151,35 @@ function formatDateTimeExact(value: string) {
     minute: "2-digit",
     second: "2-digit",
   });
+}
+
+function getFinishedTimingText(item: CountdownTask) {
+  const finished = parseDateTimeLocal(item.completedAtISO || "");
+  const scheduledEnd = parseDateTimeLocal(item.endISO);
+
+  if (!finished) return "Not recorded";
+  if (!scheduledEnd) return "Finished";
+
+  const diffMs = finished.getTime() - scheduledEnd.getTime();
+  const absMs = Math.abs(diffMs);
+  const minutesLateOrEarly = Math.round(absMs / 60000);
+
+  if (minutesLateOrEarly <= 0) return "Finished on time";
+
+  if (diffMs < 0) {
+    return `Finished ${minutesLateOrEarly} minute${
+      minutesLateOrEarly === 1 ? "" : "s"
+    } early`;
+  }
+
+  return `Finished ${minutesLateOrEarly} minute${
+    minutesLateOrEarly === 1 ? "" : "s"
+  } late`;
+}
+
+function getCompletedStatusText(item: CountdownTask, nowMs: number) {
+  if (!item.done) return getStatusText(item, nowMs);
+  return getFinishedTimingText(item);
 }
 
 function pad2(n: number) {
@@ -413,6 +441,56 @@ function encodeTaskForFocus(item: CountdownTask) {
   return "";
 }
 
+function getDurationMinutes(startISO: string, endISO: string) {
+  const start = parseDateTimeLocal(startISO);
+  const end = parseDateTimeLocal(endISO);
+  if (!start || !end) return 0;
+  return Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+}
+
+function addMinutesToLocalDateTime(value: string, minutes: number) {
+  const base = parseDateTimeLocal(value);
+  if (!base) return "";
+  const next = new Date(base.getTime() + minutes * 60000);
+  return `${next.getFullYear()}-${pad2(next.getMonth() + 1)}-${pad2(
+    next.getDate()
+  )}T${pad2(next.getHours())}:${pad2(next.getMinutes())}`;
+}
+
+function getLatestTaskEnd(items: CountdownTask[]) {
+  if (!items.length) return null;
+
+  let latest: CountdownTask | null = null;
+  let latestMs = -Infinity;
+
+  for (const item of items) {
+    const endMs = parseDateTimeLocal(item.endISO)?.getTime();
+    if (endMs != null && endMs > latestMs) {
+      latestMs = endMs;
+      latest = item;
+    }
+  }
+
+  return latest;
+}
+
+function getLastCreatedTask(items: CountdownTask[]) {
+  if (!items.length) return null;
+
+  let latest: CountdownTask | null = null;
+  let latestCreatedMs = -Infinity;
+
+  for (const item of items) {
+    const createdMs = parseDateTimeLocal(item.createdAtISO)?.getTime() ?? 0;
+    if (createdMs > latestCreatedMs) {
+      latestCreatedMs = createdMs;
+      latest = item;
+    }
+  }
+
+  return latest;
+}
+
 function TrashIcon() {
   return (
     <svg
@@ -547,9 +625,12 @@ function EditModal({
     { value: "lavender", label: "Soft lavender", className: styles.swatchLavender },
   ];
 
+  const durationValue =
+    draft.durationMinutes === "" ? "" : String(Math.max(0, Number(draft.durationMinutes) || 0));
+
   return (
     <div className={styles.modalBack}>
-      <div className={styles.modalCard}>
+      <div className={`${styles.modalCard} `}>
         <div className={styles.modalHeader}>
           <div className={styles.modalTitle}>
             {draft.id ? "Edit task" : "Add task"}
@@ -586,6 +667,35 @@ function EditModal({
             />
           </label>
 
+          <label className={styles.label}>
+            <div className={styles.labelText}>Length of task (minutes)</div>
+            <input
+              className={styles.input}
+              type="number"
+              min="1"
+              step="1"
+              inputMode="numeric"
+              value={durationValue}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^\d]/g, "");
+                setDraft((d) => {
+                  if (raw === "") {
+                    return { ...d, durationMinutes: "" };
+                  }
+
+                  const mins = Math.max(1, parseInt(raw, 10) || 0);
+
+                  return {
+                    ...d,
+                    durationMinutes: String(mins),
+                    endISO: d.startISO ? addMinutesToLocalDateTime(d.startISO, mins) : d.endISO,
+                  };
+                });
+              }}
+              placeholder="30"
+            />
+          </label>
+
           <div className={styles.twoCol}>
             <label className={styles.label}>
               <div className={styles.labelText}>Start date and time</div>
@@ -594,7 +704,17 @@ function EditModal({
                 type="datetime-local"
                 value={draft.startISO}
                 onChange={(e) =>
-                  setDraft((d) => ({ ...d, startISO: e.target.value }))
+                  setDraft((d) => {
+                    const nextStart = e.target.value;
+                    const mins = Math.max(1, parseInt(d.durationMinutes || "30", 10) || 30);
+
+                    return {
+                      ...d,
+                      startISO: nextStart,
+                      endISO: nextStart ? addMinutesToLocalDateTime(nextStart, mins) : d.endISO,
+                      durationMinutes: String(mins),
+                    };
+                  })
                 }
               />
             </label>
@@ -606,10 +726,23 @@ function EditModal({
                 type="datetime-local"
                 value={draft.endISO}
                 onChange={(e) =>
-                  setDraft((d) => ({ ...d, endISO: e.target.value }))
+                  setDraft((d) => {
+                    const nextEnd = e.target.value;
+                    const mins = getDurationMinutes(d.startISO, nextEnd);
+
+                    return {
+                      ...d,
+                      endISO: nextEnd,
+                      durationMinutes: mins > 0 ? String(mins) : d.durationMinutes,
+                    };
+                  })
                 }
               />
             </label>
+          </div>
+
+          <div className={styles.helper}>
+            You can edit either the task length or the end time. Changing one will update the other.
           </div>
 
           <div className={styles.label}>
@@ -690,7 +823,7 @@ function InfoModal({
       aria-modal="true"
       aria-labelledby="countdown-tasks-info-title"
     >
-      <div className={styles.modalCard}>
+      <div className={`${styles.modalCard} `}>
         <div className={styles.modalHeader}>
           <h2 id="countdown-tasks-info-title" className={styles.modalTitle}>
             About this tool
@@ -702,33 +835,33 @@ function InfoModal({
         </div>
 
         <div className={styles.aboutContent}>
-        <p>
+          <p>
             <strong>Countdown Tasks</strong> helps you track tasks with a start time and an
             end deadline.
-        </p>
+          </p>
 
-        <p>
+          <p>
             Before a task begins, the timer shows how long until it starts. Once the
             start time is reached, the countdown automatically switches to time
             remaining until the end.
-        </p>
+          </p>
 
-        <p>
+          <p>
             If the timer reaches zero and the task is not marked complete, it becomes
             <strong> delayed</strong> and stays at the top until you mark it done or
             delete it.
-        </p>
+          </p>
 
-        <p>
+          <p>
             For tasks you want to monitor more closely, you can open a detached
             <strong> Focus Window</strong>. It keeps a single countdown visible in a
             clean sticky-note style view using the same task color.
-        </p>
+          </p>
 
-        <p>
+          <p>
             Your tasks are stored locally in your browser on this device. To keep a
-  copy, you can <strong>save a backup</strong> or restore tasks using JSON.
-        </p>
+            copy, you can <strong>save a backup</strong> or restore tasks using JSON.
+          </p>
         </div>
       </div>
     </div>
@@ -748,7 +881,7 @@ function DeleteConfirmModal({
 
   return (
     <div className={styles.modalBack}>
-      <div className={styles.modalCard}>
+      <div className={`${styles.modalCard} ${styles.pastelGold}`}>
         <div className={styles.modalHeader}>
           <div className={styles.modalTitle}>Delete task?</div>
         </div>
@@ -815,7 +948,8 @@ function Section({
         const expanded = !!expandedIds[item.id];
         const phase = getTaskPhase(item, nowMs);
         const statusClass = getStatusClass(item, nowMs);
-        const focusDisabled = phase === "delayed" || phase === "done";;
+        const focusDisabled = phase === "delayed" || phase === "done";
+        const durationMinutes = getDurationMinutes(item.startISO, item.endISO);
 
         return (
           <div
@@ -868,11 +1002,13 @@ function Section({
                   </div>
 
                   <div className={styles.meta}>
+                    <span>{durationMinutes} min</span>
+                    <span>•</span>
                     <span>Start: {formatDateTimeLong(item.startISO)}</span>
                     <span>•</span>
                     <span>End: {formatDateTimeLong(item.endISO)}</span>
                     <span>•</span>
-                    <span className={statusClass}>{getStatusText(item, nowMs)}</span>
+                    <span className={statusClass}>{getCompletedStatusText(item, nowMs)}</span>
                   </div>
                 </div>
               </div>
@@ -883,14 +1019,18 @@ function Section({
 
               <div className={styles.iconCol}>
                 <button
-                    type="button"
-                    className={styles.postItButton}
-                    onClick={() => onOpenFocusWindow(item)}
-                    aria-label={`Open focus window for ${item.title}`}
-                    title={focusDisabled ? "Focus window is only available before or during the task" : "Open focus window"}
-                    disabled={focusDisabled}
-                    >
-                    <PostItIcon />
+                  type="button"
+                  className={styles.postItButton}
+                  onClick={() => onOpenFocusWindow(item)}
+                  aria-label={`Open focus window for ${item.title}`}
+                  title={
+                    focusDisabled
+                      ? "Focus window is only available before or during the task"
+                      : "Open focus window"
+                  }
+                  disabled={focusDisabled}
+                >
+                  <PostItIcon />
                 </button>
 
                 <button
@@ -915,29 +1055,42 @@ function Section({
 
                 <div className={styles.detailMeta}>
                   <div>
+                    <strong>Length:</strong> {durationMinutes} minute
+                    {durationMinutes === 1 ? "" : "s"}
+                  </div>
+                  <div>
                     <strong>Start:</strong> {formatDateTimeExact(item.startISO)}
                   </div>
                   <div>
                     <strong>End:</strong> {formatDateTimeExact(item.endISO)}
                   </div>
-                  <div>
-                    <strong>Status:</strong> {getStatusText(item, nowMs)}
-                  </div>
+                  {item.done && item.completedAtISO ? (
+                    <div>
+                        <strong>Finished:</strong> {formatDateTimeExact(item.completedAtISO)}
+                    </div>
+                    ) : null}
+                    <div>
+                    <strong>Status:</strong> {getCompletedStatusText(item, nowMs)}
+                    </div>
                 </div>
 
                 <div className={styles.detailActions}>
                   <button className={styles.btn} type="button" onClick={() => onEdit(item)}>
                     Edit
                   </button>
-                    <button
+                  <button
                     className={styles.btn}
                     type="button"
                     onClick={() => onOpenFocusWindow(item)}
                     disabled={focusDisabled}
-                    title={focusDisabled ? "Focus window is only available before or during the task" : "Open Focus Window"}
-                    >
+                    title={
+                      focusDisabled
+                        ? "Focus window is only available before or during the task"
+                        : "Open Focus Window"
+                    }
+                  >
                     Open Focus Window
-                    </button>
+                  </button>
                 </div>
               </div>
             ) : null}
@@ -963,11 +1116,13 @@ export default function CountdownTasksClient() {
     note: "",
     startISO: "",
     endISO: "",
+    durationMinutes: "30",
     done: false,
     pinned: false,
     color: "blue",
   });
   const [lastExportSig, setLastExportSig] = useState("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     try {
@@ -1038,48 +1193,56 @@ export default function CountdownTasksClient() {
     )}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
   }
 
-    function openFocusWindow(item: CountdownTask) {
+  function openFocusWindow(item: CountdownTask) {
     const phase = getTaskPhase(item, Date.now());
 
     if (phase === "delayed") {
-        setToast("Focus window is only available before or during the task.");
-        return;
+      setToast("Focus window is only available before or during the task.");
+      return;
     }
 
     try {
-        const encoded = encodeTaskForFocus(item);
-        const url = `/countdown-tasks/focus?payload=${encodeURIComponent(encoded)}`;
-        const win = window.open(
+      const encoded = encodeTaskForFocus(item);
+      const url = `/countdown-tasks/focus?payload=${encodeURIComponent(encoded)}`;
+      const win = window.open(
         url,
         "_blank",
-        "popup=yes,width=380,height=230,resizable=yes,scrollbars=no"
-        );
+        "popup=yes,width=380,height=240,resizable=yes,scrollbars=no"
+      );
 
-        if (!win) {
+      if (!win) {
         setToast("Popup blocked. Please allow popups for this site.");
         return;
-        }
+      }
 
-        win.focus();
+      win.focus();
     } catch {
-        setToast("Could not open focus window.");
+      setToast("Could not open focus window.");
     }
-    }
+  }
 
   function openAdd() {
     setModalError("");
 
-    const start = new Date();
-    start.setMinutes(start.getMinutes() + 30);
+    // const latestTask = getLatestTaskEnd(state.items);
+    // const defaultStart = latestTask
+    //   ? parseDateTimeLocal(latestTask.endISO) ?? new Date()
+    //   : new Date();
 
-    const end = new Date(start.getTime());
-    end.setHours(end.getHours() + 1);
+    const lastCreatedTask = getLastCreatedTask(state.items);
+    const defaultStart = lastCreatedTask
+    ? parseDateTimeLocal(lastCreatedTask.endISO) ?? new Date()
+    : new Date();
+
+    const start = new Date(defaultStart.getTime());
+    const end = new Date(start.getTime() + 30 * 60000);
 
     setDraft({
       title: "",
       note: "",
       startISO: makeLocalDateTimeValue(start),
       endISO: makeLocalDateTimeValue(end),
+      durationMinutes: "30",
       done: false,
       pinned: false,
       color: "blue",
@@ -1096,6 +1259,7 @@ export default function CountdownTasksClient() {
       note: item.note,
       startISO: item.startISO,
       endISO: item.endISO,
+      durationMinutes: String(getDurationMinutes(item.startISO, item.endISO)),
       done: item.done,
       pinned: item.pinned,
       color: item.color,
@@ -1112,6 +1276,7 @@ export default function CountdownTasksClient() {
     const title = draft.title.trim();
     const start = parseDateTimeLocal(draft.startISO);
     const end = parseDateTimeLocal(draft.endISO);
+    const duration = Math.max(1, parseInt(draft.durationMinutes || "0", 10) || 0);
 
     setModalError("");
 
@@ -1122,6 +1287,11 @@ export default function CountdownTasksClient() {
 
     if (!start || !end) {
       setModalError("Valid start and end dates are required.");
+      return;
+    }
+
+    if (!duration) {
+      setModalError("Task length must be at least 1 minute.");
       return;
     }
 
@@ -1263,26 +1433,26 @@ export default function CountdownTasksClient() {
 
   async function importTasks(file: File) {
     try {
-        const parsed = await readJsonFile(file);
+      const parsed = await readJsonFile(file);
 
-        if (parsed?.tool !== "countdown-tasks") {
+      if (parsed?.tool !== "countdown-tasks") {
         throw new Error("Invalid backup file.");
-        }
+      }
 
-        const nextState = sanitizeState(parsed);
-        setState(nextState);
+      const nextState = sanitizeState(parsed);
+      setState(nextState);
 
-        setLastExportSig("");
-        try {
+      setLastExportSig("");
+      try {
         localStorage.setItem(LS_EXPORT_SIG_KEY, "");
-        } catch {}
+      } catch {}
 
-        setToast("Backup restored.");
+      setToast("Backup restored.");
     } catch (err: any) {
-        console.error("Import error:", err);
-        setToast(err?.message || "Restore failed.");
+      console.error("Import error:", err);
+      setToast(err?.message || "Restore failed.");
     }
-    }
+  }
 
   function resetEverything() {
     try {
@@ -1294,7 +1464,6 @@ export default function CountdownTasksClient() {
     setShowResetConfirm(false);
     setToast("Reset.");
   }
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <PageShell
@@ -1332,7 +1501,7 @@ export default function CountdownTasksClient() {
                 className={styles.btn}
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                >
+              >
                 Restore Backup
               </button>
 
@@ -1351,22 +1520,21 @@ export default function CountdownTasksClient() {
                 accept="application/json"
                 className="hidden"
                 onChange={async (e) => {
-                    const input = e.target as HTMLInputElement;
-                    const file = input.files?.[0] ?? null;
+                  const input = e.target as HTMLInputElement;
+                  const file = input.files?.[0] ?? null;
 
-                    // Clear immediately so the same file can be selected again later
-                    input.value = "";
+                  input.value = "";
 
-                    if (!file) return;
+                  if (!file) return;
 
-                    try {
+                  try {
                     await importTasks(file);
-                    } catch (err) {
+                  } catch (err) {
                     console.error("Restore failed:", err);
                     setToast("Restore failed.");
-                    }
+                  }
                 }}
-                />
+              />
             </div>
 
             <div className={styles.actions}>
@@ -1387,11 +1555,6 @@ export default function CountdownTasksClient() {
               {toast ? <span className={styles.badge}>{toast}</span> : null}
             </div>
           </div>
-
-          {/* <div className={styles.helperBanner}>
-            Keep the main page simple. Open a Focus Window for tasks you want to
-            watch on another screen.
-          </div> */}
 
           {state.items.length === 0 ? (
             <div className={styles.card}>
@@ -1449,7 +1612,7 @@ export default function CountdownTasksClient() {
 
         {showResetConfirm ? (
           <div className={styles.modalBack}>
-            <div className={styles.modalCard}>
+            <div className={`${styles.modalCard}`}>
               <div className={styles.modalHeader}>
                 <div className={styles.modalTitle}>Reset countdown tasks?</div>
               </div>
