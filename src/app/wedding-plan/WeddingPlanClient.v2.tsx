@@ -92,8 +92,7 @@ function toMonthISO(d: Date) {
 function parseMonthISO(iso: string) {
   return parseISODateLocal(iso);
 }
-function formatDateLong(d: Date, mounted: boolean) {
-  if (!mounted) return toISODate(d);
+function formatDateLong(d: Date) {
   return d.toLocaleDateString(undefined, {
     weekday: "short",
     year: "numeric",
@@ -183,7 +182,7 @@ function isBetweenInclusive(d: Date, start: Date, end: Date) {
 const DEFAULT_STATE: WeddingPlanStateV1 = {
   v: 1,
   tool: "wedding-plan",
-  weddingDateISO: "",
+  weddingDateISO: toISODate(addDays(startOfToday(), 365)),
 
   isFirstTime: true,
   isFaithTraditional: false,
@@ -194,25 +193,11 @@ const DEFAULT_STATE: WeddingPlanStateV1 = {
 
   ui: {
     expandedTasks: {},
-    calendarMonthISO: "",
+    calendarMonthISO: toMonthISO(new Date()),
     showCompleted: true,
     showCalendar: false,
   },
 };
-
-
-function buildClientDefaultState() {
-  const today = startOfToday();
-  return sanitizeState({
-    ...DEFAULT_STATE,
-    weddingDateISO: toISODate(addDays(today, 365)),
-    ui: {
-      ...DEFAULT_STATE.ui,
-      expandedTasks: {},
-      calendarMonthISO: toMonthISO(today),
-    },
-  });
-}
 
 function sanitizeState(raw: any): WeddingPlanStateV1 {
   const base = DEFAULT_STATE;
@@ -858,7 +843,6 @@ export default function WeddingPlanClient() {
 
   const [state, setState] = useState<WeddingPlanStateV1>(DEFAULT_STATE);
   const [toast, setToast] = useState("");
-  const [mounted, setMounted] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [openRemark, setOpenRemark] = useState<Record<string, boolean>>({});
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -897,8 +881,6 @@ export default function WeddingPlanClient() {
     };
 
   useEffect(() => {
-    setMounted(true);
-
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) {
@@ -910,14 +892,13 @@ export default function WeddingPlanClient() {
               ui: { ...(parsed.ui ?? {}), expandedTasks: {} }, // keep calm on load
             })
           );
-          return;
         }
+      } else {
+        setState(sanitizeState(DEFAULT_STATE));
       }
     } catch {
-      // ignore
+      setState(sanitizeState(DEFAULT_STATE));
     }
-
-    setState(buildClientDefaultState());
   }, []);
 
   useEffect(() => {
@@ -952,28 +933,16 @@ export default function WeddingPlanClient() {
     } catch {}
     setLastExportSig("");
     setOpenRemark({});
-    setState(buildClientDefaultState());
+    setState(sanitizeState(DEFAULT_STATE));
     setToast("Reset.");
   }
 
   const wedding = useMemo(() => parseISODateLocal(state.weddingDateISO), [state.weddingDateISO]);
-  const today = useMemo(() => {
-    if (!mounted) return null;
-    return startOfToday();
-  }, [mounted]);
-  const daysToGo = useMemo(() => {
-    if (!mounted || !wedding || !today) return 0;
-    return daysBetween(today, wedding);
-  }, [mounted, today, wedding]);
-  const isShortTimeline = useMemo(() => {
-    if (!mounted || !wedding || !today) return false;
-    return daysBetween(today, wedding) <= 120;
-  }, [mounted, today, wedding]);
+  const today = useMemo(() => startOfToday(), []);
+  const daysToGo = useMemo(() => (wedding ? daysBetween(today, wedding) : 0), [today, wedding]);
+  const isShortTimeline = useMemo(() => (wedding ? daysBetween(today, wedding) <= 120 : false), [today, wedding]);
 
-  const computedTasks = useMemo(() => {
-    if (!mounted || !state.weddingDateISO) return [];
-    return computeTasks(state);
-  }, [mounted, state]);
+  const computedTasks = useMemo(() => computeTasks(state), [state]);
 
   const tasksByDate = useMemo(() => {
     const map = new Map<string, ComputedTask[]>();
@@ -1114,15 +1083,8 @@ export default function WeddingPlanClient() {
 
   const leftMonthStart = useMemo(() => {
     const m = parseMonthISO(state.ui.calendarMonthISO);
-    if (m) return m;
-
-    if (!mounted) {
-      return new Date(2000, 0, 1);
-    }
-
-    const t = startOfToday();
-    return new Date(t.getFullYear(), t.getMonth(), 1);
-  }, [state.ui.calendarMonthISO, mounted]);
+    return m ?? new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  }, [state.ui.calendarMonthISO]);
   const leftGrid = useMemo(() => getMonthGrid(leftMonthStart), [leftMonthStart]);
 
   function MonthPanel({
@@ -1134,9 +1096,7 @@ export default function WeddingPlanClient() {
     grid: { weeks: Date[][] };
     onToday?: () => void;
   }) {
-    const title = mounted
-      ? monthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" })
-      : toMonthISO(monthStart).slice(0, 7);
+    const title = monthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
     const eventStart = wedding;
     const eventEnd = wedding;
@@ -1185,7 +1145,7 @@ export default function WeddingPlanClient() {
               const hasTasks = tasks.length > 0;
               const weddingDay = wedding ? sameDay(d, wedding) : false;
 
-              const todayISO = mounted ? toISODate(startOfToday()) : "";
+              const todayISO = toISODate(startOfToday());
               const isToday = inThisMonth && iso === todayISO;
 
               const isEventDay =
@@ -1356,7 +1316,7 @@ export default function WeddingPlanClient() {
   return (
     <div className="min-h-screen wedding-bg">
       <PageShell
-  title="Wedding Planner"
+  title="Wedding Plan"
   subtitle="A simple wedding timeline built around your actual date."
 >
         {/* Always-mounted modals (content is in DOM) */}
@@ -1566,7 +1526,7 @@ export default function WeddingPlanClient() {
                   {wedding ? (
                     <>
                       <span style={{ fontWeight: 900, color: "rgba(0,0,0,0.82)", fontSize: 14 }}>Wedding Date:</span>{" "}
-                      {formatDateLong(wedding, mounted)} •{" "}
+                      {formatDateLong(wedding)} •{" "}
                       <span
                         className={styles.badge}
                         style={{
@@ -1626,9 +1586,7 @@ export default function WeddingPlanClient() {
                   </button>
                   <div className={styles.calendarHeaderCenter} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontWeight: 800, color: "rgba(0,0,0,0.65)" }}>
-                      {mounted
-                      ? leftMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" })
-                      : toMonthISO(leftMonthStart).slice(0, 7)}
+                      {leftMonthStart.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
                     </span>
                   </div>
                   <button className={styles.btn} onClick={() => shiftCalendarMonth(1)} type="button">
@@ -1654,7 +1612,7 @@ export default function WeddingPlanClient() {
                 return (
                   <div key={dateISO} className={styles.card}>
                     <div className={styles.row} style={{ justifyContent: "space-between", marginBottom: 8 }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(0,0,0,0.75)" }}>{formatDateLong(date, mounted)}</div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: "rgba(0,0,0,0.75)" }}>{formatDateLong(date)}</div>
                       <div className={styles.muted}>Due by</div>
                     </div>
 
