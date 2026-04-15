@@ -323,6 +323,29 @@ export default function HomePage() {
               </svg>
             }
           />
+
+          <ToolCard
+            href="/smpte-timecode"
+            title="SMPTE Timecode"
+            desc="Convert SMPTE labels to real-time milliseconds across multiple frame rates, with drop-frame support."
+            badge="Utility"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M8 4v16M16 4v16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            }
+          />
         </div>
       </section>
 
