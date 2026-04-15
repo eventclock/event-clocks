@@ -313,8 +313,8 @@ export function convertSmpteToRealMilliseconds(
   }
 
   const option = getFrameRateOption(frameRateKey);
-  const interpretedSeparator = option.isDropFrame ? ";" : ":";
-  const value = {
+  const interpretedSeparator: ParsedSmpteTimecode["separator"] = option.isDropFrame ? ";" : ":";
+  const value: ParsedSmpteTimecode = {
     ...parsed.value,
     separator: interpretedSeparator,
   };
