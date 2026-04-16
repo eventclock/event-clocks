@@ -132,3 +132,9 @@ select {
       #fcf5ec 40%
     );
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-clock * {
+    transition: none !important;
+  }
+}
