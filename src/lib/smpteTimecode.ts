@@ -5,10 +5,15 @@ export type FrameRateKey =
   | "29.97 NDF"
   | "29.97 DF"
   | "30"
+  | "47.952"
+  | "48"
   | "50"
   | "59.94 NDF"
   | "59.94 DF"
-  | "60";
+  | "60"
+  | "100"
+  | "119.88"
+  | "120";
 
 export type FrameRateOption = {
   key: FrameRateKey;
@@ -112,6 +117,24 @@ export const FRAME_RATE_OPTIONS: FrameRateOption[] = [
     isDropFrame: false,
   },
   {
+    key: "47.952",
+    label: "47.952",
+    fpsNumerator: 48000,
+    fpsDenominator: 1001,
+    nominalFps: 48,
+    dropFrames: 0,
+    isDropFrame: false,
+  },
+  {
+    key: "48",
+    label: "48",
+    fpsNumerator: 48,
+    fpsDenominator: 1,
+    nominalFps: 48,
+    dropFrames: 0,
+    isDropFrame: false,
+  },
+  {
     key: "50",
     label: "50",
     fpsNumerator: 50,
@@ -144,6 +167,33 @@ export const FRAME_RATE_OPTIONS: FrameRateOption[] = [
     fpsNumerator: 60,
     fpsDenominator: 1,
     nominalFps: 60,
+    dropFrames: 0,
+    isDropFrame: false,
+  },
+  {
+    key: "100",
+    label: "100",
+    fpsNumerator: 100,
+    fpsDenominator: 1,
+    nominalFps: 100,
+    dropFrames: 0,
+    isDropFrame: false,
+  },
+  {
+    key: "119.88",
+    label: "119.88",
+    fpsNumerator: 120000,
+    fpsDenominator: 1001,
+    nominalFps: 120,
+    dropFrames: 0,
+    isDropFrame: false,
+  },
+  {
+    key: "120",
+    label: "120",
+    fpsNumerator: 120,
+    fpsDenominator: 1,
+    nominalFps: 120,
     dropFrames: 0,
     isDropFrame: false,
   },

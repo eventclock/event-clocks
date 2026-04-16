@@ -38,7 +38,7 @@ export default function Header() {
           <Section title="Time Tools">
             <MenuItem href="/timezone">Timezone Converter</MenuItem>
             <MenuItem href="/meeting-overlap">Meeting Overlap</MenuItem>
-            <MenuItem href="/smpte-timecode">SMPTE Timecode</MenuItem>
+            <MenuItem href="/smpte-timecode">Timecode Converter</MenuItem>
           </Section>
 
           <Divider />

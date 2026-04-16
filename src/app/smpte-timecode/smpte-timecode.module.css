@@ -1,7 +1,25 @@
 .shell {
+  --smpte-font-sans: var(--font-geist-sans), "Segoe UI", system-ui, sans-serif;
+  --smpte-font-mono: var(--font-geist-mono), "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+
   max-width: 1180px;
   margin: 0 auto;
   padding: 24px 24px 36px;
+  font-family: var(--smpte-font-sans);
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.hero {
+  padding: 18px 18px 20px;
+  border: 1px solid rgba(147, 197, 253, 0.12);
+  border-radius: 11px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(219, 234, 254, 0.42), transparent 34%),
+    linear-gradient(135deg, rgba(248, 251, 255, 0.96), rgba(248, 250, 252, 0.82));
+  box-shadow: 0 14px 36px rgba(147, 197, 253, 0.045);
 }
 
 .eyebrow {
@@ -24,7 +42,7 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: rgba(16, 185, 129, 0.8);
+  background: rgba(96, 165, 250, 0.64);
 }
 
 .title {
@@ -55,7 +73,7 @@
   background: rgba(255, 255, 255, 0.66);
   color: rgba(15, 23, 42, 0.72);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
@@ -74,7 +92,7 @@
   background: rgba(255, 255, 255, 0.66);
   color: rgba(15, 23, 42, 0.62);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
@@ -86,9 +104,9 @@
 }
 
 .panel {
-  margin-top: 18px;
+  margin-top: 16px;
   border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 18px;
+  border-radius: 9px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.94));
   box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
@@ -118,7 +136,7 @@
 
 .label {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(15, 23, 42, 0.74);
@@ -133,10 +151,10 @@
   min-height: 176px;
   resize: vertical;
   border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 12px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.92);
   padding: 11px 12px;
-  font: 600 12px/1.55 var(--font-mono);
+  font: 500 12px/1.55 var(--smpte-font-mono);
   color: rgba(15, 23, 42, 0.92);
 }
 
@@ -152,7 +170,7 @@
   gap: 12px;
   padding: 13px;
   border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 14px;
+  border-radius: 7px;
   background: rgba(255, 255, 255, 0.62);
 }
 
@@ -165,7 +183,7 @@
 .select,
 .deltaSelect {
   border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 9px;
+  border-radius: 5px;
   background: white;
   color: rgba(15, 23, 42, 0.9);
 }
@@ -184,7 +202,7 @@
   height: 34px;
   padding: 0 10px;
   font-size: 12px !important;
-  font-weight: 700;
+  font-weight: 650;
   flex: 1;
 }
 
@@ -192,7 +210,7 @@
   height: 30px;
   padding: 0 8px;
   font-size: 11px !important;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .headerMetricSelect {
@@ -200,7 +218,7 @@
   max-width: 82px;
   padding: 0 7px;
   font-size: 10px !important;
-  font-weight: 800;
+  font-weight: 650;
   flex: 0 0 82px;
 }
 
@@ -208,7 +226,7 @@
   height: 26px;
   padding: 0 7px;
   font-size: 10px !important;
-  font-weight: 700;
+  font-weight: 650;
   width: 100%;
 }
 
@@ -216,11 +234,11 @@
   height: 34px;
   padding: 0 11px;
   border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 9px;
+  border-radius: 5px;
   background: rgba(15, 23, 42, 0.92);
   color: white;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   cursor: pointer;
@@ -246,7 +264,7 @@
   background: rgba(226, 232, 240, 0.65);
   color: rgba(15, 23, 42, 0.8);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .chipMuted {
@@ -272,7 +290,7 @@
   min-width: max-content;
   overflow: visible;
   border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 14px;
+  border-radius: 7px;
   background: rgba(255, 255, 255, 0.6);
 }
 
@@ -392,11 +410,11 @@
   height: 22px;
   padding: 0;
   border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 7px;
+  border-radius: 4px;
   background: rgba(255, 255, 255, 0.9);
   color: rgba(15, 23, 42, 0.68);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   line-height: 1;
   cursor: pointer;
   flex: 0 0 auto;
@@ -415,7 +433,7 @@
 .columnTitle {
   margin-top: 6px;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 650;
   line-height: 1.35;
   color: rgba(15, 23, 42, 0.74);
 }
@@ -428,7 +446,7 @@
   display: block;
   margin-bottom: 3px;
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 650;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgba(15, 23, 42, 0.42);
@@ -438,7 +456,7 @@
   margin-top: 10px;
   min-height: 26px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 650;
   color: rgba(15, 23, 42, 0.38);
 }
 
@@ -462,13 +480,13 @@
 }
 
 .timecodeText {
-  font: 700 12px/1.35 var(--font-mono);
+  font: 600 12px/1.35 var(--smpte-font-mono);
   color: rgba(15, 23, 42, 0.92);
 }
 
 .inputPreview {
   margin-top: 3px;
-  font: 600 11px/1.35 var(--font-mono);
+  font: 500 11px/1.35 var(--smpte-font-mono);
   color: rgba(15, 23, 42, 0.64);
 }
 
@@ -485,7 +503,7 @@
   color: rgba(185, 28, 28, 0.95);
   font-size: 10px;
   line-height: 1.45;
-  font-weight: 700;
+  font-weight: 650;
 }
 
 .invalidRow .timecodeCell,
@@ -494,13 +512,13 @@
 }
 
 .primaryValue {
-  font: 800 12px/1.35 var(--font-mono);
+  font: 650 12px/1.35 var(--smpte-font-mono);
   color: rgba(15, 23, 42, 0.92);
 }
 
 .secondaryValue {
   margin-top: 3px;
-  font: 600 11px/1.35 var(--font-mono);
+  font: 500 11px/1.35 var(--smpte-font-mono);
   color: rgba(15, 23, 42, 0.66);
 }
 
@@ -509,7 +527,7 @@
   padding-top: 5px;
   border-top: 1px dashed rgba(15, 23, 42, 0.1);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 650;
   color: rgba(3, 105, 161, 0.82);
 }
 
@@ -521,7 +539,7 @@
 
 .infoEyebrow {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(15, 23, 42, 0.5);
@@ -550,7 +568,7 @@
 
 .faqItem {
   border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 12px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.62);
   padding: 10px 12px;
 }
@@ -558,7 +576,7 @@
 .faqQuestion {
   margin: 0;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   color: rgba(15, 23, 42, 0.82);
 }
 
@@ -603,7 +621,7 @@
   overflow: auto;
   transform: translate(-50%, -48%) scale(0.98);
   border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 18px;
+  border-radius: 9px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.96));
   box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
@@ -631,11 +649,11 @@
   height: 28px;
   padding: 0;
   border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 9px;
+  border-radius: 5px;
   background: rgba(255, 255, 255, 0.9);
   color: rgba(15, 23, 42, 0.68);
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 750;
   line-height: 1;
   cursor: pointer;
   flex: 0 0 auto;
@@ -653,6 +671,14 @@
 }
 
 @media (prefers-color-scheme: dark) {
+  .hero {
+    border-color: rgba(125, 211, 252, 0.16);
+    background:
+      radial-gradient(circle at 8% 0%, rgba(14, 165, 233, 0.16), transparent 36%),
+      linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.74));
+    box-shadow: 0 14px 36px rgba(14, 165, 233, 0.08);
+  }
+
   .eyebrow,
   .panel,
   .sideCard,

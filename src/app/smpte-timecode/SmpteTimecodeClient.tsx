@@ -47,8 +47,8 @@ type RowCell = {
 };
 
 const INPUT_METRIC_OPTIONS: { value: InputMetric; label: string; shortLabel: string }[] = [
-  { value: "smpte", label: "SMPTE", shortLabel: "SMPTE" },
   { value: "smpteFree", label: "SMPTE (No Rate)", shortLabel: "SMPTE" },
+  { value: "smpte", label: "SMPTE", shortLabel: "SMPTE" },
   { value: "frames", label: "Frames", shortLabel: "Frames" },
   { value: "milliseconds", label: "Milliseconds", shortLabel: "MS" },
 ];
@@ -79,9 +79,14 @@ const SIMPLIFIED_RATE_KEYS: FrameRateKey[] = [
   "25",
   "29.97 NDF",
   "30",
+  "47.952",
+  "48",
   "50",
   "59.94 NDF",
   "60",
+  "100",
+  "119.88",
+  "120",
 ];
 
 const FAQ_ITEMS = [
@@ -143,9 +148,9 @@ type PersistedState = {
 
 function getDefaultState(): PersistedState {
   return {
-    inputMetric: "smpte",
+    inputMetric: "smpteFree",
     sourceRateKey: "24",
-    input: DEFAULT_INPUT_BY_METRIC.smpte,
+    input: DEFAULT_INPUT_BY_METRIC.smpteFree,
     columns: INITIAL_COLUMNS,
     nextMetric: "formattedTime",
     nextColumnKey: "29.97 DF",
@@ -570,9 +575,9 @@ function InfoOverlay({
 }
 
 export default function SmpteTimecodeClient() {
-  const [inputMetric, setInputMetric] = useState<InputMetric>("smpte");
+  const [inputMetric, setInputMetric] = useState<InputMetric>("smpteFree");
   const [sourceRateKey, setSourceRateKey] = useState<FrameRateKey>("24");
-  const [input, setInput] = useState(DEFAULT_INPUT_BY_METRIC.smpte);
+  const [input, setInput] = useState(DEFAULT_INPUT_BY_METRIC.smpteFree);
   const [columns, setColumns] = useState<Column[]>(INITIAL_COLUMNS);
   const [nextMetric, setNextMetric] = useState<ColumnMetric>("formattedTime");
   const [nextColumnKey, setNextColumnKey] = useState<FrameRateKey>("29.97 DF");
@@ -767,9 +772,10 @@ export default function SmpteTimecodeClient() {
     setNextColumnKey(defaults.nextColumnKey);
     setColumnCounter(defaults.columnCounter);
     setDraggedColumnId(null);
+    setHasLoadedPersistedState(true);
 
     if (typeof window !== "undefined") {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
     }
   }
 
@@ -777,37 +783,34 @@ export default function SmpteTimecodeClient() {
     <main className={styles.shell}>
       <InfoOverlay open={infoOpen} onClose={() => setInfoOpen(false)} />
 
-      <div className={styles.eyebrow}>
-        <span className={styles.eyebrowDot} />
-        Precision Tool
-      </div>
+      <div className={styles.hero}>
+        <h1 className={styles.title}>Timecode Converter</h1>
+        <p className={styles.subtitle}>
+          Convert between SMPTE timecode, frame counts, milliseconds, and real-time durations across
+          multiple frame rates, including drop-frame and non-drop-frame formats.
+        </p>
 
-      <h1 className={styles.title}>SMPTE Timecode Converter &amp; Frame Rate Comparison Tool</h1>
-      <p className={styles.subtitle}>
-        Convert between SMPTE timecode, frame counts, milliseconds, and real-time durations across
-        multiple frame rates, including drop-frame and non-drop-frame formats.
-      </p>
+        <div className={styles.heroActions}>
+          <button
+            type="button"
+            className={styles.infoTrigger}
+            onClick={() => setInfoOpen(true)}
+            aria-label="Open info and FAQ"
+            title="Info / FAQ"
+          >
+            Info / FAQ
+          </button>
 
-      <div className={styles.heroActions}>
-        <button
-          type="button"
-          className={styles.infoTrigger}
-          onClick={() => setInfoOpen(true)}
-          aria-label="Open info and FAQ"
-          title="Info / FAQ"
-        >
-          Info / FAQ
-        </button>
-
-        <button
-          type="button"
-          className={styles.secondaryAction}
-          onClick={handleReset}
-          aria-label="Reset converter"
-          title="Reset"
-        >
-          Reset
-        </button>
+          <button
+            type="button"
+            className={styles.secondaryAction}
+            onClick={handleReset}
+            aria-label="Reset converter"
+            title="Reset"
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
       <section className={styles.panel}>

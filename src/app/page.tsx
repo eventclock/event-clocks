@@ -326,8 +326,8 @@ export default function HomePage() {
 
           <ToolCard
             href="/smpte-timecode"
-            title="SMPTE Timecode"
-            desc="Convert SMPTE labels to real-time milliseconds across multiple frame rates, with drop-frame support."
+            title="Timecode Converter"
+            desc="Convert timecode, frame counts, milliseconds, and real-time durations across multiple frame rates."
             badge="Utility"
             icon={
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-80">
