@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import WebAppSchema from "@/components/WebAppSchema";
 import HolidayLongWeekendPlannerClient from "./HolidayLongWeekendPlannerClient";
 
@@ -77,7 +78,9 @@ export default function HolidayLongWeekendPlannerPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <HolidayLongWeekendPlannerClient />
+      <Suspense fallback={null}>
+        <HolidayLongWeekendPlannerClient />
+      </Suspense>
     </>
   );
 }
