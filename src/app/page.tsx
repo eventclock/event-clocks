@@ -69,6 +69,13 @@ const tools = [
     position: "md:right-[12%] md:bottom-[12%]",
   },
   {
+    href: "/holiday-long-weekend-planner",
+    title: "Holiday Planner",
+    desc: "See upcoming holidays, countdowns, long weekends, and bridge-day opportunities.",
+    badge: "Holidays",
+    position: "md:right-[29%] md:bottom-[18%]",
+  },
+  {
     href: "/smpte-timecode",
     title: "Timecode",
     desc: "Convert SMPTE, frames, milliseconds, and real-time durations.",

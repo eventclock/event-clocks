@@ -53,6 +53,7 @@ export default function Header() {
 
           <Section title="Calculators">
             <MenuItem href="/business-days">Business Days</MenuItem>
+            <MenuItem href="/holiday-long-weekend-planner">Holiday + Long Weekend Planner</MenuItem>
           </Section>
 
           <Divider />
