@@ -18,6 +18,13 @@ type LoadState = "idle" | "loading" | "ready" | "empty" | "error";
 
 const LS_KEY = "eventclocks:holiday-long-weekend-planner:v1";
 
+function isPublicHoliday(input: unknown) {
+  if (!input || typeof input !== "object") return false;
+
+  const types = (input as { types?: unknown }).types;
+  return Array.isArray(types) && types.some((type) => type === "Public");
+}
+
 function getCurrentYear() {
   return new Date().getFullYear();
 }
@@ -72,7 +79,10 @@ function isValidYear(value: number) {
 
 function tagClassName(tag: PlannedHoliday["tags"][number]) {
   if (tag === "Long weekend") return "longWeekend";
+  if (tag === "4-day weekend") return "fourDayWeekend";
   if (tag === "Potential 4-day weekend") return "bridgeDay";
+  if (tag === "Potential 9-day break") return "nineDayBreak";
+  if (tag === "Potential year-end break") return "yearEndBreak";
   if (tag === "Weekend holiday") return "weekendHoliday";
   return "midweekHoliday";
 }
@@ -268,25 +278,46 @@ export default function HolidayLongWeekendPlannerClient() {
       setError("");
 
       try {
-        const response = await fetch(
-          `/api/holidays?country=${encodeURIComponent(countryCode)}&year=${encodeURIComponent(year)}`
-        );
+        async function fetchPublicHolidays(targetYear: number) {
+          const response = await fetch(
+            `/api/holidays?country=${encodeURIComponent(countryCode)}&year=${encodeURIComponent(
+              targetYear
+            )}`
+          );
 
-        if (!response.ok) {
-          throw new Error(`Holiday data returned HTTP ${response.status}`);
+          if (!response.ok) {
+            throw new Error(`Holiday data returned HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          return Array.isArray(data)
+            ? data
+                .filter(isPublicHoliday)
+                .map(normalizeHoliday)
+                .filter((holiday): holiday is NonNullable<typeof holiday> => !!holiday)
+            : [];
         }
 
-        const data = await response.json();
+        const normalized = await fetchPublicHolidays(year);
+        let planningContext = normalized;
 
-        const normalized = Array.isArray(data)
-          ? data
-              .map(normalizeHoliday)
-              .filter((holiday): holiday is NonNullable<typeof holiday> => !!holiday)
-          : [];
+        if (year < 2100) {
+          try {
+            const nextYearHolidays = await fetchPublicHolidays(year + 1);
+            planningContext = [...normalized, ...nextYearHolidays];
+          } catch {
+            planningContext = normalized;
+          }
+        }
 
         if (cancelled) return;
 
-        const planned = planHolidays(uniqueHolidays(normalized), today);
+        const planned = planHolidays(
+          uniqueHolidays(normalized),
+          today,
+          uniqueHolidays(planningContext)
+        );
         const mergedByDate = mergeHolidaysByDate(planned);
 
         setHolidays(mergedByDate);
@@ -309,14 +340,7 @@ export default function HolidayLongWeekendPlannerClient() {
 
   const { upcoming, past } = useMemo(() => splitPastAndUpcoming(holidays), [holidays]);
   const summary = useMemo(() => deriveHolidaySummary(holidays), [holidays]);
-
-  const longWeekendsLeft = useMemo(() => {
-    return upcoming.filter((holiday) => holiday.tags.includes("Long weekend")).length;
-  }, [upcoming]);
-
-  const bridgeDaysLeft = useMemo(() => {
-    return upcoming.filter((holiday) => holiday.tags.includes("Potential 4-day weekend")).length;
-  }, [upcoming]);
+  const upcomingSummary = useMemo(() => deriveHolidaySummary(upcoming), [upcoming]);
 
   const nextHolidayDetail = summary.nextHoliday
     ? `${formatDate(summary.nextHoliday.date)} · ${countdownLabel(
@@ -440,13 +464,24 @@ export default function HolidayLongWeekendPlannerClient() {
         />
         <StatCard
           label="Long weekends left"
-          value={String(longWeekendsLeft)}
-          detail="Monday or Friday holidays still ahead"
+          value={String(upcomingSummary.longWeekendCount)}
+          detail="3-day breaks"
+        />
+        <StatCard
+          label="4-day weekends left"
+          value={String(upcomingSummary.fourDayWeekendCount)}
+          detail={
+            upcomingSummary.yearEndBreakCount > 0
+              ? `${upcomingSummary.yearEndBreakCount} year-end`
+              : upcomingSummary.nineDayBreakCount > 0
+                ? `${upcomingSummary.nineDayBreakCount} stretchable`
+              : "Adjacent pairs"
+          }
         />
         <StatCard
           label="Bridge days left"
-          value={String(bridgeDaysLeft)}
-          detail="Tuesday or Thursday holidays still ahead"
+          value={String(upcomingSummary.bridgeDayCount)}
+          detail="Tue/Thu holidays"
         />
       </section>
 
@@ -504,9 +539,11 @@ export default function HolidayLongWeekendPlannerClient() {
         <article className={styles.infoBlock}>
           <h2>How the long weekend tags work</h2>
           <p>
-            Holidays on Monday or Friday are marked as long weekends. Holidays on Tuesday or
-            Thursday are marked as potential 4-day weekends because one bridge day may connect the
-            holiday to a weekend.
+            Holidays on Monday or Friday are marked as long weekends. Adjacent Monday-Tuesday or
+            Thursday-Friday holiday pairs are marked as 4-day weekends, with a potential 9-day break
+            cue when taking three surrounding weekdays could extend the time off. Late-December
+            holidays also look ahead to New Year&apos;s Day when checking year-end break potential.
+            Standalone Tuesday or Thursday holidays remain potential 4-day weekends.
           </p>
         </article>
 

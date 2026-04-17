@@ -1,4 +1,4 @@
-import { compareYYYYMMDD, parseYYYYMMDDToUTCDate } from "./dateUtils";
+import { addDaysUTC, compareYYYYMMDD, parseYYYYMMDDToUTCDate, toYYYYMMDD_UTC } from "./dateUtils";
 
 export type Holiday = {
   name: string;
@@ -7,7 +7,10 @@ export type Holiday = {
 
 export type HolidayTag =
   | "Long weekend"
+  | "4-day weekend"
   | "Potential 4-day weekend"
+  | "Potential 9-day break"
+  | "Potential year-end break"
   | "Weekend holiday"
   | "Midweek holiday";
 
@@ -23,7 +26,10 @@ export type HolidaySummary = {
   nextHoliday: PlannedHoliday | null;
   holidaysLeft: number;
   longWeekendCount: number;
+  fourDayWeekendCount: number;
   bridgeDayCount: number;
+  nineDayBreakCount: number;
+  yearEndBreakCount: number;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -55,17 +61,48 @@ export function countdownInDays(date: string, today: string): number {
   return Math.round((target - start) / DAY_MS);
 }
 
-export function getHolidayTags(date: string): HolidayTag[] {
-  const day = parseYYYYMMDDToUTCDate(date).getUTCDay();
-
-  if (day === 1 || day === 5) return ["Long weekend"];
-  if (day === 2 || day === 4) return ["Potential 4-day weekend"];
-  if (day === 0 || day === 6) return ["Weekend holiday"];
-
-  return ["Midweek holiday"];
+function addDaysYYYYMMDD(date: string, days: number): string {
+  return toYYYYMMDD_UTC(addDaysUTC(parseYYYYMMDDToUTCDate(date), days));
 }
 
-export function planHolidays(holidays: Holiday[], today: string): PlannedHoliday[] {
+export function getHolidayTags(date: string, holidayDates: Set<string> = new Set()): HolidayTag[] {
+  const day = parseYYYYMMDDToUTCDate(date).getUTCDay();
+  const previousDate = addDaysYYYYMMDD(date, -1);
+  const nextDate = addDaysYYYYMMDD(date, 1);
+  const year = parseYYYYMMDDToUTCDate(date).getUTCFullYear();
+  const newYearsDay = `${year + 1}-01-01`;
+  const isLateDecember = date >= `${year}-12-24` && date <= `${year}-12-31`;
+  const hasNewYearContext = isLateDecember && holidayDates.has(newYearsDay);
+
+  const isFourDayWeekendCluster =
+    (day === 1 && holidayDates.has(nextDate)) ||
+    (day === 2 && holidayDates.has(previousDate)) ||
+    (day === 4 && holidayDates.has(nextDate)) ||
+    (day === 5 && holidayDates.has(previousDate));
+
+  if (isFourDayWeekendCluster) {
+    return ["4-day weekend", hasNewYearContext ? "Potential year-end break" : "Potential 9-day break"];
+  }
+
+  const tags: HolidayTag[] = [];
+
+  if (day === 1 || day === 5) tags.push("Long weekend");
+  else if (day === 2 || day === 4) tags.push("Potential 4-day weekend");
+  else if (day === 0 || day === 6) tags.push("Weekend holiday");
+  else tags.push("Midweek holiday");
+
+  if (hasNewYearContext) tags.push("Potential year-end break");
+
+  return tags;
+}
+
+export function planHolidays(
+  holidays: Holiday[],
+  today: string,
+  holidayDateContext: Holiday[] = holidays
+): PlannedHoliday[] {
+  const holidayDates = new Set(holidayDateContext.map((holiday) => holiday.date));
+
   return sortHolidays(holidays).map((holiday) => {
     const date = parseYYYYMMDDToUTCDate(holiday.date);
     const weekdayIndex = date.getUTCDay();
@@ -77,7 +114,7 @@ export function planHolidays(holidays: Holiday[], today: string): PlannedHoliday
       weekdayShort: WEEKDAYS_SHORT[weekdayIndex],
       countdownDays,
       isPast: countdownDays < 0,
-      tags: getHolidayTags(holiday.date),
+      tags: getHolidayTags(holiday.date, holidayDates),
     };
   });
 }
@@ -89,21 +126,40 @@ export function splitPastAndUpcoming(holidays: PlannedHoliday[]) {
   };
 }
 
+function countDateClusters(dates: Set<string>): number {
+  let clusters = 0;
+
+  for (const date of Array.from(dates).sort(compareYYYYMMDD)) {
+    if (!dates.has(addDaysYYYYMMDD(date, -1))) clusters += 1;
+  }
+
+  return clusters;
+}
+
 export function deriveHolidaySummary(holidays: PlannedHoliday[]): HolidaySummary {
   const { upcoming } = splitPastAndUpcoming(holidays);
   const longWeekendDates = new Set<string>();
+  const fourDayWeekendDates = new Set<string>();
   const bridgeDayDates = new Set<string>();
+  const nineDayBreakDates = new Set<string>();
+  const yearEndBreakDates = new Set<string>();
 
   for (const holiday of holidays) {
     if (holiday.tags.includes("Long weekend")) longWeekendDates.add(holiday.date);
+    if (holiday.tags.includes("4-day weekend")) fourDayWeekendDates.add(holiday.date);
     if (holiday.tags.includes("Potential 4-day weekend")) bridgeDayDates.add(holiday.date);
+    if (holiday.tags.includes("Potential 9-day break")) nineDayBreakDates.add(holiday.date);
+    if (holiday.tags.includes("Potential year-end break")) yearEndBreakDates.add(holiday.date);
   }
 
   return {
     nextHoliday: upcoming[0] ?? null,
     holidaysLeft: new Set(upcoming.map((holiday) => holiday.date)).size,
     longWeekendCount: longWeekendDates.size,
+    fourDayWeekendCount: countDateClusters(fourDayWeekendDates),
     bridgeDayCount: bridgeDayDates.size,
+    nineDayBreakCount: countDateClusters(nineDayBreakDates),
+    yearEndBreakCount: countDateClusters(yearEndBreakDates),
   };
 }
 

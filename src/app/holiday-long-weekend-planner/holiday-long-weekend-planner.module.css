@@ -79,14 +79,14 @@
 
 .summaryGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: 1.35fr repeat(4, minmax(0, 0.92fr));
+  gap: 8px;
   margin-top: 14px;
 }
 
 .statCard {
-  min-height: 102px;
-  padding: 14px;
+  min-height: 82px;
+  padding: 12px;
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.7);
@@ -94,28 +94,31 @@
 }
 
 .statLabel {
-  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
   font-weight: 800;
   color: rgba(15, 23, 42, 0.48);
 }
 
 .statValue {
   display: -webkit-box;
-  min-height: 44px;
-  margin-top: 8px;
+  min-height: 28px;
+  margin-top: 6px;
   overflow: hidden;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 850;
   line-height: 1.12;
   color: rgba(15, 23, 42, 0.86);
 }
 
 .statDetail {
-  margin-top: 8px;
-  font-size: 12px;
-  line-height: 1.35;
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.25;
   color: rgba(15, 23, 42, 0.52);
 }
 
@@ -517,12 +520,36 @@
   color: rgba(63, 98, 74, 0.92);
 }
 
+.fourDayWeekend {
+  border-color: rgba(45, 212, 191, 0.28);
+  background:
+    linear-gradient(135deg, rgba(204, 251, 241, 0.7), rgba(255, 255, 255, 0.76)),
+    rgba(240, 253, 250, 0.72);
+  color: rgba(17, 94, 89, 0.92);
+}
+
 .bridgeDay {
   border-color: rgba(147, 197, 253, 0.24);
   background:
     linear-gradient(135deg, rgba(191, 219, 254, 0.32), rgba(255, 255, 255, 0) 72%),
     rgba(255, 255, 255, 0.74);
   color: rgba(44, 92, 138, 0.92);
+}
+
+.nineDayBreak {
+  border-color: rgba(216, 180, 254, 0.32);
+  background:
+    linear-gradient(135deg, rgba(243, 232, 255, 0.72), rgba(255, 255, 255, 0.76)),
+    rgba(250, 245, 255, 0.7);
+  color: rgba(107, 33, 168, 0.88);
+}
+
+.yearEndBreak {
+  border-color: rgba(251, 191, 36, 0.28);
+  background:
+    linear-gradient(135deg, rgba(254, 249, 195, 0.72), rgba(255, 255, 255, 0.76)),
+    rgba(255, 251, 235, 0.7);
+  color: rgba(133, 77, 14, 0.9);
 }
 
 .weekendHoliday {
