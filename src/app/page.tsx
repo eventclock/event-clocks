@@ -30,78 +30,78 @@ const tools = [
     href: "/timezone",
     title: "Timezone",
     desc: "Compare one date/time across multiple zones with DST-aware share links.",
-    badge: "Most used",
-    position: "md:left-[8%] md:top-[18%]",
+    badge: "Utility",
+    position: "md:left-[5%] md:top-[14%]",
   },
   {
     href: "/meeting-overlap",
     title: "Meeting Overlap",
     desc: "Find times that work for everyone across zones, weekends, and holidays.",
     badge: "Planner",
-    position: "md:right-[8%] md:top-[18%]",
+    position: "md:right-[5%] md:top-[14%]",
   },
   {
     href: "/time-since",
     title: "Time Since",
     desc: "Live counter for time since or until a date.",
     badge: "Live",
-    position: "md:left-[7%] md:top-[45%]",
+    position: "md:left-[3%] md:top-[39%]",
   },
   {
     href: "/countdown-notes",
     title: "Countdown Notes",
     desc: "Attach notes to dates and watch each countdown live.",
     badge: "Live",
-    position: "md:right-[7%] md:top-[45%]",
+    position: "md:right-[3%] md:top-[39%]",
   },
   {
     href: "/countdown-tasks",
     title: "Countdown Tasks",
     desc: "Track tasks with start dates, end deadlines, and delayed status.",
     badge: "New",
-    position: "md:left-[12%] md:bottom-[12%]",
+    position: "md:left-[5%] md:bottom-[13%]",
   },
   {
     href: "/business-days",
     title: "Business Days",
     desc: "Count workdays or add business days while excluding weekends and holidays.",
     badge: "Workdays",
-    position: "md:right-[12%] md:bottom-[12%]",
+    position: "md:right-[5%] md:bottom-[13%]",
   },
   {
     href: "/holiday-long-weekend-planner",
     title: "Holiday Planner",
     desc: "See upcoming holidays, countdowns, long weekends, and bridge-day opportunities.",
     badge: "Holidays",
-    position: "md:right-[29%] md:bottom-[18%]",
+    position: "md:left-[33%] md:bottom-[8%]",
   },
   {
     href: "/smpte-timecode",
     title: "Timecode",
     desc: "Convert SMPTE, frames, milliseconds, and real-time durations.",
     badge: "Utility",
-    position: "md:left-[38%] md:bottom-[2%]",
+    position: "md:right-[33%] md:bottom-[0%]",
   },
   {
     href: "/cruise",
     title: "Cruise Planner",
     desc: "A simple cruise timeline with reminders and a checklist.",
     badge: "Timeline",
-    position: "md:left-[38%] md:top-[2%]",
+    position: "md:left-[39%] md:top-[0%]",
   },
   {
     href: "/wedding-plan",
     title: "Wedding Planner",
     desc: "A wedding prep timeline with checkpoints and reminders.",
     badge: "Checklist",
-    position: "md:left-[16%] md:top-[70%]",
+    position: "md:left-[15%] md:top-[67%]",
   },
   {
     href: "/tax-document-checklist",
     title: "Tax Checklist",
     desc: "Gather tax documents with a calm, practical checklist.",
     badge: "Checklist",
-    position: "md:right-[16%] md:top-[70%]",
+    position: "md:right-[15%] md:top-[67%]",
   },
 ];
 
@@ -121,11 +121,11 @@ function ToolOrbit() {
             <a
               key={tool.href}
               href={tool.href}
-              className={`group/tool relative block rounded-full border border-[#9a633b]/55 bg-white/34 px-3.5 py-2 text-left shadow-[0_6px_14px_rgba(81,51,35,0.05)] backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-[#85502f]/70 hover:bg-white/60 hover:shadow-[0_10px_20px_rgba(81,51,35,0.08)] focus:outline-none focus:ring-4 focus:ring-amber-200/50 dark:border-[#bc8657]/35 dark:bg-white/5 dark:hover:bg-white/9 md:absolute md:w-44 ${tool.position}`}
+              className={`group/tool relative block rounded-[1.15rem] border border-[#9a633b]/38 bg-white/50 px-4 py-2.5 text-left shadow-[0_8px_20px_rgba(81,51,35,0.045)] backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-[#85502f]/55 hover:bg-white/70 hover:shadow-[0_12px_28px_rgba(81,51,35,0.075)] focus:outline-none focus:ring-4 focus:ring-amber-200/50 dark:border-[#bc8657]/30 dark:bg-white/6 dark:hover:bg-white/10 md:absolute md:w-48 ${tool.position}`}
             >
               <span className="flex items-center justify-between gap-3">
                 <span>
-                    <span className="block text-[0.82rem] font-extrabold tracking-tight text-black/75 dark:text-white/80">
+                  <span className="block text-[0.86rem] font-extrabold tracking-tight text-black/76 dark:text-white/80">
                     {tool.title}
                   </span>
                   <span className="mt-1 block text-xs leading-relaxed text-black/52 dark:text-white/52 md:hidden">
