@@ -8,6 +8,7 @@ export type Holiday = {
 export type HolidayTag =
   | "Long weekend"
   | "4-day weekend"
+  | "5-day weekend"
   | "Potential 4-day weekend"
   | "Potential 9-day break"
   | "Potential year-end break"
@@ -27,6 +28,7 @@ export type HolidaySummary = {
   holidaysLeft: number;
   longWeekendCount: number;
   fourDayWeekendCount: number;
+  fiveDayWeekendCount: number;
   bridgeDayCount: number;
   nineDayBreakCount: number;
   yearEndBreakCount: number;
@@ -65,6 +67,32 @@ function addDaysYYYYMMDD(date: string, days: number): string {
   return toYYYYMMDD_UTC(addDaysUTC(parseYYYYMMDDToUTCDate(date), days));
 }
 
+function isWeekendYYYYMMDD(date: string): boolean {
+  const day = parseYYYYMMDDToUTCDate(date).getUTCDay();
+  return day === 0 || day === 6;
+}
+
+function getBreakLength(date: string, holidayDates: Set<string>): number {
+  if (!holidayDates.has(date)) return 0;
+
+  let start = date;
+  let end = date;
+
+  for (let i = 0; i < 14; i++) {
+    const previous = addDaysYYYYMMDD(start, -1);
+    if (!holidayDates.has(previous) && !isWeekendYYYYMMDD(previous)) break;
+    start = previous;
+  }
+
+  for (let i = 0; i < 14; i++) {
+    const next = addDaysYYYYMMDD(end, 1);
+    if (!holidayDates.has(next) && !isWeekendYYYYMMDD(next)) break;
+    end = next;
+  }
+
+  return countdownInDays(end, start) + 1;
+}
+
 export function getHolidayTags(date: string, holidayDates: Set<string> = new Set()): HolidayTag[] {
   const day = parseYYYYMMDDToUTCDate(date).getUTCDay();
   const previousDate = addDaysYYYYMMDD(date, -1);
@@ -73,6 +101,7 @@ export function getHolidayTags(date: string, holidayDates: Set<string> = new Set
   const newYearsDay = `${year + 1}-01-01`;
   const isLateDecember = date >= `${year}-12-24` && date <= `${year}-12-31`;
   const hasNewYearContext = isLateDecember && holidayDates.has(newYearsDay);
+  const breakLength = getBreakLength(date, holidayDates);
 
   const isFourDayWeekendCluster =
     (day === 1 && holidayDates.has(nextDate)) ||
@@ -80,7 +109,11 @@ export function getHolidayTags(date: string, holidayDates: Set<string> = new Set
     (day === 4 && holidayDates.has(nextDate)) ||
     (day === 5 && holidayDates.has(previousDate));
 
-  if (isFourDayWeekendCluster) {
+  if (breakLength >= 5) {
+    return hasNewYearContext ? ["5-day weekend", "Potential year-end break"] : ["5-day weekend"];
+  }
+
+  if (breakLength === 4 || isFourDayWeekendCluster) {
     return ["4-day weekend", hasNewYearContext ? "Potential year-end break" : "Potential 9-day break"];
   }
 
@@ -140,6 +173,7 @@ export function deriveHolidaySummary(holidays: PlannedHoliday[]): HolidaySummary
   const { upcoming } = splitPastAndUpcoming(holidays);
   const longWeekendDates = new Set<string>();
   const fourDayWeekendDates = new Set<string>();
+  const fiveDayWeekendDates = new Set<string>();
   const bridgeDayDates = new Set<string>();
   const nineDayBreakDates = new Set<string>();
   const yearEndBreakDates = new Set<string>();
@@ -147,6 +181,7 @@ export function deriveHolidaySummary(holidays: PlannedHoliday[]): HolidaySummary
   for (const holiday of holidays) {
     if (holiday.tags.includes("Long weekend")) longWeekendDates.add(holiday.date);
     if (holiday.tags.includes("4-day weekend")) fourDayWeekendDates.add(holiday.date);
+    if (holiday.tags.includes("5-day weekend")) fiveDayWeekendDates.add(holiday.date);
     if (holiday.tags.includes("Potential 4-day weekend")) bridgeDayDates.add(holiday.date);
     if (holiday.tags.includes("Potential 9-day break")) nineDayBreakDates.add(holiday.date);
     if (holiday.tags.includes("Potential year-end break")) yearEndBreakDates.add(holiday.date);
@@ -157,6 +192,7 @@ export function deriveHolidaySummary(holidays: PlannedHoliday[]): HolidaySummary
     holidaysLeft: new Set(upcoming.map((holiday) => holiday.date)).size,
     longWeekendCount: longWeekendDates.size,
     fourDayWeekendCount: countDateClusters(fourDayWeekendDates),
+    fiveDayWeekendCount: countDateClusters(fiveDayWeekendDates),
     bridgeDayCount: bridgeDayDates.size,
     nineDayBreakCount: countDateClusters(nineDayBreakDates),
     yearEndBreakCount: countDateClusters(yearEndBreakDates),

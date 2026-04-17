@@ -15,7 +15,7 @@
   background:
     linear-gradient(
       135deg,
-      rgba(187, 247, 208, 0.20),
+      rgba(186, 230, 253, 0.24),
       rgba(255, 255, 255, 0) 72%
     ),
     rgba(255, 255, 255, 0.74);
@@ -33,7 +33,7 @@
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
-  color: rgba(72, 120, 90, 0.92);
+  color: rgba(37, 99, 145, 0.9);
   opacity: 1;
 }
 
@@ -353,7 +353,7 @@
   .infoBlock {
     border-color: rgba(255, 255, 255, 0.1);
     background:
-      linear-gradient(135deg, rgba(6, 78, 59, 0.12), rgba(2, 132, 199, 0.08)),
+      linear-gradient(135deg, rgba(14, 116, 144, 0.12), rgba(37, 99, 235, 0.08)),
       rgba(15, 23, 42, 0.72);
     box-shadow: none;
   }
@@ -368,7 +368,7 @@
   }
 
   .eyebrow {
-    color: rgba(110, 231, 183, 0.88);
+    color: rgba(125, 211, 252, 0.88);
   }
 
   .control span,
@@ -526,6 +526,14 @@
     linear-gradient(135deg, rgba(204, 251, 241, 0.7), rgba(255, 255, 255, 0.76)),
     rgba(240, 253, 250, 0.72);
   color: rgba(17, 94, 89, 0.92);
+}
+
+.fiveDayWeekend {
+  border-color: rgba(20, 184, 166, 0.32);
+  background:
+    linear-gradient(135deg, rgba(153, 246, 228, 0.72), rgba(255, 255, 255, 0.76)),
+    rgba(240, 253, 250, 0.78);
+  color: rgba(15, 118, 110, 0.94);
 }
 
 .bridgeDay {

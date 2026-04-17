@@ -80,6 +80,7 @@ function isValidYear(value: number) {
 function tagClassName(tag: PlannedHoliday["tags"][number]) {
   if (tag === "Long weekend") return "longWeekend";
   if (tag === "4-day weekend") return "fourDayWeekend";
+  if (tag === "5-day weekend") return "fiveDayWeekend";
   if (tag === "Potential 4-day weekend") return "bridgeDay";
   if (tag === "Potential 9-day break") return "nineDayBreak";
   if (tag === "Potential year-end break") return "yearEndBreak";
@@ -468,11 +469,13 @@ export default function HolidayLongWeekendPlannerClient() {
           detail="3-day breaks"
         />
         <StatCard
-          label="4-day weekends left"
-          value={String(upcomingSummary.fourDayWeekendCount)}
+          label="4/5-day weekends left"
+          value={String(upcomingSummary.fourDayWeekendCount + upcomingSummary.fiveDayWeekendCount)}
           detail={
-            upcomingSummary.yearEndBreakCount > 0
-              ? `${upcomingSummary.yearEndBreakCount} year-end`
+            upcomingSummary.fiveDayWeekendCount > 0
+              ? `${upcomingSummary.fiveDayWeekendCount} five-day`
+              : upcomingSummary.yearEndBreakCount > 0
+                ? `${upcomingSummary.yearEndBreakCount} year-end`
               : upcomingSummary.nineDayBreakCount > 0
                 ? `${upcomingSummary.nineDayBreakCount} stretchable`
               : "Adjacent pairs"
@@ -540,10 +543,9 @@ export default function HolidayLongWeekendPlannerClient() {
           <h2>How the long weekend tags work</h2>
           <p>
             Holidays on Monday or Friday are marked as long weekends. Adjacent Monday-Tuesday or
-            Thursday-Friday holiday pairs are marked as 4-day weekends, with a potential 9-day break
-            cue when taking three surrounding weekdays could extend the time off. Late-December
-            holidays also look ahead to New Year&apos;s Day when checking year-end break potential.
-            Standalone Tuesday or Thursday holidays remain potential 4-day weekends.
+            Thursday-Friday holiday pairs are marked as 4-day weekends. A Dec 31 holiday connected
+            to New Year&apos;s Day is marked as a 5-day weekend when the weekend follows. Standalone
+            Tuesday or Thursday holidays remain potential 4-day weekends.
           </p>
         </article>
 
