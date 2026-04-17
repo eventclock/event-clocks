@@ -26,16 +26,17 @@ export default function Header() {
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 16,
+          gap: 24,
           flexWrap: "wrap",
           justifyContent: "flex-end",
+          marginRight: 28,
           fontSize: 13,
           fontWeight: 500,
           letterSpacing: "-0.01em",
         }}
       >
         <Dropdown label="Tools">
-          <Section title="Time Tools">
+          <Section title="Time">
             <MenuItem href="/timezone">Timezone Converter</MenuItem>
             <MenuItem href="/meeting-overlap">Meeting Overlap</MenuItem>
             <MenuItem href="/smpte-timecode">Timecode Converter</MenuItem>
@@ -44,19 +45,19 @@ export default function Header() {
 
           <Divider />
 
-          <Section title="Counters">
-            <MenuItem href="/time-since">Time Since</MenuItem>
-            <MenuItem href="/countdown-notes">Countdown Notes</MenuItem>
-            <MenuItem href="/countdown-tasks">Countdown Tasks</MenuItem>
-          </Section>
-
-          <Divider />
-
-          <Section title="Calculators">
+          <Section title="Date Math">
             <MenuItem href="/business-days">Business Days</MenuItem>
             <MenuItem href="/date-difference">Date Difference</MenuItem>
             <MenuItem href="/week-number">Week Number</MenuItem>
             <MenuItem href="/holiday-long-weekend-planner">Holiday + Long Weekend Planner</MenuItem>
+          </Section>
+
+          <Divider />
+
+          <Section title="Counters">
+            <MenuItem href="/time-since">Time Since</MenuItem>
+            <MenuItem href="/countdown-notes">Countdown Notes</MenuItem>
+            <MenuItem href="/countdown-tasks">Countdown Tasks</MenuItem>
           </Section>
 
           <Divider />
@@ -108,9 +109,13 @@ const topLinkStyle: React.CSSProperties = {
 function Dropdown({
   label,
   children,
+  align = "right",
+  offsetX = 0,
 }: {
   label: string;
   children: React.ReactNode;
+  align?: "left" | "right";
+  offsetX?: number;
 }) {
   const id = useId();
   const detailsRef = useRef<HTMLDetailsElement | null>(null);
@@ -203,7 +208,20 @@ function Dropdown({
         {label}
       </summary>
 
-      <div id={`menu-${id}`} style={menuAppleStyle} role="menu" aria-label={label}>
+      <div
+        id={`menu-${id}`}
+        style={{
+          ...menuAppleStyle,
+          ...(align === "left" ? { left: 0 } : { right: 0 }),
+          transform: offsetX ? `translateX(${offsetX}px)` : undefined,
+        }}
+        role="menu"
+        aria-label={label}
+        onClick={(e) => {
+          const target = e.target as HTMLElement | null;
+          if (target?.closest("a")) close();
+        }}
+      >
         {enhancedChildren}
       </div>
     </details>
@@ -221,16 +239,16 @@ const summaryAppleStyle: React.CSSProperties = {
 
 const menuAppleStyle: React.CSSProperties = {
   position: "absolute",
-  right: 0,
   top: "calc(100% + 12px)",
-  minWidth: 260,
+  width: 250,
+  maxWidth: "calc(100vw - 32px)",
   background: "rgba(255,255,255,0.92)",
   border: "1px solid rgba(0,0,0,0.08)",
   borderRadius: 14,
   boxShadow: "0 18px 40px rgba(0,0,0,0.10)",
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
-  padding: 10,
+  padding: 8,
   zIndex: 50,
 };
 
@@ -252,8 +270,8 @@ function MenuItem({
       onClick={() => onNavigate?.()}
       style={{
         display: "block",
-        padding: "10px 10px",
-        borderRadius: 10,
+        padding: "7px 10px",
+        borderRadius: 8,
         textDecoration: "none",
         color: "inherit",
         fontSize: 13,
@@ -273,7 +291,7 @@ function Divider() {
       style={{
         height: 1,
         background: "rgba(0,0,0,0.07)",
-        margin: "8px 6px",
+        margin: "5px 6px",
       }}
     />
   );
@@ -287,14 +305,14 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ padding: "2px 2px" }}>
+    <div style={{ padding: "1px 2px" }}>
       <div
         style={{
           fontSize: 11,
           fontWeight: 600,
           letterSpacing: "0.02em",
           opacity: 0.55,
-          padding: "6px 10px 4px",
+          padding: "4px 10px 2px",
           textTransform: "uppercase",
         }}
       >

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 function toDatetimeLocalValue(date: Date) {
   const pad = (value: number) => String(value).padStart(2, "0");
@@ -18,11 +18,19 @@ function formatDate(date: Date, timeZone?: string) {
 }
 
 export default function UnixTimeClient() {
-  const [timestamp, setTimestamp] = useState(() => String(Math.floor(Date.now() / 1000)));
+  const [timestamp, setTimestamp] = useState("");
   const [unit, setUnit] = useState<"seconds" | "milliseconds">("seconds");
-  const [dateTime, setDateTime] = useState(() => toDatetimeLocalValue(new Date()));
+  const [dateTime, setDateTime] = useState("");
+
+  useEffect(() => {
+    const now = new Date();
+    setTimestamp(String(Math.floor(now.getTime() / 1000)));
+    setDateTime(toDatetimeLocalValue(now));
+  }, []);
 
   const timestampResult = useMemo(() => {
+    if (!timestamp.trim()) return null;
+
     const numeric = Number(timestamp);
     if (!Number.isFinite(numeric)) return null;
 
@@ -36,6 +44,8 @@ export default function UnixTimeClient() {
   }, [timestamp, unit]);
 
   const dateResult = useMemo(() => {
+    if (!dateTime) return null;
+
     const date = new Date(dateTime);
     if (Number.isNaN(date.getTime())) return null;
 
