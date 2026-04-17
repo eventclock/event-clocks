@@ -39,6 +39,7 @@ export default function Header() {
             <MenuItem href="/timezone">Timezone Converter</MenuItem>
             <MenuItem href="/meeting-overlap">Meeting Overlap</MenuItem>
             <MenuItem href="/smpte-timecode">Timecode Converter</MenuItem>
+            <MenuItem href="/unix-time">Unix Time Converter</MenuItem>
           </Section>
 
           <Divider />
@@ -53,6 +54,8 @@ export default function Header() {
 
           <Section title="Calculators">
             <MenuItem href="/business-days">Business Days</MenuItem>
+            <MenuItem href="/date-difference">Date Difference</MenuItem>
+            <MenuItem href="/week-number">Week Number</MenuItem>
             <MenuItem href="/holiday-long-weekend-planner">Holiday + Long Weekend Planner</MenuItem>
           </Section>
 

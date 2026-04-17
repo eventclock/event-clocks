@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import HeroClockVignette from "./HeroClockVignette";
+import HomeToolOrbit from "./HomeToolOrbit";
 
 export const metadata: Metadata = {
   title:
-    "Event Clocks — Time Zone Converter, Meeting Overlap, Business Days, Countdown Notes, Countdown Tasks, Time Since",
+    "Event Clocks — Time Zone Converter, Meeting Overlap, Business Days, Date Difference, Week Number, Unix Time",
   description:
-    "Simple planning tools for time zones, meeting scheduling, deadlines, live countdowns, task tracking, and time counters. Private, fast, and no accounts.",
+    "Simple planning tools for time zones, meeting scheduling, date differences, week numbers, Unix time, deadlines, live countdowns, and task tracking. Private, fast, and no accounts.",
   alternates: {
     canonical: "https://www.event-clocks.com/",
   },
@@ -14,139 +14,16 @@ export const metadata: Metadata = {
     url: "https://www.event-clocks.com/",
     title: "Event Clocks",
     description:
-      "Simple planning tools for time zones, meeting scheduling, deadlines, live countdowns, task tracking, and time counters. Private, fast, and no accounts.",
+      "Simple planning tools for time zones, meeting scheduling, date differences, week numbers, Unix time, deadlines, live countdowns, and task tracking. Private, fast, and no accounts.",
     siteName: "Event Clocks",
   },
   twitter: {
     card: "summary",
     title: "Event Clocks",
     description:
-      "Simple planning tools for time zones, meeting scheduling, deadlines, live countdowns, task tracking, and time counters. Private, fast, and no accounts.",
+      "Simple planning tools for time zones, meeting scheduling, date differences, week numbers, Unix time, deadlines, live countdowns, and task tracking. Private, fast, and no accounts.",
   },
 };
-
-const tools = [
-  {
-    href: "/timezone",
-    title: "Timezone",
-    desc: "Compare one date/time across multiple zones with DST-aware share links.",
-    badge: "Utility",
-    position: "md:left-[5%] md:top-[14%]",
-  },
-  {
-    href: "/meeting-overlap",
-    title: "Meeting Overlap",
-    desc: "Find times that work for everyone across zones, weekends, and holidays.",
-    badge: "Planner",
-    position: "md:right-[5%] md:top-[14%]",
-  },
-  {
-    href: "/time-since",
-    title: "Time Since",
-    desc: "Live counter for time since or until a date.",
-    badge: "Live",
-    position: "md:left-[3%] md:top-[39%]",
-  },
-  {
-    href: "/countdown-notes",
-    title: "Countdown Notes",
-    desc: "Attach notes to dates and watch each countdown live.",
-    badge: "Live",
-    position: "md:right-[3%] md:top-[39%]",
-  },
-  {
-    href: "/countdown-tasks",
-    title: "Countdown Tasks",
-    desc: "Track tasks with start dates, end deadlines, and delayed status.",
-    badge: "New",
-    position: "md:left-[5%] md:bottom-[13%]",
-  },
-  {
-    href: "/business-days",
-    title: "Business Days",
-    desc: "Count workdays or add business days while excluding weekends and holidays.",
-    badge: "Workdays",
-    position: "md:right-[5%] md:bottom-[13%]",
-  },
-  {
-    href: "/holiday-long-weekend-planner",
-    title: "Holiday Planner",
-    desc: "See upcoming holidays, countdowns, long weekends, and bridge-day opportunities.",
-    badge: "Holidays",
-    position: "md:left-[33%] md:bottom-[8%]",
-  },
-  {
-    href: "/smpte-timecode",
-    title: "Timecode",
-    desc: "Convert SMPTE, frames, milliseconds, and real-time durations.",
-    badge: "Utility",
-    position: "md:right-[33%] md:bottom-[0%]",
-  },
-  {
-    href: "/cruise",
-    title: "Cruise Planner",
-    desc: "A simple cruise timeline with reminders and a checklist.",
-    badge: "Timeline",
-    position: "md:left-[39%] md:top-[0%]",
-  },
-  {
-    href: "/wedding-plan",
-    title: "Wedding Planner",
-    desc: "A wedding prep timeline with checkpoints and reminders.",
-    badge: "Checklist",
-    position: "md:left-[15%] md:top-[67%]",
-  },
-  {
-    href: "/tax-document-checklist",
-    title: "Tax Checklist",
-    desc: "Gather tax documents with a calm, practical checklist.",
-    badge: "Checklist",
-    position: "md:right-[15%] md:top-[67%]",
-  },
-];
-
-function ToolOrbit() {
-  return (
-    <nav aria-label="Event Clocks tools" className="relative mx-auto mt-6 w-full max-w-5xl">
-      <div className="relative min-h-[34rem] md:min-h-[41rem]">
-        <div className="absolute inset-x-0 top-1/2 hidden -translate-y-1/2 md:block">
-          <HeroClockVignette />
-        </div>
-        <div className="md:hidden">
-          <HeroClockVignette />
-        </div>
-
-        <div className="grid gap-3 md:block">
-          {tools.map((tool) => (
-            <a
-              key={tool.href}
-              href={tool.href}
-              className={`group/tool relative block rounded-[1.15rem] border border-[#9a633b]/38 bg-white/50 px-4 py-2.5 text-left shadow-[0_8px_20px_rgba(81,51,35,0.045)] backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-[#85502f]/55 hover:bg-white/70 hover:shadow-[0_12px_28px_rgba(81,51,35,0.075)] focus:outline-none focus:ring-4 focus:ring-amber-200/50 dark:border-[#bc8657]/30 dark:bg-white/6 dark:hover:bg-white/10 md:absolute md:w-48 ${tool.position}`}
-            >
-              <span className="flex items-center justify-between gap-3">
-                <span>
-                  <span className="block text-[0.86rem] font-extrabold tracking-tight text-black/76 dark:text-white/80">
-                    {tool.title}
-                  </span>
-                  <span className="mt-1 block text-xs leading-relaxed text-black/52 dark:text-white/52 md:hidden">
-                    {tool.desc}
-                  </span>
-                </span>
-                <span className="shrink-0 text-[0.55rem] font-bold uppercase tracking-[0.18em] text-[#85502f]/62 dark:text-[#d6a06d]/58">
-                  {tool.badge}
-                </span>
-              </span>
-
-              <span className="pointer-events-none absolute left-1/2 top-[calc(100%+0.6rem)] z-20 hidden w-64 -translate-x-1/2 rounded-2xl border border-black/10 bg-white/95 p-3 text-xs leading-relaxed text-black/62 opacity-0 shadow-xl backdrop-blur transition group-hover/tool:opacity-100 group-focus/tool:opacity-100 dark:border-white/10 dark:bg-neutral-950/95 dark:text-white/62 md:block">
-                {tool.desc}
-              </span>
-            </a>
-          ))}
-        </div>
-      </div>
-    </nav>
-  );
-}
 
 export default function HomePage() {
   return (
@@ -187,7 +64,7 @@ export default function HomePage() {
             and date deadlines — calm, quick, and dependable.
           </p>
         </div>
-        <ToolOrbit />
+        <HomeToolOrbit />
       </header>
 
       <section className="mb-8 grid gap-4 md:grid-cols-3">
