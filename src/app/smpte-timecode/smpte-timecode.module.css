@@ -587,6 +587,73 @@
   color: rgba(15, 23, 42, 0.66);
 }
 
+.infoSection {
+  scroll-margin-top: 24px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 9px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(248, 250, 252, 0.9));
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.045);
+}
+
+.infoSectionHeader {
+  display: grid;
+  gap: 6px;
+  max-width: 820px;
+}
+
+.howGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.infoCard,
+.faqDetails {
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 10px 12px;
+}
+
+.formula {
+  display: block;
+  margin-top: 8px;
+  padding: 8px 9px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 6px;
+  background: rgba(241, 245, 249, 0.78);
+  color: rgba(15, 23, 42, 0.76);
+  font: 600 11px/1.55 var(--smpte-font-mono);
+  white-space: pre-wrap;
+}
+
+.inlineFaqList {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.faqDetails {
+  padding: 0;
+}
+
+.faqSummary {
+  cursor: pointer;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 750;
+  color: rgba(15, 23, 42, 0.78);
+}
+
+.faqDetails .faqAnswer {
+  margin: 0;
+  padding: 0 12px 12px;
+}
+
 .overlayRoot {
   position: fixed;
   inset: 0;
@@ -682,6 +749,10 @@
   .eyebrow,
   .panel,
   .sideCard,
+  .infoSection,
+  .infoCard,
+  .faqDetails,
+  .formula,
   .faqItem,
   .textarea,
   .select,
@@ -700,6 +771,10 @@
   .eyebrow,
   .panel,
   .sideCard,
+  .infoSection,
+  .infoCard,
+  .faqDetails,
+  .formula,
   .faqItem,
   .textarea,
   .select,
@@ -752,6 +827,22 @@
     color: rgba(248, 250, 252, 0.96);
   }
 
+  .infoSection {
+    background:
+      linear-gradient(180deg, rgba(15, 23, 42, 0.74), rgba(2, 6, 23, 0.68));
+    box-shadow: 0 14px 36px rgba(2, 6, 23, 0.16);
+  }
+
+  .infoCard,
+  .faqDetails {
+    background: rgba(15, 23, 42, 0.52);
+  }
+
+  .formula {
+    background: rgba(2, 6, 23, 0.38);
+    color: rgba(226, 232, 240, 0.8);
+  }
+
   .deltaValue {
     color: rgba(125, 211, 252, 0.88);
     border-top-color: rgba(255, 255, 255, 0.12);
@@ -760,5 +851,15 @@
   .invalidRow .timecodeCell,
   .invalidCell {
     background: rgba(69, 10, 10, 0.72);
+  }
+}
+
+@media (max-width: 720px) {
+  .heroActions {
+    flex-wrap: wrap;
+  }
+
+  .howGrid {
+    grid-template-columns: 1fr;
   }
 }

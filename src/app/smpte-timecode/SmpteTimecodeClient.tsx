@@ -91,48 +91,49 @@ const SIMPLIFIED_RATE_KEYS: FrameRateKey[] = [
 
 const FAQ_ITEMS = [
   {
-    question: "What does this tool do?",
+    question: "Why does the converter use 30 instead of 29.97 for frame counting?",
     answer:
-      "This tool converts between SMPTE labels, frame counts, milliseconds, and real-time durations across common video timing systems, including drop-frame and non-drop-frame formats.",
+      "SMPTE timecode labels are counted using the nominal integer frame rate. For example, 23.976 uses 24 labels per second, 29.97 uses 30, and 59.94 uses 60. Real elapsed time is calculated afterward using the exact playback-rate ratio.",
   },
   {
-    question: "What is drop-frame?",
+    question: "What is the difference between nominal fps and real fps?",
     answer:
-      "Drop-frame does not remove actual video frames. It skips certain frame numbers in the label so timecode stays aligned with real clock time.",
+      "Nominal fps is the integer rate used for timecode labels. Real fps is the actual playback speed. For example, 29.97 uses nominal 30, while the exact playback rate is 30000/1001.",
   },
   {
-    question: "What is non-drop-frame?",
+    question: "Does drop-frame remove actual video frames?",
     answer:
-      "Non-drop-frame counts labels sequentially. At rates like 29.97, labels drift from real time over long durations.",
+      "No. Drop-frame timecode does not remove footage. It skips certain frame numbers in the label sequence so the displayed timecode stays aligned with real elapsed time.",
   },
   {
-    question: "What are Frames?",
-    answer: "Elapsed frames for the interpreted value at the target playback rate.",
+    question: "Why are some drop-frame values invalid?",
+    answer:
+      "In drop-frame formats such as 29.97 DF and 59.94 DF, certain labels are skipped at the start of most minutes except every 10th minute. Those skipped labels are invalid inputs.",
+  },
+  {
+    question: "Why is every 10th minute special in drop-frame?",
+    answer:
+      "Drop-frame skips labels in most minutes, but not every 10th minute. That pattern keeps long-running timecode close to clock time without skipping actual media frames.",
+  },
+  {
+    question: "Why does 01:00:00;00 differ from 01:00:00:00?",
+    answer:
+      "The semicolon usually indicates drop-frame while the colon usually indicates non-drop-frame. They are different counting systems and can produce different real-time values when interpreted directly.",
+  },
+  {
+    question: "Why does my timecode drift?",
+    answer:
+      "Drift usually comes from using the wrong frame rate or wrong DF/NDF mode, such as using 30 instead of 29.97 or NDF instead of DF.",
+  },
+  {
+    question: "How are milliseconds calculated?",
+    answer:
+      "The converter first counts total frames from the source value, then converts those frames into real elapsed time using the exact frame-rate ratio, such as 30000/1001.",
   },
   {
     question: "What is SMPTE (No Rate)?",
     answer:
       "Use SMPTE (No Rate) when you have a label like 01:00:00:00 but do not want to commit to a source timing system yet. In that mode, each output column applies its own rate and DF/NDF rules to the same raw SMPTE label.",
-  },
-  {
-    question: "How does normal SMPTE input work?",
-    answer:
-      "Standard SMPTE input uses the selected source rate and format first, then converts that parsed elapsed duration into each output column. That keeps the page in a clear conversion-first model.",
-  },
-  {
-    question: "Why does milliseconds ignore frame rate?",
-    answer:
-      "Milliseconds are already an absolute elapsed time value, so no source rate is required.",
-  },
-  {
-    question: "Why do some outputs match while others differ?",
-    answer:
-      "Some outputs represent real elapsed time, while others depend on how a timing system interprets or labels that same moment. For example, in normal conversion mode Time and Milliseconds often match across DF and NDF at the same real fps, while SMPTE labels can still differ.",
-  },
-  {
-    question: "Who is this for?",
-    answer:
-      "Useful for broadcast, streaming, post-production, engineering, QA, and debugging timing discrepancies.",
   },
 ] as const;
 
@@ -511,69 +512,6 @@ function getInputHeaderLabel(inputMetric: InputMetric, sourceRateKey: FrameRateK
   return `${metricLabel} @ ${getFrameRateOption(sourceRateKey).label}`;
 }
 
-function InfoOverlay({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className={`${styles.overlayRoot} ${open ? styles.overlayOpen : ""}`}
-      aria-hidden={open ? "false" : "true"}
-    >
-      <button
-        type="button"
-        className={styles.overlayBackdrop}
-        onClick={onClose}
-        tabIndex={open ? 0 : -1}
-        aria-label="Close info panel"
-      />
-
-      <section
-        className={styles.overlayPanel}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="smpte-faq-title"
-      >
-        <div className={styles.overlayHeader}>
-          <div>
-            <div className={styles.infoEyebrow}>Help &amp; FAQ</div>
-            <h2 id="smpte-faq-title" className={styles.infoTitle}>
-              Timing notes
-            </h2>
-          </div>
-
-          <button
-            type="button"
-            className={styles.overlayClose}
-            onClick={onClose}
-            aria-label="Close info panel"
-            title="Close"
-          >
-            ×
-          </button>
-        </div>
-
-        <p className={styles.infoIntro}>
-          Quick reference for how the converter interprets source values, when output rates matter,
-          and why some columns match while others diverge.
-        </p>
-
-        <div className={styles.faqList}>
-          {FAQ_ITEMS.map((item) => (
-            <div key={item.question} className={styles.faqItem}>
-              <h3 className={styles.faqQuestion}>{item.question}</h3>
-              <p className={styles.faqAnswer}>{item.answer}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-}
-
 export default function SmpteTimecodeClient() {
   const [inputMetric, setInputMetric] = useState<InputMetric>("smpteFree");
   const [sourceRateKey, setSourceRateKey] = useState<FrameRateKey>("24");
@@ -582,7 +520,6 @@ export default function SmpteTimecodeClient() {
   const [nextMetric, setNextMetric] = useState<ColumnMetric>("formattedTime");
   const [nextColumnKey, setNextColumnKey] = useState<FrameRateKey>("29.97 DF");
   const [columnCounter, setColumnCounter] = useState(2);
-  const [infoOpen, setInfoOpen] = useState(false);
   const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
   const [hasLoadedPersistedState, setHasLoadedPersistedState] = useState(false);
 
@@ -779,10 +716,12 @@ export default function SmpteTimecodeClient() {
     }
   }
 
+  function scrollToInfoSection(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <main className={styles.shell}>
-      <InfoOverlay open={infoOpen} onClose={() => setInfoOpen(false)} />
-
       <div className={styles.hero}>
         <h1 className={styles.title}>Timecode Converter</h1>
         <p className={styles.subtitle}>
@@ -794,11 +733,17 @@ export default function SmpteTimecodeClient() {
           <button
             type="button"
             className={styles.infoTrigger}
-            onClick={() => setInfoOpen(true)}
-            aria-label="Open info and FAQ"
-            title="Info / FAQ"
+            onClick={() => scrollToInfoSection("how-it-works")}
           >
-            Info / FAQ
+            How it works
+          </button>
+
+          <button
+            type="button"
+            className={styles.infoTrigger}
+            onClick={() => scrollToInfoSection("faq")}
+          >
+            FAQ
           </button>
 
           <button
@@ -1148,6 +1093,99 @@ export default function SmpteTimecodeClient() {
             </div>
           </div>
         )}
+      </section>
+
+      <section id="how-it-works" className={styles.infoSection}>
+        <div className={styles.infoSectionHeader}>
+          <div className={styles.infoEyebrow}>Reference</div>
+          <h2 className={styles.infoTitle}>How this SMPTE converter works</h2>
+          <p className={styles.infoIntro}>
+            The converter keeps label counting and real elapsed time separate. SMPTE labels are
+            counted with the nominal integer frame rate, then converted to milliseconds with the
+            exact playback-rate ratio.
+          </p>
+        </div>
+
+        <div className={styles.howGrid}>
+          <article className={styles.infoCard}>
+            <h3 className={styles.faqQuestion}>Nominal fps vs real fps</h3>
+            <p className={styles.faqAnswer}>
+              SMPTE label counting uses nominal fps. Real elapsed time uses the exact playback
+              rate. For example, 23.976 uses nominal 24, 29.97 uses nominal 30, and 59.94 uses
+              nominal 60.
+            </p>
+          </article>
+
+          <article className={styles.infoCard}>
+            <h3 className={styles.faqQuestion}>Non-drop-frame count</h3>
+            <p className={styles.faqAnswer}>
+              For NDF labels, total frames are counted sequentially:
+            </p>
+            <code className={styles.formula}>
+              Frames = ((HH × 3600 + MM × 60 + SS) × nominalFps) + FF
+            </code>
+          </article>
+
+          <article className={styles.infoCard}>
+            <h3 className={styles.faqQuestion}>Drop-frame count</h3>
+            <p className={styles.faqAnswer}>
+              For valid DF labels, skipped label numbers are subtracted from the nominal count:
+            </p>
+            <code className={styles.formula}>
+              totalMinutes = HH × 60 + MM
+              {"\n"}droppedFrameCount = dropFrames × (totalMinutes - floor(totalMinutes / 10))
+              {"\n"}Frames = ((HH × 3600 + MM × 60 + SS) × nominalFps) + FF - droppedFrameCount
+            </code>
+          </article>
+
+          <article className={styles.infoCard}>
+            <h3 className={styles.faqQuestion}>Milliseconds conversion</h3>
+            <p className={styles.faqAnswer}>
+              Once total frames are known, real elapsed time is calculated with the exact rate:
+            </p>
+            <code className={styles.formula}>
+              milliseconds = round((totalFrames × fpsDenominator × 1000) / fpsNumerator)
+            </code>
+          </article>
+
+          <article className={styles.infoCard}>
+            <h3 className={styles.faqQuestion}>Drop-frame validity</h3>
+            <p className={styles.faqAnswer}>
+              Drop-frame skips frame numbers, not actual video frames. At DF rates, skipped labels
+              at the start of most minutes are invalid. Every 10th minute is treated differently,
+              so labels are not skipped there.
+            </p>
+          </article>
+
+          <article className={styles.infoCard}>
+            <h3 className={styles.faqQuestion}>Compact example</h3>
+            <p className={styles.faqAnswer}>
+              At 29.97 DF, <code>01:00:00;00</code> has 60 total minutes. The converter subtracts
+              108 dropped labels, so the total is 107,892 frames before converting to real
+              milliseconds.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="faq" className={styles.infoSection}>
+        <div className={styles.infoSectionHeader}>
+          <div className={styles.infoEyebrow}>FAQ</div>
+          <h2 className={styles.infoTitle}>SMPTE timecode questions</h2>
+          <p className={styles.infoIntro}>
+            Short answers for the common places where frame rates, DF/NDF modes, and elapsed time
+            can feel counterintuitive.
+          </p>
+        </div>
+
+        <div className={styles.inlineFaqList}>
+          {FAQ_ITEMS.map((item) => (
+            <details key={item.question} className={styles.faqDetails}>
+              <summary className={styles.faqSummary}>{item.question}</summary>
+              <p className={styles.faqAnswer}>{item.answer}</p>
+            </details>
+          ))}
+        </div>
       </section>
     </main>
   );
