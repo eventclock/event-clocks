@@ -25,7 +25,7 @@ export default function TodaySummaryCard({ snapshot }: Props) {
             {snapshot.location.city}
           </h2>
         </div>
-        <div className="rounded-md border border-[#868f87]/90 bg-white/55 px-2.5 py-1.5 text-[12px] font-semibold text-black/62 shadow-sm dark:border-white/18 dark:bg-white/[0.06] dark:text-white/62">
+        <div className="rounded-md border-[0.5px] border-[#868f87]/50 bg-white/55 px-2.5 py-1.5 text-[12px] font-semibold text-black/62 shadow-sm dark:border-white/18 dark:bg-white/[0.06] dark:text-white/62">
           {formatDateWithWeekday(snapshot.date)}
         </div>
       </div>
