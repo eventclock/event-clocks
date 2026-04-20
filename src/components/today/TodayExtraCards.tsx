@@ -10,7 +10,13 @@ type Props = {
   snapshot: TodaySnapshot;
 };
 
-function ExtraCard({ item }: { item: OptionalTodaySnapshot }) {
+function ExtraCard({
+  item,
+  latitude,
+}: {
+  item: OptionalTodaySnapshot;
+  latitude: number;
+}) {
   const value =
     item.status === "available" && item.value ? item.value : "Unavailable today";
   const isMoon = item.label === "Moon Phase";
@@ -27,7 +33,7 @@ function ExtraCard({ item }: { item: OptionalTodaySnapshot }) {
             {value}
           </p>
         </div>
-        {isMoon && <MoonPhaseVisual phase={value} />}
+        {isMoon && <MoonPhaseVisual phase={value} latitude={latitude} />}
       </div>
       {item.note && (
         <p className="relative mt-2 text-[12px] leading-5 text-black/50 dark:text-white/50">
@@ -55,7 +61,11 @@ export default function TodayExtraCards({ snapshot }: Props) {
     <section>
       <div className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {extras.map((item) => (
-          <ExtraCard key={item.label} item={item} />
+          <ExtraCard
+            key={item.label}
+            item={item}
+            latitude={snapshot.location.latitude}
+          />
         ))}
       </div>
     </section>
