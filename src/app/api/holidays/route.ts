@@ -1,8 +1,6 @@
 // src/app/api/holidays/route.ts
 import { NextResponse } from "next/server";
-
-type CacheEntry = { expiresAt: number; data: any };
-const memCache = new Map<string, CacheEntry>();
+import { fetchPublicHolidays } from "@/lib/holidays";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -17,42 +15,16 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "year is invalid" }, { status: 400 });
   }
 
-  const key = `${country}:${year}`;
-  const now = Date.now();
-  const hit = memCache.get(key);
-  if (hit && hit.expiresAt > now) {
-    return NextResponse.json(hit.data, {
+  try {
+    const data = await fetchPublicHolidays(country, year);
+
+    return NextResponse.json(data, {
       headers: {
         "Cache-Control": "public, max-age=3600, s-maxage=86400",
       },
     });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "upstream_failed";
+    return NextResponse.json({ error: message }, { status: 502 });
   }
-
-  // Nager.Date public holidays
-  const upstream = `https://date.nager.at/api/v3/PublicHolidays/${year}/${country}`;
-  const r = await fetch(upstream, {
-    // Helps Vercel/Next cache upstream too
-    next: { revalidate: 86400 },
-  });
-
-  if (!r.ok) {
-    return NextResponse.json({ error: "upstream_failed", status: r.status }, { status: 502 });
-  }
-
-  const raw = await r.json();
-
-  // Normalize: keep only what you need
-  const data = (Array.isArray(raw) ? raw : []).map((h: any) => ({
-    date: h?.date, // "YYYY-MM-DD"
-    name:  h?.name || h?.localName,
-    types: h?.types,
-  }));
-
-  memCache.set(key, { expiresAt: now + 24 * 60 * 60 * 1000, data });
-
-  return NextResponse.json(data, {
-    headers: {
-      "Cache-Control": "public, max-age=3600, s-maxage=86400",
-    },
-  });
 }

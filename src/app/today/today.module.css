@@ -1,0 +1,334 @@
+.wrap {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: rgba(4, 120, 87, 0.9);
+}
+
+.title {
+  margin: 12px 0 0;
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.subtitle {
+  margin: 14px 0 0;
+  max-width: 640px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.58);
+}
+
+.stack {
+  display: grid;
+  gap: 24px;
+}
+
+.dataNote {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.warning {
+  border: 1px solid rgba(251, 191, 36, 0.42);
+  border-radius: 8px;
+  background: rgba(255, 251, 235, 0.78);
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(120, 53, 15, 0.95);
+}
+
+.sectionRule {
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: rgba(139, 111, 90, 0.72);
+}
+
+.locationShell {
+  border: 2px solid rgba(134, 143, 135, 0.95);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(8px);
+  padding: 14px;
+}
+
+.locationTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.locationLabel {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.locationName {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.locationSource {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.locationActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.controlButton,
+.controlButtonPrimary,
+.saveButton {
+  appearance: none;
+  height: 28px;
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.055);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    opacity 140ms ease;
+}
+
+.controlButton {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.controlButton:hover {
+  border-color: rgba(0, 0, 0, 0.22);
+  background: white;
+}
+
+.controlButtonPrimary {
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  background: rgba(16, 185, 129, 0.08);
+  color: rgba(6, 95, 70, 0.95);
+}
+
+.controlButtonPrimary:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.controlButtonPrimary:disabled {
+  opacity: 0.55;
+}
+
+.locationForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.input,
+.select {
+  height: 30px !important;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0 9px;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.035);
+}
+
+.regionInput {
+  width: 96px;
+}
+
+.saveRow {
+  grid-column: 1 / -1;
+}
+
+.saveButton {
+  border: 1px solid rgba(0, 0, 0, 0.82);
+  background: rgba(0, 0, 0, 0.86);
+  color: white;
+}
+
+.locationError {
+  margin: 10px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(185, 28, 28, 0.95);
+}
+
+.clock {
+  margin-top: 12px;
+}
+
+.clockLabel {
+  margin: 0 0 8px;
+  text-align: right;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.42);
+}
+
+.clockRow {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.clockUnit {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+}
+
+.clockDigits {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.clockDigitsFixed {
+  min-width: 43px;
+}
+
+.clockDigitsDays {
+  min-width: 0;
+}
+
+.clockTile {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 30px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  background: rgba(0, 0, 0, 0.78);
+  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.08);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.clockTile::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.clockSeparator {
+  margin-top: -16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 900;
+  color: rgba(0, 0, 0, 0.34);
+}
+
+.clockUnitLabel {
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.86);
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    padding: 28px 16px;
+  }
+
+  .header,
+  .locationTop {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .locationActions {
+    justify-content: flex-start;
+  }
+
+  .locationForm {
+    grid-template-columns: 1fr;
+  }
+
+  .regionInput {
+    width: 100%;
+  }
+}
