@@ -63,12 +63,15 @@ export default function Header() {
           <Divider />
 
           <Section title="Planners">
-            <MenuItem href="/today">Today in Your Area</MenuItem>
             <MenuItem href="/cruise">Cruise Planner</MenuItem>
             <MenuItem href="/wedding-plan">Wedding Planner</MenuItem>
             <MenuItem href="/tax-document-checklist">Tax Document Checklist</MenuItem>
           </Section>
         </Dropdown>
+
+        <Link href="/today" style={topLinkStyle}>
+          Today
+        </Link>
 
         <Link href="/about" style={topLinkStyle}>
           About

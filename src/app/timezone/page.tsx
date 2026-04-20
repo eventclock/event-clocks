@@ -5,7 +5,7 @@ import WebAppSchema from "@/components/WebAppSchema";
 export const metadata: Metadata = {
   title: "Timezone Converter",
   description:
-    "Compare one date/time across many timezones — DST-aware, with favorites and share links.",
+    "Compare one date/time across many timezones with country labels, DST-aware results, and share links.",
   alternates: {
     canonical: "https://www.event-clocks.com/timezone",
   },
@@ -17,12 +17,12 @@ export default function TimezonePage() {
       <WebAppSchema
         name="Timezone Converter"
         url="https://www.event-clocks.com/timezone"
-        description="Compare one date/time across many timezones — DST-aware, with favorites and share links."
+        description="Compare one date/time across many timezones with country labels, DST-aware results, and share links."
         features={[
           "Convert one date and time across multiple time zones",
           "Automatically account for daylight saving time changes",
           "Compare local times and UTC offsets side by side",
-          "Save favorite time zones for faster reuse",
+          "Show country context for supported IANA time zones",
           "Generate share links for timezone comparisons",
         ]}
       />
