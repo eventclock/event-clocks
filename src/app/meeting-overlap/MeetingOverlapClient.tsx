@@ -408,7 +408,7 @@ const btnBase =
   "inline-flex h-8 items-center justify-center rounded-md px-2 py-0 !text-[12px] !leading-none font-semibold border transition disabled:opacity-50 disabled:cursor-not-allowed";
 
 const btnNeutral = `${btnBase} bg-white border-[#8b6f5a]/30 hover:bg-[#8b6f5a]/5 text-black/75`;
-const btnPrimary = `${btnBase} bg-[#5f4a3b] border-[#5f4a3b] text-white hover:bg-[#4e3d31] disabled:bg-stone-200 disabled:border-stone-200 disabled:text-white/70`;
+const btnPrimary = `${btnBase} bg-[#5f4a3b] border-[#5f4a3b] text-white hover:bg-[#4e3d31] disabled:bg-[#8b6f5a]/12 disabled:border-[#8b6f5a]/28 disabled:text-[#5f4a3b]/60`;
 const btnSuccessActive = `${btnBase} bg-[#5f4a3b] border-[#5f4a3b] text-white hover:bg-[#4e3d31]`;
 const btnSuccessIdle = `${btnBase} bg-white border-[#8b6f5a]/30 hover:bg-[#8b6f5a]/5 text-black/75`;
 
