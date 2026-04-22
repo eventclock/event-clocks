@@ -1,6 +1,8 @@
 // src/app/timezone/TimezoneClient.tsx
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   formatInTimeZone,
@@ -9,7 +11,6 @@ import {
   zonedDateTimeLocalToUtc,
 } from "@/lib/tz";
 import { getTimeZoneMetadata } from "@/lib/timezones/metadata";
-import TimezoneDatalist from "@/components/TimezoneDatalist";
 import styles from "./timezone.module.css";
 
 const FALLBACK_TZS = [
@@ -28,6 +29,7 @@ const FALLBACK_TZS = [
 ];
 
 const STORAGE_KEY = "tztool:v5";
+const DEFAULT_FROM_TZ = "UTC";
 
 function toLocalDatetimeInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -43,6 +45,14 @@ function getTimeZoneChoices(): string[] {
   const supported = intlWithSupportedValues.supportedValuesOf?.("timeZone");
   if (Array.isArray(supported) && supported.length > 0) return supported;
   return FALLBACK_TZS;
+}
+
+function normalizeLookup(value: string) {
+  return value.trim().toLowerCase().replace(/[_\s]+/g, " ");
+}
+
+function displayNameForTimeZone(timeZone: string) {
+  return getTimeZoneMetadata(timeZone).displayName;
 }
 
 function isValidIanaTz(tz: string) {
@@ -98,10 +108,34 @@ function formatLocalDiffLabel(fromOffsetMs: number, targetOffsetMs: number): str
   return `(${sign}${hours}:${String(minutes).padStart(2, "0")}h)`;
 }
 
+type SelectedPlace = {
+  timeZone: string;
+  label: string;
+};
+
 type SavedState = {
   fromTz: string;
-  targets: string[];
+  fromLabel?: string;
+  targets: SelectedPlace[];
 };
+
+function normalizeSavedTarget(input: unknown): SelectedPlace | null {
+  if (typeof input === "string") {
+    return isValidIanaTz(input) ? { timeZone: input, label: displayNameForTimeZone(input) } : null;
+  }
+
+  if (!input || typeof input !== "object") return null;
+  const candidate = input as Partial<SelectedPlace>;
+  if (typeof candidate.timeZone !== "string" || !isValidIanaTz(candidate.timeZone)) return null;
+
+  return {
+    timeZone: candidate.timeZone,
+    label:
+      typeof candidate.label === "string" && candidate.label.trim()
+        ? candidate.label.trim()
+        : displayNameForTimeZone(candidate.timeZone),
+  };
+}
 
 function safeParse(json: string | null): SavedState | null {
   if (!json) return null;
@@ -111,16 +145,30 @@ function safeParse(json: string | null): SavedState | null {
 
     const saved = obj as Partial<Record<keyof SavedState, unknown>>;
     const fromTz = typeof saved.fromTz === "string" ? saved.fromTz : null;
+    const fromLabel = typeof saved.fromLabel === "string" ? saved.fromLabel : undefined;
     const targets = Array.isArray(saved.targets)
-      ? saved.targets.filter((x): x is string => typeof x === "string")
+      ? saved.targets
+          .map(normalizeSavedTarget)
+          .filter((target): target is SelectedPlace => Boolean(target))
       : null;
 
     if (!fromTz || !targets) return null;
-    return { fromTz, targets };
+    return { fromTz, fromLabel, targets };
   } catch {
     return null;
   }
 }
+
+type CitySuggestion = {
+  id: string;
+  label: string;
+  name: string;
+  adminName: string;
+  countryCode: string;
+  countryName: string;
+  timeZone: string;
+  population: number;
+};
 
 type SortKey = "tz" | "local" | "offset";
 type SortDir = "asc" | "desc";
@@ -156,48 +204,192 @@ function SortIndicator({
 }
 
 export default function TimezoneClient() {
-  // Kept for compatibility / future use; also makes your Intl fallback available.
-  useMemo(() => getTimeZoneChoices(), []);
   const helpRef = useRef<HTMLDetailsElement | null>(null);
+  const defaultFromLabel = displayNameForTimeZone(DEFAULT_FROM_TZ);
 
-  const [fromTz, setFromTz] = useState(getLocalTimeZone());
+  const [timeZoneOptions, setTimeZoneOptions] = useState<string[]>(FALLBACK_TZS);
+  const [fromTz, setFromTz] = useState(DEFAULT_FROM_TZ);
+  const [fromLabel, setFromLabel] = useState(defaultFromLabel);
+  const [fromInput, setFromInput] = useState(defaultFromLabel);
   const [dtLocal, setDtLocal] = useState(""); // datetime-local
 
-  const [targets, setTargets] = useState<string[]>(["Asia/Manila"]);
+  const [targets, setTargets] = useState<SelectedPlace[]>([
+    { timeZone: "Asia/Manila", label: "Manila, Metro Manila, Philippines" },
+  ]);
   const [newTarget, setNewTarget] = useState("");
+  const [baseSuggestions, setBaseSuggestions] = useState<CitySuggestion[]>([]);
+  const [targetSuggestions, setTargetSuggestions] = useState<CitySuggestion[]>([]);
 
+  const [hasInitialized, setHasInitialized] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Sorting
   const [sortKey, setSortKey] = useState<SortKey>("offset");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
-  // Track whether dt was explicitly provided in the URL (share links)
-  const hasDtFromUrlRef = useRef(false);
-
-  // Load localStorage
   useEffect(() => {
-    const saved = safeParse(localStorage.getItem(STORAGE_KEY));
-    if (saved) {
-      if (isValidIanaTz(saved.fromTz)) setFromTz(saved.fromTz);
-
-      const validTargets = saved.targets.filter(isValidIanaTz);
-      if (validTargets.length > 0) setTargets(Array.from(new Set(validTargets)));
-    }
+    setTimeZoneOptions(getTimeZoneChoices());
   }, []);
 
-  // Share-link support: ?from=...&dt=...&to=tz1,tz2,tz3
+  const resolveTimeZoneInput = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    if (isValidIanaTz(trimmed)) return getTimeZoneMetadata(trimmed).canonicalTimeZone;
+
+    const normalized = normalizeLookup(trimmed);
+    return (
+      timeZoneOptions.find((tz) => {
+        const metadata = getTimeZoneMetadata(tz);
+        return (
+          normalizeLookup(metadata.displayName) === normalized ||
+          normalizeLookup(metadata.cityName) === normalized ||
+          normalizeLookup(metadata.canonicalTimeZone) === normalized
+        );
+      }) ?? null
+    );
+  };
+
+  const findMatchingSuggestion = (value: string, suggestions: CitySuggestion[]) => {
+    const normalized = normalizeLookup(value);
+    return suggestions.find((suggestion) => normalizeLookup(suggestion.label) === normalized) ?? null;
+  };
+
+  const selectBasePlace = (place: SelectedPlace) => {
+    setFromTz(place.timeZone);
+    setFromLabel(place.label);
+    setFromInput(place.label);
+    setBaseSuggestions([]);
+  };
+
+  const selectTargetPlace = (place: SelectedPlace) => {
+    setTargets((prev) =>
+      prev.some((target) => target.timeZone === place.timeZone && target.label === place.label)
+        ? prev
+        : [...prev, place],
+    );
+    setNewTarget("");
+    setTargetSuggestions([]);
+  };
+
+  const applyBaseInput = (value: string) => {
+    setFromInput(value);
+
+    const resolved = resolveTimeZoneInput(value);
+    if (resolved) {
+      setFromTz(resolved);
+      setFromLabel(displayNameForTimeZone(resolved));
+    }
+  };
+
+  const settleBaseInput = () => {
+    const cityMatch = findMatchingSuggestion(fromInput, baseSuggestions);
+    if (cityMatch) {
+      selectBasePlace({ timeZone: cityMatch.timeZone, label: cityMatch.label });
+      return;
+    }
+
+    const resolved = resolveTimeZoneInput(fromInput);
+    if (resolved) {
+      setFromTz(resolved);
+      const label = displayNameForTimeZone(resolved);
+      setFromLabel(label);
+      setFromInput(label);
+      return;
+    }
+
+    if (isValidIanaTz(fromTz)) {
+      setFromInput(fromLabel);
+    }
+  };
+
   useEffect(() => {
+    const query = fromInput.trim();
+    if (query.length < 2 || query === fromLabel) {
+      setBaseSuggestions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/timezone-cities?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const data = (await response.json()) as { results?: CitySuggestion[] };
+        setBaseSuggestions(Array.isArray(data.results) ? data.results : []);
+      } catch {
+        if (!controller.signal.aborted) setBaseSuggestions([]);
+      }
+    }, 180);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [fromInput, fromLabel]);
+
+  useEffect(() => {
+    const query = newTarget.trim();
+    if (query.length < 2) {
+      setTargetSuggestions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/timezone-cities?q=${encodeURIComponent(query)}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const data = (await response.json()) as { results?: CitySuggestion[] };
+        setTargetSuggestions(Array.isArray(data.results) ? data.results : []);
+      } catch {
+        if (!controller.signal.aborted) setTargetSuggestions([]);
+      }
+    }, 180);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [newTarget]);
+
+  // Browser-only initialization. Keep SSR and the first client render deterministic.
+  useEffect(() => {
+    const saved = safeParse(localStorage.getItem(STORAGE_KEY));
     const p = new URLSearchParams(window.location.search);
     const from = p.get("from");
     const dt = p.get("dt");
     const to = p.get("to");
 
-    if (from && isValidIanaTz(from)) setFromTz(from);
+    if (saved?.fromTz && isValidIanaTz(saved.fromTz)) {
+      setFromTz(saved.fromTz);
+      const label = saved.fromLabel || displayNameForTimeZone(saved.fromTz);
+      setFromLabel(label);
+      setFromInput(label);
+    } else {
+      const localTimeZone = getLocalTimeZone();
+      const label = displayNameForTimeZone(localTimeZone);
+      setFromTz(localTimeZone);
+      setFromLabel(label);
+      setFromInput(label);
+    }
+
+    if (saved && saved.targets.length > 0) setTargets(saved.targets);
+
+    if (from && isValidIanaTz(from)) {
+      setFromTz(from);
+      const label = displayNameForTimeZone(from);
+      setFromLabel(label);
+      setFromInput(label);
+    }
 
     if (dt) {
-      hasDtFromUrlRef.current = true;
       setDtLocal(dt);
+    } else {
+      setDtLocal(toLocalDatetimeInputValue(new Date()));
     }
 
     if (to) {
@@ -206,22 +398,25 @@ export default function TimezoneClient() {
         .map((s) => s.trim())
         .filter(Boolean)
         .filter(isValidIanaTz);
-      if (list.length > 0) setTargets(Array.from(new Set(list)));
+      if (list.length > 0) {
+        setTargets(
+          Array.from(new Set(list)).map((timeZone) => ({
+            timeZone,
+            label: displayNameForTimeZone(timeZone),
+          })),
+        );
+      }
     }
-  }, []);
 
-  // Default datetime to "now" when entering the page (but do NOT override share-link dt)
-  useEffect(() => {
-    if (!dtLocal && !hasDtFromUrlRef.current) {
-      setDtLocal(toLocalDatetimeInputValue(new Date()));
-    }
-  }, [dtLocal]);
+    setHasInitialized(true);
+  }, []);
 
   // Persist state
   useEffect(() => {
-    const payload: SavedState = { fromTz, targets };
+    if (!hasInitialized) return;
+    const payload: SavedState = { fromTz, fromLabel, targets };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  }, [fromTz, targets]);
+  }, [hasInitialized, fromTz, fromLabel, targets]);
 
   const utcDate = useMemo(() => {
     if (!dtLocal || !isValidIanaTz(fromTz)) return null;
@@ -235,31 +430,33 @@ export default function TimezoneClient() {
 
   const fromRow = useMemo(() => {
     if (!utcDate) return null;
-    const metadata = getTimeZoneMetadata(fromTz);
 
     return {
       tz: fromTz,
-      locationLabel: metadata.displayName,
+      locationLabel: fromLabel,
       time: formatInTimeZone(utcDate, fromTz),
       offset: getUtcOffsetLabelAtUtc(fromTz, utcDate),
     };
-  }, [utcDate, fromTz]);
+  }, [utcDate, fromTz, fromLabel]);
 
   const rows: Row[] = useMemo(() => {
     if (!utcDate || fromOffsetMs == null) return [];
 
-    const uniqueTargets = Array.from(new Set(targets))
-      .filter(isValidIanaTz)
-      .filter((tz) => tz !== fromTz);
+    const uniqueTargets = Array.from(
+      new Map(targets.map((target) => [`${target.timeZone}:${target.label}`, target])).values(),
+    )
+      .filter((target) => isValidIanaTz(target.timeZone))
+      .filter((target) => target.timeZone !== fromTz || target.label !== fromLabel);
 
-    return uniqueTargets.map((tz) => {
+    return uniqueTargets.map((target) => {
+      const tz = target.timeZone;
       const targetOffsetMs = getOffsetMsAtUtc(tz, utcDate);
       const localMs = utcDate.getTime() + targetOffsetMs;
       const metadata = getTimeZoneMetadata(tz);
 
       return {
         tz,
-        locationLabel: metadata.displayName,
+        locationLabel: target.label || metadata.displayName,
         time: formatInTimeZone(utcDate, tz),
         offset: getUtcOffsetLabelAtUtc(tz, utcDate),
         diffLabel: formatLocalDiffLabel(fromOffsetMs, targetOffsetMs),
@@ -267,13 +464,13 @@ export default function TimezoneClient() {
         localMs,
       };
     });
-  }, [targets, utcDate, fromOffsetMs, fromTz]);
+  }, [targets, utcDate, fromOffsetMs, fromTz, fromLabel]);
 
   const sortedRows = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
 
     const cmp = (a: Row, b: Row) => {
-      if (sortKey === "tz") return dir * a.tz.localeCompare(b.tz, "en");
+      if (sortKey === "tz") return dir * a.locationLabel.localeCompare(b.locationLabel, "en");
       if (sortKey === "offset") return dir * (a.targetOffsetMs - b.targetOffsetMs);
       return dir * (a.localMs - b.localMs); // local
     };
@@ -291,37 +488,51 @@ export default function TimezoneClient() {
   };
 
   const addTarget = (tzOverride?: string) => {
-    const tz = (tzOverride ?? newTarget).trim();
+    const cityMatch = tzOverride ? null : findMatchingSuggestion(newTarget, targetSuggestions);
+    if (cityMatch) {
+      selectTargetPlace({ timeZone: cityMatch.timeZone, label: cityMatch.label });
+      return;
+    }
+
+    const tz = (tzOverride ?? resolveTimeZoneInput(newTarget) ?? newTarget).trim();
     if (!tz) return;
     if (!isValidIanaTz(tz)) return;
 
-    setTargets((prev) => (prev.includes(tz) ? prev : [...prev, tz]));
+    const place = { timeZone: tz, label: displayNameForTimeZone(tz) };
+    setTargets((prev) =>
+      prev.some((target) => target.timeZone === place.timeZone && target.label === place.label)
+        ? prev
+        : [...prev, place],
+    );
     if (!tzOverride) setNewTarget("");
   };
 
-  const removeTarget = (tz: string) => {
-    setTargets((prev) => prev.filter((x) => x !== tz));
+  const removeTarget = (place: SelectedPlace) => {
+    setTargets((prev) =>
+      prev.filter((target) => target.timeZone !== place.timeZone || target.label !== place.label),
+    );
   };
 
   const swapPrimary = () => {
     if (targets.length === 0) return;
     const first = targets[0];
-    setTargets([fromTz, ...targets.slice(1)]);
-    setFromTz(first);
+    setTargets([{ timeZone: fromTz, label: fromLabel }, ...targets.slice(1)]);
+    setFromTz(first.timeZone);
+    setFromLabel(first.label);
+    setFromInput(first.label);
   };
 
   const share = async () => {
     const u = new URL(window.location.href);
     u.searchParams.set("from", fromTz);
     if (dtLocal) u.searchParams.set("dt", dtLocal);
-    if (targets.length > 0) u.searchParams.set("to", targets.join(","));
+    if (targets.length > 0) u.searchParams.set("to", targets.map((target) => target.timeZone).join(","));
     await navigator.clipboard.writeText(u.toString());
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
   };
 
   const canCompute = dtLocal.length > 0 && isValidIanaTz(fromTz);
-  const baseTimeZoneMetadata = getTimeZoneMetadata(fromTz);
 
   return (
     <main className={styles.wrap}>
@@ -343,7 +554,7 @@ export default function TimezoneClient() {
         </button>
       </div>
       <p className={styles.subtitle}>
-        Convert a date/time from one timezone and compare it across many timezones (DST-aware).
+        Convert a date/time from one city or place and compare it across others (DST-aware).
       </p>
 
       <div className={styles.stack}>
@@ -352,17 +563,38 @@ export default function TimezoneClient() {
           <div className={styles.sectionLabel}>Base time</div>
           <div className={styles.inputGrid}>
             <div className={styles.field}>
-              <label className={styles.label}>Timezone</label>
+              <label className={styles.label}>City / place</label>
               <input
-                list="tz-list"
-                value={fromTz}
-                onChange={(e) => setFromTz(e.target.value)}
-                placeholder="e.g. America/Los_Angeles"
+                value={fromInput}
+                onChange={(e) => applyBaseInput(e.target.value)}
+                onBlur={settleBaseInput}
+                placeholder="e.g. Los Angeles"
                 className={styles.input}
               />
               {isValidIanaTz(fromTz) && (
                 <div className={styles.fieldHint}>
-                  {baseTimeZoneMetadata.displayName}
+                  {fromTz}
+                </div>
+              )}
+              {baseSuggestions.length > 0 && (
+                <div className={styles.suggestionList}>
+                  {baseSuggestions.map((suggestion) => (
+                    <button
+                      key={suggestion.id}
+                      type="button"
+                      className={styles.suggestion}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() =>
+                        selectBasePlace({
+                          timeZone: suggestion.timeZone,
+                          label: suggestion.label,
+                        })
+                      }
+                    >
+                      <span>{suggestion.label}</span>
+                      <span>{suggestion.timeZone}</span>
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -379,8 +611,6 @@ export default function TimezoneClient() {
               />
             </div>
           </div>
-
-          <TimezoneDatalist />
 
           <div className={styles.buttonRow}>
             <button
@@ -403,10 +633,9 @@ export default function TimezoneClient() {
 
           <div className={styles.addRow}>
             <input
-              list="tz-list"
               value={newTarget}
               onChange={(e) => setNewTarget(e.target.value)}
-              placeholder="e.g. Europe/London"
+              placeholder="e.g. London"
               className={`${styles.input} ${styles.addInput}`}
             />
 
@@ -414,6 +643,27 @@ export default function TimezoneClient() {
               Add to Compare
             </button>
           </div>
+          {targetSuggestions.length > 0 && (
+            <div className={styles.suggestionList}>
+              {targetSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion.id}
+                  type="button"
+                  className={styles.suggestion}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() =>
+                    selectTargetPlace({
+                      timeZone: suggestion.timeZone,
+                      label: suggestion.label,
+                    })
+                  }
+                >
+                  <span>{suggestion.label}</span>
+                  <span>{suggestion.timeZone}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className={styles.selectedZone}>
             <div className={styles.selectedHeader}>
@@ -423,28 +673,32 @@ export default function TimezoneClient() {
 
             {targets.length === 0 ? (
               <div className={styles.muted}>
-                No timezones yet. Add one above to start.
+                No places yet. Add one above to start.
               </div>
             ) : (
               <div className={styles.chipRow}>
-                {targets.map((tz) => (
-                  <div key={tz} className={styles.chip}>
+                {targets.map((target) => {
+                  const metadata = getTimeZoneMetadata(target.timeZone);
+
+                  return (
+                    <div key={`${target.timeZone}:${target.label}`} className={styles.chip}>
                     <span className={styles.chipText}>
-                      <span>{tz}</span>
+                      <span>{target.label || metadata.displayName}</span>
                       <span className={styles.chipMeta}>
-                        {getTimeZoneMetadata(tz).displayName}
+                        {metadata.canonicalTimeZone}
                       </span>
                     </span>
 
                     <button
-                      onClick={() => removeTarget(tz)}
+                      onClick={() => removeTarget(target)}
                       className={styles.iconButton}
                       title="Remove from comparison"
                     >
                       ×
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -458,7 +712,7 @@ export default function TimezoneClient() {
 
           {!canCompute ? (
             <div className={styles.muted}>
-              Pick a date/time and a valid base timezone to see conversions.
+              Pick a date/time and a valid base city or place to see conversions.
             </div>
           ) : !utcDate ? (
             <div className={styles.errorText}>Could not parse input.</div>
@@ -481,7 +735,7 @@ export default function TimezoneClient() {
                   <thead>
                     <tr className={styles.headRow}>
                       <th className={styles.th} onClick={() => onSort("tz")}>
-                        Timezone
+                        City / place
                         <SortIndicator active={sortKey === "tz"} dir={sortDir} />
                       </th>
                       <th className={styles.th} onClick={() => onSort("local")}>
@@ -501,10 +755,10 @@ export default function TimezoneClient() {
                         <td className={styles.td}>
                           <div className={styles.tzCell}>
                             <div>
-                              <strong>{fromRow.tz}</strong>{" "}
+                              <strong>{fromRow.locationLabel}</strong>{" "}
                               <span className={styles.fromLabel}>(Base)</span>
                             </div>
-                            <div className={styles.tzMeta}>{fromRow.locationLabel}</div>
+                            <div className={styles.tzMeta}>{fromRow.tz}</div>
                           </div>
                         </td>
                         <td className={styles.td}>
@@ -518,13 +772,13 @@ export default function TimezoneClient() {
 
                     {sortedRows.map((r, idx) => (
                       <tr
-                        key={r.tz}
+                        key={`${r.tz}:${r.locationLabel}`}
                         className={idx % 2 === 0 ? styles.rowAlt : styles.row}
                       >
                         <td className={styles.td}>
                           <div className={styles.tzCell}>
-                            <div>{r.tz}</div>
-                            <div className={styles.tzMeta}>{r.locationLabel}</div>
+                            <div>{r.locationLabel}</div>
+                            <div className={styles.tzMeta}>{r.tz}</div>
                           </div>
                         </td>
 
@@ -549,7 +803,7 @@ export default function TimezoneClient() {
                     {sortedRows.length === 0 && (
                       <tr>
                         <td colSpan={3} className={styles.td}>
-                          Add at least one comparison timezone.
+                          Add at least one comparison place.
                         </td>
                       </tr>
                     )}
@@ -560,7 +814,7 @@ export default function TimezoneClient() {
           )}
 
           <div className={styles.muted}>
-            Tip: the italic value is the time difference vs the base timezone.
+            Tip: the italic value is the time difference vs the base city.
           </div>
         </section>
 
@@ -575,7 +829,7 @@ export default function TimezoneClient() {
             <div>
               <div className={styles.helpH3}>What is a Timezone Converter?</div>
               <div>
-                A timezone converter helps you compare the same date and time across multiple time zones instantly.
+                A timezone converter helps you compare the same date and time across multiple places instantly.
                 It’s useful for scheduling meetings, coordinating with remote teams, and planning travel—especially
                 when people are spread across different regions.
               </div>
@@ -608,13 +862,17 @@ export default function TimezoneClient() {
             <div>
               <div className={styles.helpH3}>How to use this tool</div>
               <div>
-                Pick a base date/time and timezone, then add one or more comparison time zones. The results
+                Pick a base date/time and city or timezone, then add one or more comparison places. The results
                 table shows the local time and UTC offset for each zone. Use the “Copy share link” button to send the
                 exact setup to someone else.
               </div>
               <div className={styles.helpParagraphGap}>
                 If you’re trying to find a meeting time that works for everyone, use the Meeting Overlap tool after
-                you’ve confirmed the time zones here.
+                you’ve confirmed the places here.
+              </div>
+              <div className={styles.helpParagraphGap}>
+                City suggestions are derived from the GeoNames cities15000 dataset; timezone conversion still uses
+                the selected city’s IANA timezone.
               </div>
             </div>
           </div>
