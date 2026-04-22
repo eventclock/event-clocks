@@ -18,13 +18,6 @@ type LoadState = "idle" | "loading" | "ready" | "empty" | "error";
 
 const LS_KEY = "eventclocks:holiday-long-weekend-planner:v1";
 
-function isPublicHoliday(input: unknown) {
-  if (!input || typeof input !== "object") return false;
-
-  const types = (input as { types?: unknown }).types;
-  return Array.isArray(types) && types.some((type) => type === "Public");
-}
-
 function getCurrentYear() {
   return new Date().getFullYear();
 }
@@ -294,7 +287,6 @@ export default function HolidayLongWeekendPlannerClient() {
 
           return Array.isArray(data)
             ? data
-                .filter(isPublicHoliday)
                 .map(normalizeHoliday)
                 .filter((holiday): holiday is NonNullable<typeof holiday> => !!holiday)
             : [];

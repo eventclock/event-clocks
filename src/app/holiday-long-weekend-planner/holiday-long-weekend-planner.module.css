@@ -1,4 +1,17 @@
 .page {
+  --bronze-line: rgba(139, 111, 90, 0.52);
+  --bronze-line-soft: rgba(139, 111, 90, 0.22);
+  --bronze-ink: rgba(65, 48, 38, 0.92);
+  --bronze-muted: rgba(96, 77, 64, 0.66);
+  --bronze-wash: rgba(139, 111, 90, 0.08);
+  --bronze-wash-strong: rgba(139, 111, 90, 0.14);
+  --gold-line: rgba(183, 141, 64, 0.32);
+  --gold-wash: rgba(206, 166, 86, 0.14);
+  --gold-wash-soft: rgba(206, 166, 86, 0.08);
+  --silver-line: rgba(126, 132, 137, 0.24);
+  --silver-wash: rgba(126, 132, 137, 0.09);
+  --pewter-ink: rgba(56, 58, 59, 0.84);
+  --paper: rgba(255, 255, 255, 0.78);
   width: min(980px, calc(100% - 32px));
   margin: 0 auto;
   padding: 26px 0 44px;
@@ -10,16 +23,18 @@
   gap: 18px;
   align-items: end;
   padding: 18px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--bronze-line);
   border-radius: 8px;
   background:
     linear-gradient(
       135deg,
-      rgba(186, 230, 253, 0.24),
-      rgba(255, 255, 255, 0) 72%
+      rgba(255, 255, 255, 0.94),
+      rgba(139, 111, 90, 0.16) 44%,
+      rgba(180, 145, 117, 0.1) 70%,
+      rgba(255, 255, 255, 0.86)
     ),
-    rgba(255, 255, 255, 0.74);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.045);
+    var(--paper);
+  box-shadow: 0 12px 26px rgba(65, 48, 38, 0.055);
   backdrop-filter: blur(4px);
 }
 
@@ -33,7 +48,7 @@
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
-  color: rgba(37, 99, 145, 0.9);
+  color: var(--bronze-ink);
   opacity: 1;
 }
 
@@ -42,7 +57,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.55;
-  color: rgba(15, 23, 42, 0.62);
+  color: var(--bronze-muted);
   opacity: 1;
 }
 
@@ -61,20 +76,20 @@
 .control span {
   font-size: 11px;
   font-weight: 800;
-  color: rgba(15, 23, 42, 0.58);
+  color: rgba(65, 48, 38, 0.58);
 }
 
 .control select,
 .control input {
   width: 100%;
   height: 36px;
-  border: 1px solid rgba(15, 23, 42, 0.14);
+  border: 1px solid var(--bronze-line-soft);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.86);
-  color: rgba(15, 23, 42, 0.84);
+  color: rgba(38, 32, 28, 0.84);
   padding: 0 10px;
   font-size: 12px !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 2px rgba(65, 48, 38, 0.04);
 }
 
 .summaryGrid {
@@ -87,10 +102,12 @@
 .statCard {
   min-height: 82px;
   padding: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--bronze-line-soft);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), var(--bronze-wash)),
+    rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 20px rgba(65, 48, 38, 0.04);
 }
 
 .statLabel {
@@ -99,7 +116,7 @@
   white-space: nowrap;
   font-size: 10px;
   font-weight: 800;
-  color: rgba(15, 23, 42, 0.48);
+  color: rgba(65, 48, 38, 0.48);
 }
 
 .statValue {
@@ -112,23 +129,23 @@
   font-size: 18px;
   font-weight: 850;
   line-height: 1.12;
-  color: rgba(15, 23, 42, 0.86);
+  color: rgba(38, 32, 28, 0.88);
 }
 
 .statDetail {
   margin-top: 5px;
   font-size: 11px;
   line-height: 1.25;
-  color: rgba(15, 23, 42, 0.52);
+  color: rgba(65, 48, 38, 0.56);
 }
 
 .panel {
   margin-top: 14px;
   padding: 16px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--bronze-line-soft);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.045);
+  box-shadow: 0 10px 24px rgba(65, 48, 38, 0.045);
 }
 
 .sectionHeader {
@@ -148,7 +165,7 @@
 .sectionHeader p {
   margin: 3px 0 0;
   font-size: 12px;
-  color: rgba(15, 23, 42, 0.52);
+  color: var(--bronze-muted);
   opacity: 1;
 }
 
@@ -157,13 +174,15 @@
   align-items: center;
   min-height: 26px;
   white-space: nowrap;
-  border: 1px solid rgba(14, 165, 233, 0.15);
+  border: 1px solid var(--gold-line);
   border-radius: 999px;
-  background: rgba(240, 249, 255, 0.72);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.86), var(--gold-wash)),
+    rgba(255, 255, 255, 0.72);
   padding: 0 10px;
   font-size: 11px;
   font-weight: 800;
-  color: rgba(3, 105, 161, 0.8);
+  color: var(--bronze-ink);
 }
 
 .holidayList {
@@ -181,9 +200,11 @@
   align-items: center;
   min-height: 70px;
   padding: 10px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--silver-line);
   border-radius: 8px;
-  background: rgba(248, 250, 252, 0.72);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.88), var(--silver-wash)),
+    rgba(250, 249, 247, 0.74);
 }
 
 .dateBlock {
@@ -196,19 +217,19 @@
   border-radius: 6px;
   background: linear-gradient(
     135deg,
-    rgba(220, 252, 231, 0.82),
+    var(--gold-wash),
     rgba(255, 255, 255, 0.88)
   );
   padding: 3px 7px;
   font-size: 11px;
   font-weight: 850;
-  color: rgba(72, 120, 90, 0.92);
+  color: var(--bronze-ink);
 }
 
 .dateText {
   font-size: 12px;
   font-weight: 750;
-  color: rgba(15, 23, 42, 0.72);
+  color: rgba(65, 48, 38, 0.72);
 }
 
 .holidayMain {
@@ -219,7 +240,7 @@
   overflow-wrap: anywhere;
   font-size: 14px;
   font-weight: 850;
-  color: rgba(15, 23, 42, 0.86);
+  color: rgba(38, 32, 28, 0.88);
 }
 
 .holidayMeta {
@@ -228,7 +249,7 @@
   gap: 6px;
   margin-top: 4px;
   font-size: 12px;
-  color: rgba(15, 23, 42, 0.54);
+  color: rgba(65, 48, 38, 0.56);
 }
 
 .tagList {
@@ -242,7 +263,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 24px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--silver-line);
   border-radius: 999px;
   padding: 0 8px;
   font-size: 11px;
@@ -251,13 +272,13 @@
 }
 
 .emptyState {
-  border: 1px dashed rgba(15, 23, 42, 0.15);
+  border: 1px dashed rgba(139, 111, 90, 0.28);
   border-radius: 8px;
-  background: rgba(248, 250, 252, 0.58);
+  background: rgba(250, 249, 247, 0.58);
   padding: 14px;
   font-size: 13px;
   line-height: 1.55;
-  color: rgba(15, 23, 42, 0.58);
+  color: var(--bronze-muted);
 }
 
 .pastSummary {
@@ -268,13 +289,13 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 850;
-  color: rgba(15, 23, 42, 0.78);
+  color: var(--bronze-ink);
 }
 
 .pastSummary span:last-child {
   font-size: 11px;
   font-weight: 800;
-  color: rgba(15, 23, 42, 0.48);
+  color: rgba(65, 48, 38, 0.48);
 }
 
 .panel[open] .pastSummary {
@@ -290,9 +311,11 @@
 
 .infoBlock {
   padding: 16px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--silver-line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.62);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.84), var(--silver-wash)),
+    rgba(255, 255, 255, 0.62);
 }
 
 .infoBlock h2 {
@@ -305,7 +328,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.65;
-  color: rgba(15, 23, 42, 0.62);
+  color: var(--bronze-muted);
   opacity: 1;
 }
 
@@ -347,13 +370,25 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .hero,
+  .hero {
+    border-color: rgba(180, 145, 117, 0.28);
+    background:
+      linear-gradient(
+        135deg,
+        rgba(139, 111, 90, 0.2),
+        rgba(180, 145, 117, 0.12) 52%,
+        rgba(15, 23, 42, 0.72)
+      ),
+      rgba(15, 23, 42, 0.72);
+    box-shadow: none;
+  }
+
   .statCard,
   .panel,
   .infoBlock {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(180, 145, 117, 0.18);
     background:
-      linear-gradient(135deg, rgba(14, 116, 144, 0.12), rgba(37, 99, 235, 0.08)),
+      linear-gradient(135deg, rgba(139, 111, 90, 0.1), rgba(15, 23, 42, 0.72)),
       rgba(15, 23, 42, 0.72);
     box-shadow: none;
   }
@@ -368,7 +403,7 @@
   }
 
   .eyebrow {
-    color: rgba(125, 211, 252, 0.88);
+    color: rgba(224, 190, 160, 0.88);
   }
 
   .control span,
@@ -394,8 +429,10 @@
 
   .holidayRow,
   .emptyState {
-    border-color: rgba(255, 255, 255, 0.08);
-    background: rgba(15, 23, 42, 0.62);
+    border-color: rgba(198, 168, 119, 0.12);
+    background:
+      linear-gradient(135deg, rgba(206, 166, 86, 0.06), rgba(148, 154, 159, 0.06)),
+      rgba(15, 23, 42, 0.62);
   }
 
   .dateText {
@@ -403,8 +440,8 @@
   }
 
   .midweekHoliday {
-    border-color: rgba(148, 163, 184, 0.22);
-    background: rgba(30, 41, 59, 0.88);
+    border-color: rgba(148, 154, 159, 0.24);
+    background: rgba(30, 35, 39, 0.88);
     color: rgba(226, 232, 240, 0.84);
   }
 }
@@ -418,23 +455,23 @@
 
 .yearChip {
   height: 30px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border: 1px solid var(--silver-line);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.78);
   padding: 0 10px;
   font-size: 11px;
   font-weight: 800;
-  color: rgba(15, 23, 42, 0.72);
+  color: rgba(65, 48, 38, 0.76);
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 2px rgba(65, 48, 38, 0.04);
 }
 
 .yearChipActive {
-  border-color: rgba(147, 197, 253, 0.24);
+  border-color: var(--gold-line);
   background:
-    linear-gradient(135deg, rgba(191, 219, 254, 0.22), rgba(255, 255, 255, 0) 72%),
+    linear-gradient(135deg, var(--gold-wash), rgba(255, 255, 255, 0) 72%),
     rgba(255, 255, 255, 0.74);
-  color: rgba(44, 92, 138, 0.92);
+  color: var(--bronze-ink);
 }
 
 .ptoList {
@@ -444,9 +481,11 @@
 
 .ptoCard {
   padding: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--silver-line);
   border-radius: 8px;
-  background: rgba(248, 250, 252, 0.72);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.84), var(--silver-wash)),
+    rgba(250, 249, 247, 0.72);
 }
 
 .ptoTopRow {
@@ -459,12 +498,12 @@
 .ptoTitle {
   font-size: 14px;
   font-weight: 850;
-  color: rgba(15, 23, 42, 0.86);
+  color: rgba(38, 32, 28, 0.88);
 }
 
 .ptoDate {
   font-size: 12px;
-  color: rgba(15, 23, 42, 0.56);
+  color: rgba(65, 48, 38, 0.56);
 }
 
 .ptoTags {
@@ -478,7 +517,7 @@
   margin: 10px 0 0;
   font-size: 13px;
   line-height: 1.6;
-  color: rgba(15, 23, 42, 0.62);
+  color: var(--bronze-muted);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -490,14 +529,18 @@
   }
 
   .yearChipActive {
-    border-color: rgba(56, 189, 248, 0.3);
-    background: rgba(8, 47, 73, 0.9);
-    color: rgba(186, 230, 253, 0.92);
+    border-color: rgba(198, 168, 119, 0.38);
+    background:
+      linear-gradient(135deg, rgba(206, 166, 86, 0.2), rgba(65, 48, 38, 0.58)),
+      rgba(65, 48, 38, 0.72);
+    color: rgba(245, 230, 202, 0.94);
   }
 
   .ptoCard {
-    border-color: rgba(255, 255, 255, 0.08);
-    background: rgba(15, 23, 42, 0.62);
+    border-color: rgba(198, 168, 119, 0.12);
+    background:
+      linear-gradient(135deg, rgba(206, 166, 86, 0.06), rgba(148, 154, 159, 0.06)),
+      rgba(15, 23, 42, 0.62);
   }
 
   .ptoTitle {
@@ -511,71 +554,71 @@
 }
 
 .longWeekend {
-  border-color: rgba(134, 239, 172, 0.26);
+  border-color: var(--gold-line);
   background: linear-gradient(
     135deg,
-    rgba(220, 252, 231, 0.72),
+    var(--gold-wash),
     rgba(255, 255, 255, 0.78)
   );
-  color: rgba(63, 98, 74, 0.92);
+  color: var(--bronze-ink);
 }
 
 .fourDayWeekend {
-  border-color: rgba(45, 212, 191, 0.28);
+  border-color: rgba(183, 141, 64, 0.38);
   background:
-    linear-gradient(135deg, rgba(204, 251, 241, 0.7), rgba(255, 255, 255, 0.76)),
-    rgba(240, 253, 250, 0.72);
-  color: rgba(17, 94, 89, 0.92);
+    linear-gradient(135deg, rgba(206, 166, 86, 0.2), rgba(255, 255, 255, 0.76)),
+    rgba(255, 255, 255, 0.72);
+  color: var(--bronze-ink);
 }
 
 .fiveDayWeekend {
-  border-color: rgba(20, 184, 166, 0.32);
+  border-color: rgba(183, 141, 64, 0.42);
   background:
-    linear-gradient(135deg, rgba(153, 246, 228, 0.72), rgba(255, 255, 255, 0.76)),
-    rgba(240, 253, 250, 0.78);
-  color: rgba(15, 118, 110, 0.94);
+    linear-gradient(135deg, rgba(206, 166, 86, 0.24), rgba(255, 255, 255, 0.76)),
+    rgba(255, 255, 255, 0.78);
+  color: var(--bronze-ink);
 }
 
 .bridgeDay {
-  border-color: rgba(147, 197, 253, 0.24);
+  border-color: var(--silver-line);
   background:
-    linear-gradient(135deg, rgba(191, 219, 254, 0.32), rgba(255, 255, 255, 0) 72%),
+    linear-gradient(135deg, var(--silver-wash), rgba(255, 255, 255, 0) 72%),
     rgba(255, 255, 255, 0.74);
-  color: rgba(44, 92, 138, 0.92);
+  color: var(--pewter-ink);
 }
 
 .nineDayBreak {
-  border-color: rgba(216, 180, 254, 0.32);
+  border-color: rgba(139, 111, 90, 0.28);
   background:
-    linear-gradient(135deg, rgba(243, 232, 255, 0.72), rgba(255, 255, 255, 0.76)),
-    rgba(250, 245, 255, 0.7);
-  color: rgba(107, 33, 168, 0.88);
+    linear-gradient(135deg, var(--bronze-wash-strong), rgba(255, 255, 255, 0.76)),
+    rgba(255, 255, 255, 0.7);
+  color: var(--bronze-ink);
 }
 
 .yearEndBreak {
-  border-color: rgba(251, 191, 36, 0.28);
+  border-color: var(--gold-line);
   background:
-    linear-gradient(135deg, rgba(254, 249, 195, 0.72), rgba(255, 255, 255, 0.76)),
-    rgba(255, 251, 235, 0.7);
-  color: rgba(133, 77, 14, 0.9);
+    linear-gradient(135deg, rgba(206, 166, 86, 0.18), rgba(255, 255, 255, 0.76)),
+    rgba(255, 255, 255, 0.7);
+  color: var(--bronze-ink);
 }
 
 .weekendHoliday {
-  border-color: rgba(245, 158, 11, 0.18);
+  border-color: var(--bronze-line-soft);
   background: linear-gradient(
     135deg,
-    rgba(255, 251, 235, 0.96),
-    rgba(254, 243, 199, 0.92)
+    rgba(255, 255, 255, 0.96),
+    rgba(139, 111, 90, 0.1)
   );
-  color: rgba(146, 64, 14, 0.88);
+  color: rgba(65, 48, 38, 0.82);
 }
 
 .midweekHoliday {
-  border-color: rgba(148, 163, 184, 0.14);
+  border-color: var(--silver-line);
   background: linear-gradient(
     135deg,
-    rgba(248, 250, 252, 0.96),
-    rgba(241, 245, 249, 0.94)
+    rgba(255, 255, 255, 0.96),
+    var(--silver-wash)
   );
-  color: rgba(71, 85, 105, 0.86);
+  color: var(--pewter-ink);
 }
