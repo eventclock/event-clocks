@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import PageShell from "@/components/PageShell";
 import { ISO_COUNTRIES } from "@/lib/isoCountries";
+import styles from "./meeting-overlap.module.css";
 
 // ---- Types ----
 type StepMinutes = 15 | 30 | 60;
@@ -107,6 +108,25 @@ function formatInTimeZone(date: Date, timeZone: string) {
 
   const label = `${weekday}, ${month} ${day} • ${parseInt(hourStr, 10)}:${minuteStr} ${dayPeriod}`;
   return { label, hour24, weekdayShort: weekday };
+}
+
+function formatUtcOffset(date: Date, timeZone: string) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      timeZoneName: "shortOffset",
+    }).formatToParts(date);
+    const rawOffset = parts.find((part) => part.type === "timeZoneName")?.value ?? "";
+    if (rawOffset === "GMT") return "UTC+00:00";
+
+    const match = rawOffset.match(/^GMT([+-])(\d{1,2})(?::(\d{2}))?$/);
+    if (!match) return rawOffset.replace("GMT", "UTC") || "UTC offset unavailable";
+
+    const [, sign, hour, minute = "00"] = match;
+    return `UTC${sign}${pad2(Number(hour))}:${minute}`;
+  } catch {
+    return "UTC offset unavailable";
+  }
 }
 
 function isWeekendShort(weekdayShort: string) {
@@ -270,7 +290,7 @@ function InfoTip({ id, text }: { id: string; text: string }) {
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="mo-info-button ml-1 inline-flex h-3 w-3 items-center justify-center rounded-[3px] border border-[#8b6f5a]/35 text-[8px] font-bold text-black/45 hover:text-[#5f4a3b]"
+        className={`${styles.infoButton} ml-1 inline-flex h-3 w-3 items-center justify-center rounded-[3px] border border-[#8b6f5a]/35 text-[8px] font-bold text-black/45 hover:text-[#5f4a3b]`}
         aria-label="Info"
         aria-expanded={open}
       >
@@ -737,6 +757,14 @@ export default function MeetingOverlapClient() {
     const now = new Date();
     setBaseDateLocal(`${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`);
   }, [mounted]);
+  const offsetReferenceDate = useMemo(() => {
+    const [year, month, day] = baseDateLocal.split("-").map((value) => parseInt(value, 10));
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+      return new Date();
+    }
+
+    return new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  }, [baseDateLocal]);
 
   const [startMin, setStartMin] = useState<number>(8 * 60);
   const [endMin, setEndMin] = useState<number>(22 * 60);
@@ -826,6 +854,7 @@ export default function MeetingOverlapClient() {
       latestCityQueryRef.current = normalizedQuery;
       try {
         const response = await fetch(`/api/timezone-cities?q=${encodeURIComponent(query)}&limit=8`, {
+          cache: "no-store",
           signal: controller.signal,
         });
         if (!response.ok) return;
@@ -1090,7 +1119,12 @@ export default function MeetingOverlapClient() {
 
   if (!mounted) {
     return (
-      <PageShell title="Meeting Overlap" subtitle="Find times that work across multiple time zones.">
+      <PageShell
+        title="Meeting Overlap"
+        subtitle="Find times that work across multiple time zones."
+        mainClassName={styles.page}
+        contentClassName={styles.shell}
+      >
         <section className="rounded-md border border-[#8b6f5a]/35 bg-white/95 shadow-sm">
           <div className="p-3">
             <div className="text-[11px] text-black/55">Loading planner…</div>
@@ -1101,29 +1135,13 @@ export default function MeetingOverlapClient() {
   }
 
   return (
-    <PageShell title="Meeting Overlap" subtitle="Find times that work across multiple time zones.">
-      {/* NEW: tiny CSS for qualify boxes (kept local + minimal) */}
-      <style jsx global>{`
-        .mo-qual-box {
-          border-radius: 4px;
-          padding: 6px 8px;
-          border: 1px solid rgba(139, 111, 90, 0.42);
-          background: rgba(139, 111, 90, 0.065);
-        }
-        .mo-noqual-box {
-          border-radius: 10px;
-          padding: 6px 8px;
-          border: 1px solid rgba(0, 0, 0, 0.06);
-          background: transparent;
-        }
-        .pastelMint {
-          background:
-            linear-gradient(135deg, rgba(185, 154, 97, 0.16), rgba(139, 111, 90, 0.035) 72%),
-            rgba(255, 255, 255, 0.41);
-        }
-      `}</style>
-
-      <div className="meeting-overlap space-y-3">
+    <PageShell
+      title="Meeting Overlap"
+      subtitle="Find times that work across multiple time zones."
+      mainClassName={styles.page}
+      contentClassName={styles.shell}
+    >
+      <div className={`${styles.root} space-y-2`}>
         <div className="flex justify-end">
           <button
             type="button"
@@ -1147,7 +1165,7 @@ export default function MeetingOverlapClient() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div className={`${styles.mainGrid} grid grid-cols-1 lg:grid-cols-3 gap-3`}>
           {/* Time Zones */}
           <section className="lg:col-span-2 rounded-md border border-[#8b6f5a]/35 bg-white/95 shadow-sm">
             <div className="p-3">
@@ -1470,12 +1488,17 @@ export default function MeetingOverlapClient() {
             <table className="min-w-[900px] w-full text-[11px]">
               <thead className="sticky top-0 bg-white border-b border-[#8b6f5a]/25">
                 <tr className="text-left">
-                  {tzList.map((t) => (
-                    <th key={t.id} className="px-2.5 py-2 font-semibold text-black/65">
-                      <span className="block text-[11px] text-black/75">{t.label || t.tz}</span>
-                      {t.label && <span className="block text-[10px] text-black/42">{t.tz}</span>}
-                    </th>
-                  ))}
+                  {tzList.map((t) => {
+                    const offset = formatUtcOffset(offsetReferenceDate, t.tz);
+
+                    return (
+                      <th key={t.id} className="px-2.5 py-2 font-semibold text-black/65">
+                        <span className="block text-[11px] text-black/75">{t.label || t.tz}</span>
+                        {t.label && <span className="block text-[10px] text-black/42">{t.tz}</span>}
+                        <span className="block text-[10px] font-semibold text-black/36">{offset}</span>
+                      </th>
+                    );
+                  })}
                   <th className="px-2.5 py-2 font-semibold text-black/65 w-[170px]">Status</th>
                 </tr>
               </thead>
@@ -1497,7 +1520,7 @@ export default function MeetingOverlapClient() {
                         key={r.utcISO}
                         className={[
                           "border-b border-[#8b6f5a]/10",
-                          ok ? "pastelMint" : zebra,
+                          ok ? styles.overlapRow : zebra,
                           // ok ? "shadow-[inset_5px_0_0_0_rgba(20,83,45,0.95)]" : "",
                           ok ? "text-black/85" : "text-black/58",
                         ].join(" ")}
@@ -1518,7 +1541,7 @@ export default function MeetingOverlapClient() {
                                 ok && colIdx === 0 ? "border-l-[6px] border-l-[#5f4a3b]" : "",
                               ].join(" ")}
                             >
-                              <div className={qualifies ? "mo-qual-box" : "mo-noqual-box"}>
+                              <div className={qualifies ? styles.qualBox : styles.noQualBox}>
                                 <span>{local?.localLabel ?? "—"}</span>
                                 {showWeekend && <span className={weekendBadge}>{local?.weekdayShort}</span>}
                                 {showHoliday && <span className={holidayBadge}>{local?.holidayName}</span>}

@@ -1,0 +1,70 @@
+.page {
+  --page-shell-max-width: min(1520px, calc(100vw - 48px));
+}
+
+.shell {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.root input,
+.root select,
+.root button {
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.root input:focus,
+.root select:focus {
+  outline: none;
+  border-color: rgba(139, 111, 90, 0.45);
+  box-shadow: 0 0 0 3px rgba(139, 111, 90, 0.14);
+}
+
+.root input[type="date"],
+.root input[type="time"],
+.root select {
+  font-size: 11px !important;
+  line-height: 1.1 !important;
+  height: 32px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.root button:not(.infoButton) {
+  height: 32px;
+}
+
+.infoButton {
+  height: 12px;
+  min-height: 12px;
+  width: 12px;
+  padding: 0;
+  line-height: 1;
+}
+
+.mainGrid {
+  margin-top: -4px;
+}
+
+.qualBox {
+  border-radius: 4px;
+  padding: 6px 8px;
+  border: 1px solid rgba(139, 111, 90, 0.42);
+  background: rgba(139, 111, 90, 0.065);
+}
+
+.noQualBox {
+  border-radius: 10px;
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: transparent;
+}
+
+.overlapRow {
+  background:
+    linear-gradient(135deg, rgba(185, 154, 97, 0.16), rgba(139, 111, 90, 0.035) 72%),
+    rgba(255, 255, 255, 0.41);
+}

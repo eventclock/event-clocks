@@ -6,7 +6,7 @@ type CacheRecord = {
 };
 
 const TODAY_CACHE_TTL_MS = 15 * 60 * 1000;
-const TODAY_CACHE_VERSION = "v4";
+const TODAY_CACHE_VERSION = "v6";
 const globalCache = globalThis as typeof globalThis & {
   __eventClocksTodayCache?: Map<string, CacheRecord>;
 };

@@ -160,7 +160,8 @@
 
 .locationForm {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(360px, 760px) auto;
+  align-items: start;
   gap: 12px;
   margin-top: 12px;
   padding-top: 12px;
@@ -178,6 +179,7 @@
 
 .input,
 .select {
+  width: 100%;
   height: 30px !important;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 6px;
@@ -190,12 +192,74 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.035);
 }
 
-.regionInput {
-  width: 96px;
+.cityField {
+  min-width: min(760px, 100%);
+}
+
+.citySearchWrap {
+  display: block;
+}
+
+.citySuggestions {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  max-height: 220px;
+  overflow: auto;
+  margin-top: 6px;
+  border: 1px solid rgba(139, 111, 90, 0.32);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.09);
+  padding: 5px;
+}
+
+.citySuggestion {
+  appearance: none;
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.78);
+  cursor: pointer;
+  padding: 7px 8px;
+  text-align: left;
+}
+
+.citySuggestion:hover,
+.citySuggestion:focus-visible {
+  background: rgba(139, 111, 90, 0.075);
+}
+
+.citySuggestion span:first-child {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.citySuggestion span:last-child {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.selectedCity {
+  grid-column: 1 / -1;
+  align-self: end;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.52);
 }
 
 .saveRow {
-  grid-column: 1 / -1;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
 }
 
 .saveButton {
@@ -204,11 +268,23 @@
   color: white;
 }
 
+.saveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
 .locationError {
   margin: 10px 0 0;
   font-size: 12px;
   font-weight: 700;
   color: rgba(185, 28, 28, 0.95);
+}
+
+.locationStatus {
+  margin: 10px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.54);
 }
 
 .clock {
@@ -328,7 +404,14 @@
     grid-template-columns: 1fr;
   }
 
-  .regionInput {
-    width: 100%;
+  .saveRow,
+  .selectedCity {
+    grid-column: 1;
+    grid-row: auto;
   }
+
+  .saveRow {
+    margin-top: 0;
+  }
+
 }

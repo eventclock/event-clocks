@@ -23,6 +23,8 @@ export type TimeZoneCitySearchResult = {
   countryName: string;
   timeZone: string;
   population: number;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 const cities = (cityData as { cities: TimeZoneCity[] }).cities;
@@ -46,6 +48,8 @@ function toResult(city: TimeZoneCity): TimeZoneCitySearchResult {
     countryName: city.cn,
     timeZone: city.t,
     population: city.p,
+    latitude: city.lat,
+    longitude: city.lon,
   };
 }
 
@@ -65,11 +69,18 @@ function scoreCity(city: TimeZoneCity, query: string) {
   return 0;
 }
 
-export function searchTimeZoneCities(query: string, limit = 10) {
+export function searchTimeZoneCities(query: string, limit = 10, countryCode?: string) {
   const normalized = normalizeCityQuery(query);
   if (normalized.length < 2) return [];
+  const countries = new Set(
+    countryCode
+      ?.split(",")
+      .map((code) => code.trim().toUpperCase())
+      .filter(Boolean) ?? [],
+  );
 
   return cities
+    .filter((city) => countries.size === 0 || countries.has(city.c))
     .map((city) => ({ city, score: scoreCity(city, normalized) }))
     .filter((entry) => entry.score > 0)
     .sort((a, b) => {
@@ -87,4 +98,43 @@ export function findTimeZoneCityByLabel(label: string) {
 
   const city = cities.find((candidate) => normalizeCityQuery(candidate.l) === normalized);
   return city ? toResult(city) : null;
+}
+
+function toRadians(value: number) {
+  return (value * Math.PI) / 180;
+}
+
+function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const radiusKm = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  return radiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+export function findNearestTimeZoneCities(latitude: number, longitude: number, limit = 1) {
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return [];
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return [];
+
+  return cities
+    .filter((city) => typeof city.lat === "number" && typeof city.lon === "number")
+    .map((city) => ({
+      city,
+      distanceKm: distanceKm(latitude, longitude, city.lat as number, city.lon as number),
+    }))
+    .sort((a, b) => {
+      if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+      return b.city.p - a.city.p;
+    })
+    .slice(0, Math.max(1, Math.min(limit, 10)))
+    .map((entry) => ({
+      ...toResult(entry.city),
+      distanceKm: Number(entry.distanceKm.toFixed(1)),
+    }));
 }
