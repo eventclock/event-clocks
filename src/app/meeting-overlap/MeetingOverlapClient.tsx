@@ -11,7 +11,19 @@ type MeetingMinutes = 30 | 45 | 60 | 90 | 120;
 type TZEntry = {
   id: string;
   tz: string;
+  label?: string;
   holidayCountry?: string; // ISO code (e.g. "PH"), optional
+};
+
+type CitySuggestion = {
+  id: string;
+  label: string;
+  name: string;
+  adminName: string;
+  countryCode: string;
+  countryName: string;
+  timeZone: string;
+  population: number;
 };
 
 type LocalCell = {
@@ -52,30 +64,6 @@ function clampInt(v: number, min: number, max: number) {
 function toUtcISO(date: Date) {
   const iso = date.toISOString();
   return iso.replace(".000Z", "Z");
-}
-
-function safeTimeZones(): string[] {
-  const anyIntl = Intl as any;
-  if (anyIntl?.supportedValuesOf) {
-    try {
-      return (anyIntl.supportedValuesOf("timeZone") as string[]).slice();
-    } catch {
-      // ignore
-    }
-  }
-  return [
-    "UTC",
-    "America/Los_Angeles",
-    "America/Denver",
-    "America/Chicago",
-    "America/New_York",
-    "Europe/London",
-    "Europe/Paris",
-    "Asia/Manila",
-    "Asia/Singapore",
-    "Asia/Tokyo",
-    "Australia/Sydney",
-  ];
 }
 
 function isValidIanaTz(tz: string) {
@@ -156,24 +144,60 @@ function localDateTimeParts(date: Date, timeZone: string) {
 }
 
 // ---- localStorage helpers ----
-const LS_FAVORITES_KEY = "eventclocks_meetingOverlap_favoriteTimeZones_v1";
+const LS_SELECTIONS_KEY = "eventclocks_meetingOverlap_selectedPlaces_v1";
 const LS_TZ_COUNTRY_MAP_KEY = "eventclocks_meetingOverlap_tzCountryMap_v1";
 
-function loadFavorites(): string[] {
+function normalizeSavedEntry(value: unknown): TZEntry | null {
+  if (typeof value === "string") {
+    const tz = value.trim();
+    return isValidIanaTz(tz) ? { id: uid(), tz } : null;
+  }
+
+  if (!value || typeof value !== "object") return null;
+  const input = value as Partial<TZEntry>;
+  const tz = typeof input.tz === "string" ? input.tz.trim() : "";
+  if (!tz || !isValidIanaTz(tz)) return null;
+
+  const label = typeof input.label === "string" && input.label.trim() ? input.label.trim() : undefined;
+  const holidayCountry =
+    typeof input.holidayCountry === "string" && input.holidayCountry.trim()
+      ? input.holidayCountry.trim().toUpperCase()
+      : undefined;
+
+  return {
+    id: uid(),
+    tz,
+    label,
+    holidayCountry,
+  };
+}
+
+function loadSelections(): TZEntry[] {
   try {
-    const raw = localStorage.getItem(LS_FAVORITES_KEY);
+    const raw = localStorage.getItem(LS_SELECTIONS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((x) => typeof x === "string");
+    return parsed
+      .map(normalizeSavedEntry)
+      .filter((entry): entry is TZEntry => Boolean(entry));
   } catch {
     return [];
   }
 }
 
-function saveFavorites(favs: string[]) {
+function saveSelections(entries: TZEntry[]) {
   try {
-    localStorage.setItem(LS_FAVORITES_KEY, JSON.stringify(favs));
+    localStorage.setItem(
+      LS_SELECTIONS_KEY,
+      JSON.stringify(
+        entries.map((entry) => ({
+          tz: entry.tz,
+          label: entry.label,
+          holidayCountry: entry.holidayCountry,
+        })),
+      ),
+    );
   } catch {
     // ignore
   }
@@ -239,14 +263,14 @@ function InfoTip({ id, text }: { id: string; text: string }) {
   }, [open, id]);
 
   return (
-    <span id={id} className="relative inline-flex items-center">
+    <span id={id} className="relative -top-1 inline-flex items-center align-super">
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-sm border border-slate-200 text-[10px] font-bold text-slate-500 hover:text-slate-700"
+        className="mo-info-button ml-1 inline-flex h-3 w-3 items-center justify-center rounded-[3px] border border-[#8b6f5a]/35 text-[8px] font-bold text-black/45 hover:text-[#5f4a3b]"
         aria-label="Info"
         aria-expanded={open}
       >
@@ -255,7 +279,7 @@ function InfoTip({ id, text }: { id: string; text: string }) {
 
       {open && (
         <div
-          className="absolute z-20 top-6 left-0 w-72 rounded-md border border-slate-200 bg-white p-2 shadow-lg text-[11px] text-slate-700"
+          className="absolute z-20 top-6 left-0 w-72 rounded-md border border-[#8b6f5a]/35 bg-white p-2 shadow-lg text-[11px] text-black/70"
           role="tooltip"
         >
           {text}
@@ -309,7 +333,7 @@ function CountryPicker({
 
   return (
     <div id={id} className="relative inline-flex items-center gap-2">
-      <span className="text-slate-600">Holidays</span>
+      <span className="text-black/55">Holidays</span>
 
       <button
         type="button"
@@ -318,23 +342,23 @@ function CountryPicker({
           if (!open) setQ("");
         }}
         // UPDATED: uniform control height
-        className="inline-flex h-8 items-center gap-2 rounded-md border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-800 hover:bg-slate-50"
+        className="inline-flex h-8 items-center gap-2 rounded-md border border-[#8b6f5a]/35 bg-white px-2 text-[11px] font-semibold text-black/75 hover:bg-[#8b6f5a]/5"
         title="Pick a holiday calendar (country)"
         aria-expanded={open}
       >
         {selected ? `${selected.name} (${selected.code})` : "No holidays"}
-        <span className="text-slate-400">▾</span>
+        <span className="text-[#8b6f5a]/70">▾</span>
       </button>
 
       {open && (
-        <div className="absolute z-30 top-9 left-0 w-[280px] rounded-md border border-slate-200 bg-white shadow-lg">
-          <div className="p-2 border-b border-slate-200">
+        <div className="absolute z-30 top-9 left-0 w-[280px] rounded-md border border-[#8b6f5a]/35 bg-white shadow-lg">
+          <div className="p-2 border-b border-[#8b6f5a]/25">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Type a country (e.g. Philippines)"
               // UPDATED: uniform control height
-              className="h-8 w-full rounded-md border border-slate-200 bg-white px-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-blue-100"
+              className="h-8 w-full rounded-md border border-[#8b6f5a]/30 bg-white px-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-[#8b6f5a]/15"
               autoFocus
             />
           </div>
@@ -342,7 +366,7 @@ function CountryPicker({
           <div className="max-h-56 overflow-auto p-1">
             <button
               type="button"
-              className="w-full text-left rounded-md px-2 py-1 text-[11px] hover:bg-slate-50 text-slate-700"
+              className="w-full text-left rounded-md px-2 py-1 text-[11px] hover:bg-[#8b6f5a]/5 text-black/65"
               onClick={() => {
                 onChange("");
                 setOpen(false);
@@ -355,17 +379,17 @@ function CountryPicker({
               <button
                 key={c.code}
                 type="button"
-                className="w-full text-left rounded-md px-2 py-1 text-[11px] hover:bg-slate-50 text-slate-800"
+                className="w-full text-left rounded-md px-2 py-1 text-[11px] hover:bg-[#8b6f5a]/5 text-black/75"
                 onClick={() => {
                   onChange(c.code);
                   setOpen(false);
                 }}
               >
-                {c.name} <span className="text-slate-500">({c.code})</span>
+                {c.name} <span className="text-black/45">({c.code})</span>
               </button>
             ))}
 
-            {filtered.length === 0 && <div className="px-2 py-2 text-[11px] text-slate-500">No matches.</div>}
+            {filtered.length === 0 && <div className="px-2 py-2 text-[11px] text-black/45">No matches.</div>}
           </div>
         </div>
       )}
@@ -374,42 +398,35 @@ function CountryPicker({
 }
 
 // ---- UI classes ----
-// UPDATED: smaller + uniform height for inputs/selects/buttons
-// const inputCls =
-//   "mt-1 h-8 w-full rounded-md border border-slate-200 bg-white px-2 py-0 text-[11px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100";
-// const selectCls =
-//   "mt-1 h-8 w-full rounded-md border border-slate-200 bg-white px-2 py-0 text-[11px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100";
-
-// const btnBase =
-//   "inline-flex h-8 items-center justify-center rounded-md px-2 py-1 text-[11px] font-semibold border transition disabled:opacity-50 disabled:cursor-not-allowed";
-
 const inputCls =
-  " h-8 w-full rounded-md border border-slate-200 bg-white px-2 py-0 !text-[12px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100";
+  " h-8 w-full rounded-md border border-[#8b6f5a]/30 bg-white px-2 py-0 !text-[12px] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8b6f5a]/15";
 
 const selectCls =
-  " h-8 w-full rounded-md border border-slate-200 bg-white px-2 py-0 !text-[12px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100";
+  " h-8 w-full rounded-md border border-[#8b6f5a]/30 bg-white px-2 py-0 !text-[12px] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8b6f5a]/15";
 
 const btnBase =
   "inline-flex h-8 items-center justify-center rounded-md px-2 py-0 !text-[12px] !leading-none font-semibold border transition disabled:opacity-50 disabled:cursor-not-allowed";
 
-const btnNeutral = `${btnBase} bg-white border-slate-200 hover:bg-slate-50 text-slate-800`;
-const btnPrimary = `${btnBase} bg-blue-900 border-blue-900 text-white hover:bg-blue-800 disabled:bg-slate-200 disabled:border-slate-200 disabled:text-white/70`;
-const btnSuccessActive = `${btnBase} bg-green-900 border-green-900 text-white hover:bg-green-800`;
-const btnSuccessIdle = `${btnBase} bg-white border-slate-200 hover:bg-slate-50 text-slate-800`;
+const btnNeutral = `${btnBase} bg-white border-[#8b6f5a]/30 hover:bg-[#8b6f5a]/5 text-black/75`;
+const btnPrimary = `${btnBase} bg-[#5f4a3b] border-[#5f4a3b] text-white hover:bg-[#4e3d31] disabled:bg-stone-200 disabled:border-stone-200 disabled:text-white/70`;
+const btnSuccessActive = `${btnBase} bg-[#5f4a3b] border-[#5f4a3b] text-white hover:bg-[#4e3d31]`;
+const btnSuccessIdle = `${btnBase} bg-white border-[#8b6f5a]/30 hover:bg-[#8b6f5a]/5 text-black/75`;
 
 const pillBase = "inline-flex items-center gap-2 rounded-md border px-2 py-1 text-[11px] font-semibold leading-none";
-const pillNeutral = `${pillBase} border-slate-200 bg-white text-slate-600`;
-const pillOverlapLegend = `${pillBase} border-slate-200 bg-green-50 text-slate-800`;
-const pillFavorite = `${pillBase} border-slate-200 bg-white text-slate-800 hover:bg-slate-50`;
-
+const pillNeutral = `${pillBase} border-[#8b6f5a]/25 bg-white text-black/55`;
+const pillOverlapLegend = `${pillBase} border-[#8b6f5a]/30 bg-[#8b6f5a]/[0.08] text-black/75`;
 const weekendBadge =
-  "ml-2 inline-flex items-center rounded-sm border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-600";
+  "ml-2 inline-flex items-center rounded-sm border border-[#8b6f5a]/25 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-black/55";
 
 const holidayBadge =
-  "ml-2 inline-flex items-center rounded-sm border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900";
+  "ml-2 inline-flex items-center rounded-sm border border-[#b99a61]/35 bg-[#b99a61]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#6f552f]";
+
+function normalizeLookup(value: string) {
+  return value.trim().toLowerCase().replace(/[_\s]+/g, " ");
+}
 
 // ---- Holidays: client cache + status ----
-type HolidayItem = { date: string; name: string; types?: any };
+type HolidayItem = { date: string; name: string; types?: unknown };
 type HolidayIndex = Record<string, Record<string, string>>; // country -> (YYYY-MM-DD -> name)
 type HolidayCountryStatus = {
   state: "idle" | "loading" | "loaded" | "empty" | "error";
@@ -429,7 +446,7 @@ function ssGetJSON<T>(key: string): T | null {
   }
 }
 
-function ssSetJSON(key: string, value: any) {
+function ssSetJSON(key: string, value: unknown) {
   try {
     sessionStorage.setItem(key, JSON.stringify(value));
   } catch {
@@ -644,21 +661,21 @@ function useHolidayIndex(mounted: boolean, tzList: TZEntry[], baseDateLocal: str
 function HolidayLoadPill({ status }: { status: HolidayCountryStatus }) {
   const base = "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold";
 
-  if (status.state === "idle") return <span className={`${base} border-slate-200 bg-white text-slate-500`}>Not loaded</span>;
+  if (status.state === "idle") return <span className={`${base} border-[#8b6f5a]/25 bg-white text-black/45`}>Not loaded</span>;
 
-  if (status.state === "loading") return <span className={`${base} border-slate-200 bg-slate-50 text-slate-600`}>Loading…</span>;
+  if (status.state === "loading") return <span className={`${base} border-[#8b6f5a]/25 bg-[#8b6f5a]/5 text-black/55`}>Loading…</span>;
 
   if (status.state === "empty")
     return (
-      <span className={`${base} border-amber-200 bg-amber-50 text-amber-900`} title={status.message || "No data"}>
+      <span className={`${base} border-[#b99a61]/35 bg-[#b99a61]/10 text-[#6f552f]`} title={status.message || "No data"}>
         No data
       </span>
     );
 
-  if (status.state === "loaded") return <span className={`${base} border-emerald-200 bg-emerald-50 text-emerald-900`}>Loaded</span>;
+  if (status.state === "loaded") return <span className={`${base} border-[#8b6f5a]/30 bg-[#8b6f5a]/[0.08] text-[#5f4a3b]`}>Loaded</span>;
 
   return (
-    <span className={`${base} border-rose-200 bg-rose-50 text-rose-900`} title={status.message || "Error"}>
+    <span className={`${base} border-[#8f382a]/25 bg-[#8f382a]/[0.08] text-[#8f382a]`} title={status.message || "Error"}>
       Error
     </span>
   );
@@ -671,19 +688,7 @@ export default function MeetingOverlapClient() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const [timeZones, setTimeZones] = useState<string[]>([]);
-  useEffect(() => {
-    if (!mounted) return;
-    setTimeZones(safeTimeZones());
-  }, [mounted]);
-
   const tzInputRef = useRef<HTMLInputElement | null>(null);
-
-  const [favorites, setFavorites] = useState<string[]>([]);
-  useEffect(() => {
-    if (!mounted) return;
-    setFavorites(loadFavorites());
-  }, [mounted]);
 
   const [tzCountryMap, setTzCountryMap] = useState<Record<string, string>>({});
   useEffect(() => {
@@ -692,6 +697,19 @@ export default function MeetingOverlapClient() {
   }, [mounted]);
 
   const [tzList, setTzList] = useState<TZEntry[]>([{ id: uid(), tz: defaultTZ }]);
+  const [hasLoadedSelections, setHasLoadedSelections] = useState(false);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const saved = loadSelections();
+    if (saved.length > 0) setTzList(saved.slice(0, 6));
+    setHasLoadedSelections(true);
+  }, [mounted]);
+
+  useEffect(() => {
+    if (!mounted || !hasLoadedSelections) return;
+    saveSelections(tzList);
+  }, [hasLoadedSelections, mounted, tzList]);
 
   // Hydrate (or rehydrate) entries from stored tz->country mapping
   useEffect(() => {
@@ -706,8 +724,12 @@ export default function MeetingOverlapClient() {
     );
   }, [mounted, tzCountryMap]);
 
-  const [newTZInput, setNewTZInput] = useState<string>("Europe/London");
+  const [newTZInput, setNewTZInput] = useState<string>("");
+  const [citySuggestions, setCitySuggestions] = useState<CitySuggestion[]>([]);
+  const [isCitySearchFocused, setIsCitySearchFocused] = useState(false);
   const [tzInputError, setTzInputError] = useState<string>("");
+  const citySearchCacheRef = useRef<Map<string, CitySuggestion[]>>(new Map());
+  const latestCityQueryRef = useRef("");
 
   const [baseDateLocal, setBaseDateLocal] = useState<string>("");
   useEffect(() => {
@@ -735,7 +757,7 @@ export default function MeetingOverlapClient() {
   // Default the first TZ to the user's local timezone (client-only), but only
   // if the list is still the single default entry.
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || hasLoadedSelections) return;
 
     const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -762,7 +784,7 @@ export default function MeetingOverlapClient() {
         },
       ];
     });
-  }, [mounted, tzCountryMap, defaultTZ]);
+  }, [hasLoadedSelections, mounted, tzCountryMap, defaultTZ]);
 
   // Holidays
   const { getHolidayName, getCountryStatus } = useHolidayIndex(mounted, tzList, baseDateLocal);
@@ -776,21 +798,68 @@ export default function MeetingOverlapClient() {
   const canAddTZ = useMemo(() => {
     const tz = newTZInput.trim();
     if (!tz) return false;
-    if (tzList.some((t) => t.tz === tz)) return false;
+    const exactCity = citySuggestions.some((city) => normalizeLookup(city.label) === normalizeLookup(tz));
+    const resolvedTz = exactCity ? citySuggestions.find((city) => normalizeLookup(city.label) === normalizeLookup(tz))?.timeZone : tz;
+    if (!resolvedTz) return false;
+    if (tzList.some((t) => t.tz === resolvedTz)) return false;
     if (tzList.length >= 6) return false;
-    return isValidIanaTz(tz);
-  }, [newTZInput, tzList]);
+    return exactCity || isValidIanaTz(resolvedTz);
+  }, [citySuggestions, newTZInput, tzList]);
 
-  function addTZ(tzRaw?: string) {
-    const tz = (tzRaw ?? newTZInput).trim();
+  useEffect(() => {
+    if (!mounted || !isCitySearchFocused) return;
+    const query = newTZInput.trim();
+    const normalizedQuery = normalizeLookup(query);
+    if (normalizedQuery.length < 3 || isValidIanaTz(query)) {
+      setCitySuggestions([]);
+      return;
+    }
+
+    const cached = citySearchCacheRef.current.get(normalizedQuery);
+    if (cached) {
+      setCitySuggestions(cached);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      latestCityQueryRef.current = normalizedQuery;
+      try {
+        const response = await fetch(`/api/timezone-cities?q=${encodeURIComponent(query)}&limit=8`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const data = (await response.json()) as { results?: CitySuggestion[] };
+        const results = Array.isArray(data.results) ? data.results : [];
+        citySearchCacheRef.current.set(normalizedQuery, results);
+        if (latestCityQueryRef.current === normalizedQuery) setCitySuggestions(results);
+      } catch {
+        if (!controller.signal.aborted) setCitySuggestions([]);
+      }
+    }, 320);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [isCitySearchFocused, mounted, newTZInput]);
+
+  function findMatchingCity(value: string) {
+    const normalized = normalizeLookup(value);
+    return citySuggestions.find((city) => normalizeLookup(city.label) === normalized) ?? null;
+  }
+
+  function addTZ(tzRaw?: string, city?: CitySuggestion) {
+    const cityMatch = city ?? (tzRaw ? null : findMatchingCity(newTZInput));
+    const tz = (cityMatch?.timeZone ?? tzRaw ?? newTZInput).trim();
     if (!tz) return;
 
     if (!isValidIanaTz(tz)) {
-      setTzInputError("That doesn’t look like a valid IANA time zone (example: Asia/Manila).");
+      setTzInputError("Pick a city from the list, or enter a valid IANA time zone like Asia/Manila.");
       return;
     }
     if (tzList.some((t) => t.tz === tz)) {
-      setTzInputError("That time zone is already added.");
+      setTzInputError(`${cityMatch?.label ?? tz} uses ${tz}, which is already added.`);
       return;
     }
     if (tzList.length >= 6) {
@@ -799,13 +868,23 @@ export default function MeetingOverlapClient() {
     }
 
     setTzInputError("");
+    setCitySuggestions([]);
 
     const rememberedCountry = tzCountryMap[tz] ?? "";
-    setTzList((prev) => [...prev, { id: uid(), tz, holidayCountry: rememberedCountry }]);
+    const holidayCountry = cityMatch?.countryCode?.trim().toUpperCase() || rememberedCountry;
+    setTzList((prev) => [
+      ...prev,
+      {
+        id: uid(),
+        tz,
+        label: cityMatch?.label,
+        holidayCountry,
+      },
+    ]);
+    setNewTZInput("");
 
     requestAnimationFrame(() => {
       tzInputRef.current?.focus();
-      tzInputRef.current?.select();
     });
   }
 
@@ -845,6 +924,7 @@ export default function MeetingOverlapClient() {
           ? {
               ...t,
               tz: newTz,
+              label: undefined,
               holidayCountry: entryHoliday ? entryHoliday : rememberedCountry,
             }
           : t
@@ -873,20 +953,13 @@ export default function MeetingOverlapClient() {
     });
   }
 
-  function toggleFavorite(tz: string) {
-    const trimmed = tz.trim();
-    if (!trimmed || !isValidIanaTz(trimmed)) return;
-
-    setFavorites((prev) => {
-      const exists = prev.includes(trimmed);
-      const next = exists ? prev.filter((x) => x !== trimmed) : [...prev, trimmed].sort();
-      saveFavorites(next);
-      return next;
-    });
-  }
-
-  function addFromFavorite(tz: string) {
-    addTZ(tz);
+  function resetSelections() {
+    const fallbackCountry = tzCountryMap[defaultTZ] ?? "";
+    setTzList([{ id: uid(), tz: defaultTZ, holidayCountry: fallbackCountry }]);
+    setNewTZInput("");
+    setCitySuggestions([]);
+    setIsCitySearchFocused(false);
+    setTzInputError("");
   }
 
   const rows: Row[] = useMemo(() => {
@@ -1018,9 +1091,9 @@ export default function MeetingOverlapClient() {
   if (!mounted) {
     return (
       <PageShell title="Meeting Overlap" subtitle="Find times that work across multiple time zones.">
-        <section className="rounded-md border border-slate-200 bg-white shadow-sm">
+        <section className="rounded-md border border-[#8b6f5a]/35 bg-white/95 shadow-sm">
           <div className="p-3">
-            <div className="text-[11px] text-slate-600">Loading planner…</div>
+            <div className="text-[11px] text-black/55">Loading planner…</div>
           </div>
         </section>
       </PageShell>
@@ -1034,8 +1107,8 @@ export default function MeetingOverlapClient() {
         .mo-qual-box {
           border-radius: 4px;
           padding: 6px 8px;
-          border: 1px solid rgba(14, 71, 52, 0.41);
-          background: rgba(37, 99, 235, 0.05);
+          border: 1px solid rgba(139, 111, 90, 0.42);
+          background: rgba(139, 111, 90, 0.065);
         }
         .mo-noqual-box {
           border-radius: 10px;
@@ -1045,12 +1118,12 @@ export default function MeetingOverlapClient() {
         }
         .pastelMint {
           background:
-            linear-gradient(135deg, rgba(187, 247, 208, 0.2), rgba(187, 247, 208, 0.05) 72%),
+            linear-gradient(135deg, rgba(185, 154, 97, 0.16), rgba(139, 111, 90, 0.035) 72%),
             rgba(255, 255, 255, 0.41);
         }
       `}</style>
 
-      <div className="space-y-3">
+      <div className="meeting-overlap space-y-3">
         <div className="flex justify-end">
           <button
             type="button"
@@ -1060,13 +1133,13 @@ export default function MeetingOverlapClient() {
               el.open = true;
               el.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-700"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-black/45 hover:text-[#5f4a3b]"
             aria-label="About this tool"
             title="About this tool"
           >
             
             <span
-              className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-300/70 text-[10px] font-bold leading-none relative -top-1"
+              className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#8b6f5a]/35 text-[10px] font-bold leading-none relative -top-1"
               aria-hidden="true"
             >
               i
@@ -1076,30 +1149,30 @@ export default function MeetingOverlapClient() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {/* Time Zones */}
-          <section className="lg:col-span-2 rounded-md border border-slate-200 bg-white shadow-sm">
+          <section className="lg:col-span-2 rounded-md border border-[#8b6f5a]/35 bg-white/95 shadow-sm">
             <div className="p-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-[13px] font-semibold text-slate-900">Time zones</h2>
-                  <p className="mt-1 text-[11px] text-slate-600">
-                    Add up to 6 time zones.
+                  <h2 className="text-[13px] font-semibold text-black/85">Cities and time zones</h2>
+                  <p className="mt-1 text-[11px] text-black/55">
+                    Add up to 6 cities or time zones.
                     <InfoTip
                       id="tip-tz"
-                      text="Use IANA format like Asia/Manila or America/New_York. Favorites are stored in this browser only."
+                      text="Search for a city like San Francisco or Houston. The planner uses the city’s IANA timezone for calculations. IANA input still works."
                     />
                   </p>
                 </div>
 
-                <div className="hidden sm:flex items-center gap-2 rounded-md border border-slate-200 px-2 py-1 bg-white">
-                  <span className="text-[11px] font-medium text-slate-600">Selected</span>
-                  <span className="text-[11px] font-semibold text-slate-800">{tzList.length} / 6</span>
+                <div className="hidden sm:flex items-center gap-2 rounded-md border border-[#8b6f5a]/25 px-2 py-1 bg-white">
+                  <span className="text-[11px] font-medium text-black/55">Selected</span>
+                  <span className="text-[11px] font-semibold text-black/75">{tzList.length} / 6</span>
                 </div>
               </div>
 
               <div className="mt-3">
                 <div className="flex flex-col sm:flex-row gap-2">
                   <div className="flex-1">
-                    <label className="sr-only">Add time zone</label>
+                    <label className="sr-only">Add city or time zone</label>
                     <input
                       ref={tzInputRef}
                       value={newTZInput}
@@ -1107,32 +1180,42 @@ export default function MeetingOverlapClient() {
                         const v = e.target.value;
                         setNewTZInput(v);
                         setTzInputError("");
-                        if (timeZones.length > 0 && timeZones.includes(v)) {
-                          requestAnimationFrame(() => tzInputRef.current?.select());
-                        }
                       }}
-                      onFocus={() => requestAnimationFrame(() => tzInputRef.current?.select())}
-                      onClick={() => requestAnimationFrame(() => tzInputRef.current?.select())}
+                      onFocus={() => setIsCitySearchFocused(true)}
+                      onBlur={() => {
+                        window.setTimeout(() => {
+                          setIsCitySearchFocused(false);
+                          setCitySuggestions([]);
+                        }, 120);
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") addTZ();
                       }}
-                      list="iana-timezones"
-                      placeholder="Type a time zone (Asia/Manila)"
+                      placeholder="Type a city (San Francisco)"
                       className={inputCls}
                     />
 
-                    {timeZones.length > 0 && (
-                      <datalist id="iana-timezones">
-                        {timeZones.map((tz) => (
-                          <option key={tz} value={tz} />
+                    {isCitySearchFocused && citySuggestions.length > 0 && (
+                      <div className="mt-1 max-h-56 overflow-auto rounded-md border border-[#8b6f5a]/35 bg-white p-1 shadow-lg">
+                        {citySuggestions.map((city) => (
+                          <button
+                            key={city.id}
+                            type="button"
+                            className="w-full rounded-md px-2 py-1.5 text-left hover:bg-[#8b6f5a]/5"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => addTZ(undefined, city)}
+                          >
+                            <span className="block text-[12px] font-semibold text-black/78">{city.label}</span>
+                            <span className="block text-[10px] font-semibold text-black/45">{city.timeZone}</span>
+                          </button>
                         ))}
-                      </datalist>
+                      </div>
                     )}
 
                     {tzInputError ? (
-                      <div className="mt-1 text-[11px] font-semibold text-rose-600">{tzInputError}</div>
+                      <div className="mt-1 text-[11px] font-semibold text-[#8f382a]">{tzInputError}</div>
                     ) : (
-                      <div className="mt-1 text-[11px] text-slate-500">Example: America/Los_Angeles, Asia/Manila</div>
+                      <div className="mt-1 text-[11px] text-black/45">Example: San Francisco, Houston, or Asia/Manila</div>
                     )}
                   </div>
 
@@ -1141,56 +1224,21 @@ export default function MeetingOverlapClient() {
                   </button>
 
                   <button
-                    onClick={() => toggleFavorite(newTZInput.trim())}
-                    disabled={!newTZInput.trim() || !isValidIanaTz(newTZInput.trim())}
+                    type="button"
+                    onClick={resetSelections}
                     className={btnNeutral}
                   >
-                    ★ Favorite
+                    Reset
                   </button>
                 </div>
 
-                <div className="mt-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-[11px] font-semibold text-slate-700 tracking-wide">Favorites</h3>
-                    {favorites.length > 0 && (
-                      <button
-                        onClick={() => {
-                          setFavorites([]);
-                          saveFavorites([]);
-                        }}
-                        className="text-[11px] font-medium text-slate-500 hover:text-slate-700 transition"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-
-                  {favorites.length === 0 ? (
-                    <div className="mt-2 text-[11px] text-slate-500">No favorites yet.</div>
-                  ) : (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {favorites.map((tz) => (
-                        <div key={tz} className={pillFavorite}>
-                          <button onClick={() => addFromFavorite(tz)} className="hover:text-slate-900">
-                            + {tz}
-                          </button>
-                          <button
-                            onClick={() => toggleFavorite(tz)}
-                            className="font-bold text-slate-400 hover:text-slate-700"
-                            title="Remove"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <div className="mt-3 rounded-md border border-[#8b6f5a]/20 bg-[#8b6f5a]/[0.035] px-2 py-1.5 text-[11px] font-medium text-black/50">
+                  Selected places are saved automatically in this browser.
                 </div>
               </div>
 
               <div className="mt-4 space-y-2">
                 {tzList.map((t) => {
-                  const isFav = favorites.includes(t.tz);
                   const cc = (t.holidayCountry || "").trim().toUpperCase();
                   const found = cc ? ISO_COUNTRIES.find((c) => c.code === cc) : null;
                   const countryLabel = found ? `${found.name} (${cc})` : "";
@@ -1198,17 +1246,25 @@ export default function MeetingOverlapClient() {
                   const status = cc ? getCountryStatus(cc) : { state: "idle" as const };
 
                   return (
-                    <div key={t.id} className="rounded-md border border-slate-200 bg-white p-2 space-y-2">
+                    <div key={t.id} className="rounded-md border border-[#8b6f5a]/25 bg-white p-2 space-y-2">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="flex-1">
-                          <input value={t.tz} onChange={(e) => setTZ(t.id, e.target.value)} list="iana-timezones" className={inputCls} />
+                          {t.label && (
+                            <div className="mb-1 text-[12px] font-semibold text-black/78">{t.label}</div>
+                          )}
+                          <input
+                            value={t.tz}
+                            onChange={(e) => setTZ(t.id, e.target.value)}
+                            className={inputCls}
+                            aria-label={t.label ? `${t.label} timezone` : "Timezone"}
+                          />
                         </div>
 
-                        <button onClick={() => toggleFavorite(t.tz)} className={btnNeutral}>
-                          {isFav ? "★ Saved" : "☆ Save"}
-                        </button>
-
-                        <button onClick={() => removeTZ(t.id)} disabled={tzList.length <= 1} className={btnNeutral}>
+                        <button
+                          onClick={() => removeTZ(t.id)}
+                          disabled={tzList.length <= 1}
+                          className={`${btnNeutral} sm:self-start ${t.label ? "sm:mt-[22px]" : ""}`}
+                        >
                           Remove
                         </button>
                       </div>
@@ -1216,16 +1272,16 @@ export default function MeetingOverlapClient() {
                       <div className="flex flex-wrap items-center gap-2 text-[11px]">
                         <CountryPicker id={`country-${t.id}`} value={cc} onChange={(code) => setHolidayCountry(t.id, code)} />
 
-                        {cc ? <HolidayLoadPill status={status} /> : <span className="text-[10px] text-slate-500">No country selected</span>}
+                        {cc ? <HolidayLoadPill status={status} /> : <span className="text-[10px] text-black/45">No country selected</span>}
 
-                        <span className="text-slate-500">
+                        <span className="text-black/45">
                           <InfoTip
                             id={`tip-holidays-${t.id}`}
                             text="Holiday data is fetched from /api/holidays (Nager.Date) and cached in this tab. If a country is unsupported, you may see Error."
                           />
                         </span>
 
-                        {countryLabel && <span className="text-slate-500">Saved as {countryLabel}</span>}
+                        {countryLabel && <span className="text-black/45">Saved as {countryLabel}</span>}
                       </div>
                     </div>
                   );
@@ -1235,16 +1291,16 @@ export default function MeetingOverlapClient() {
           </section>
 
           {/* Settings */}
-          <section className="rounded-md border border-slate-200 bg-white shadow-sm">
+          <section className="rounded-md border border-[#8b6f5a]/35 bg-white/95 shadow-sm">
             <div className="p-3">
-              <h2 className="text-[13px] font-semibold text-slate-900">Time window</h2>
-              <p className="mt-1 text-[11px] text-slate-600">
+              <h2 className="text-[13px] font-semibold text-black/85">Time window</h2>
+              <p className="mt-1 text-[11px] text-black/55">
                 Overlap requires the <span className="font-semibold">full meeting length</span> to fit in every person’s local window.
               </p>
 
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <label className="text-[11px] font-semibold text-slate-700">
+                  <label className="text-[11px] font-semibold text-black/65">
                     Scan date (UTC)
                     <InfoTip id="tip-date" text="We scan the full UTC day for this date. Local dates may differ by time zone." />
                   </label>
@@ -1252,7 +1308,7 @@ export default function MeetingOverlapClient() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-700">
+                  <label className="text-[11px] font-semibold text-black/65">
                     Start (local)
                     <InfoTip id="tip-start" text="Window start in each person’s own local time." />
                   </label>
@@ -1266,7 +1322,7 @@ export default function MeetingOverlapClient() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-700">
+                  <label className="text-[11px] font-semibold text-black/65">
                     End (local)
                     <InfoTip id="tip-end" text="Window end in each person’s own local time." />
                   </label>
@@ -1280,7 +1336,7 @@ export default function MeetingOverlapClient() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-700">
+                  <label className="text-[11px] font-semibold text-black/65">
                     Start-time step
                     <InfoTip id="tip-step" text="How often we try a new start time (example: every 30 minutes)." />
                   </label>
@@ -1292,7 +1348,7 @@ export default function MeetingOverlapClient() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-700">
+                  <label className="text-[11px] font-semibold text-black/65">
                     Meeting length
                     <InfoTip id="tip-length" text="Overlap is true only if the entire meeting interval fits in all time zones." />
                   </label>
@@ -1310,10 +1366,10 @@ export default function MeetingOverlapClient() {
                     type="checkbox"
                     checked={businessHoursOnly}
                     onChange={(e) => setBusinessHoursOnly(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded-sm border-slate-300"
+                    className="mt-0.5 h-4 w-4 rounded-sm border-[#8b6f5a]/35 accent-[#5f4a3b]"
                     id="businessHours"
                   />
-                  <label htmlFor="businessHours" className="text-[11px] font-semibold text-slate-700 cursor-pointer leading-5">
+                  <label htmlFor="businessHours" className="text-[11px] font-semibold text-black/65 cursor-pointer leading-5">
                     Business hours (9AM–5PM local)
                     <InfoTip id="tip-biz" text="If enabled, your start/end window is ignored and replaced with 9AM–5PM for each person." />
                   </label>
@@ -1324,10 +1380,10 @@ export default function MeetingOverlapClient() {
                     type="checkbox"
                     checked={weekdaysOnly}
                     onChange={(e) => setWeekdaysOnly(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded-sm border-slate-300"
+                    className="mt-0.5 h-4 w-4 rounded-sm border-[#8b6f5a]/35 accent-[#5f4a3b]"
                     id="weekdaysOnly"
                   />
-                  <label htmlFor="weekdaysOnly" className="text-[11px] font-semibold text-slate-700 cursor-pointer leading-5">
+                  <label htmlFor="weekdaysOnly" className="text-[11px] font-semibold text-black/65 cursor-pointer leading-5">
                     Weekdays only (Mon–Fri local)
                     <InfoTip id="tip-weekdays" text="If enabled, overlap is valid only if the local day is Mon–Fri in every selected time zone." />
                   </label>
@@ -1338,10 +1394,10 @@ export default function MeetingOverlapClient() {
                     type="checkbox"
                     checked={avoidHolidays}
                     onChange={(e) => setAvoidHolidays(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded-sm border-slate-300"
+                    className="mt-0.5 h-4 w-4 rounded-sm border-[#8b6f5a]/35 accent-[#5f4a3b]"
                     id="avoidHolidays"
                   />
-                  <label htmlFor="avoidHolidays" className="text-[11px] font-semibold text-slate-700 cursor-pointer leading-5">
+                  <label htmlFor="avoidHolidays" className="text-[11px] font-semibold text-black/65 cursor-pointer leading-5">
                     Avoid holidays (local)
                     <InfoTip
                       id="tip-avoid-holidays"
@@ -1355,18 +1411,18 @@ export default function MeetingOverlapClient() {
         </div>
 
         {/* Results */}
-        <section className="rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="p-3 border-b border-slate-200">
+        <section className="rounded-md border border-[#8b6f5a]/35 bg-white/95 shadow-sm overflow-hidden">
+          <div className="p-3 border-b border-[#8b6f5a]/25">
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-2">
               <div>
-                <h2 className="text-[13px] font-semibold text-slate-900">Results</h2>
-                <p className="mt-1 text-[11px] text-slate-600">
+                <h2 className="text-[13px] font-semibold text-black/85">Results</h2>
+                <p className="mt-1 text-[11px] text-black/55">
                   Highlight means the <span className="font-semibold">full meeting</span> fits inside everyone’s local window.
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <div className="text-[11px] font-semibold text-slate-700">
+                <div className="text-[11px] font-semibold text-black/65">
                   Sort
                   <InfoTip id="tip-sort" text="Overlap-first groups valid times at the top. UTC order shows the full day chronologically." />
                 </div>
@@ -1380,31 +1436,31 @@ export default function MeetingOverlapClient() {
                   </button>
                 </div>
 
-                <div className="sm:ml-1 inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700">
-                  Overlap slots: <span className="text-slate-900">{overlapCount}</span>
+                <div className="sm:ml-1 inline-flex items-center gap-2 rounded-md border border-[#8b6f5a]/25 bg-white px-2 py-1 text-[11px] font-semibold text-black/65">
+                  Overlap slots: <span className="text-black/85">{overlapCount}</span>
                 </div>
               </div>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
               <span className={pillOverlapLegend}>
-                <span className="h-2 w-2 rounded-full bg-green-900" />
+                <span className="h-2 w-2 rounded-full bg-[#5f4a3b]" />
                 Overlap
               </span>
               <span className={pillNeutral}>
-                <span className="h-2 w-2 rounded-full bg-slate-300" />
+                <span className="h-2 w-2 rounded-full bg-[#c5c1b8]" />
                 Not a fit
               </span>
               <span className={pillNeutral}>
-                <span className="h-2 w-2 rounded-full bg-slate-400" />
+                <span className="h-2 w-2 rounded-full bg-[#9a968c]" />
                 Weekend (local)
               </span>
               <span className={pillNeutral}>
-                <span className="h-2 w-2 rounded-full bg-amber-600" />
+                <span className="h-2 w-2 rounded-full bg-[#b99a61]" />
                 Holiday
               </span>
               <span className={pillNeutral}>
-                <span className="h-2 w-2 rounded-full bg-green-800" />
+                <span className="h-2 w-2 rounded-full bg-[#8b6f5a]" />
                 Qualifies (per TZ)
               </span>
             </div>
@@ -1412,37 +1468,38 @@ export default function MeetingOverlapClient() {
 
           <div className="overflow-auto">
             <table className="min-w-[900px] w-full text-[11px]">
-              <thead className="sticky top-0 bg-white border-b border-slate-200">
+              <thead className="sticky top-0 bg-white border-b border-[#8b6f5a]/25">
                 <tr className="text-left">
                   {tzList.map((t) => (
-                    <th key={t.id} className="px-2.5 py-2 font-semibold text-slate-700">
-                      {t.tz}
+                    <th key={t.id} className="px-2.5 py-2 font-semibold text-black/65">
+                      <span className="block text-[11px] text-black/75">{t.label || t.tz}</span>
+                      {t.label && <span className="block text-[10px] text-black/42">{t.tz}</span>}
                     </th>
                   ))}
-                  <th className="px-2.5 py-2 font-semibold text-slate-700 w-[170px]">Status</th>
+                  <th className="px-2.5 py-2 font-semibold text-black/65 w-[170px]">Status</th>
                 </tr>
               </thead>
 
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={tzList.length + 1} className="px-3 py-10 text-center text-slate-500">
+                    <td colSpan={tzList.length + 1} className="px-3 py-10 text-center text-black/45">
                       Choose a date and time zones to generate results.
                     </td>
                   </tr>
                 ) : (
                   rows.map((r, idx) => {
-                    const zebra = idx % 2 === 0 ? "bg-white" : "bg-slate-50";
+                    const zebra = idx % 2 === 0 ? "bg-white" : "bg-[#8b6f5a]/[0.025]";
                     const ok = r.isOverlap;
 
                     return (
                       <tr
                         key={r.utcISO}
                         className={[
-                          "border-b border-slate-100",
+                          "border-b border-[#8b6f5a]/10",
                           ok ? "pastelMint" : zebra,
                           // ok ? "shadow-[inset_5px_0_0_0_rgba(20,83,45,0.95)]" : "",
-                          ok ? "text-slate-900" : "text-slate-600",
+                          ok ? "text-black/85" : "text-black/58",
                         ].join(" ")}
                       >
                         {tzList.map((t, colIdx) => {
@@ -1458,7 +1515,7 @@ export default function MeetingOverlapClient() {
                               className={[
                                 "px-2.5 py-2 whitespace-nowrap",
                                 ok ? "font-semibold" : "",
-                                ok && colIdx === 0 ? "border-l-[6px] border-l-green-900" : "",
+                                ok && colIdx === 0 ? "border-l-[6px] border-l-[#5f4a3b]" : "",
                               ].join(" ")}
                             >
                               <div className={qualifies ? "mo-qual-box" : "mo-noqual-box"}>
@@ -1475,13 +1532,13 @@ export default function MeetingOverlapClient() {
                             <span
                               className={[
                                 "inline-flex items-center rounded-full px-2 py-1 text-[10px] font-bold border",
-                                ok ? "bg-green-800 text-white border-slate-100" : "bg-white text-slate-500 border-slate-200",
+                                ok ? "bg-[#5f4a3b] text-white border-[#5f4a3b]" : "bg-white text-black/45 border-[#8b6f5a]/25",
                               ].join(" ")}
                             >
                               {ok ? "OVERLAP" : "—"}
                             </span>
 
-                            {r.weekendZones > 0 && <span className="text-[10px] font-semibold text-slate-600">Weekend zones: {r.weekendZones}</span>}
+                            {r.weekendZones > 0 && <span className="text-[10px] font-semibold text-black/55">Weekend zones: {r.weekendZones}</span>}
                           </div>
                         </td>
                       </tr>
@@ -1493,10 +1550,10 @@ export default function MeetingOverlapClient() {
           </div>
         </section>
 
-        <details ref={helpRef} className="rounded-md border border-slate-200 bg-white shadow-sm">
-          <summary className="cursor-pointer select-none px-3 py-2 text-[12px] font-semibold text-slate-800 flex items-center gap-2">
+        <details ref={helpRef} className="rounded-md border border-[#8b6f5a]/35 bg-white/95 shadow-sm">
+          <summary className="cursor-pointer select-none px-3 py-2 text-[12px] font-semibold text-black/75 flex items-center gap-2">
             <span
-              className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-200 text-[11px] font-black text-slate-500"
+              className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#8b6f5a]/30 text-[11px] font-black text-black/45"
               aria-hidden="true"
             >
               i
@@ -1504,9 +1561,9 @@ export default function MeetingOverlapClient() {
             How Meeting Overlap works
           </summary>
 
-          <div className="px-3 pb-3 pt-1 text-[12px] text-slate-700 space-y-4">
+          <div className="px-3 pb-3 pt-1 text-[12px] text-black/68 space-y-4">
             <div>
-              <div className="font-semibold text-slate-900">What this tool does</div>
+              <div className="font-semibold text-black/85">What this tool does</div>
               <p className="mt-1">
                 Meeting Overlap helps you find time slots that work across multiple time zones. You set a date, a set of time zones, and a time window (or
                 business hours), and the tool lists possible start times while showing everyone’s local time.
@@ -1514,7 +1571,7 @@ export default function MeetingOverlapClient() {
             </div>
 
             <div>
-              <div className="font-semibold text-slate-900">Weekends and holidays</div>
+              <div className="font-semibold text-black/85">Weekends and holidays</div>
               <p className="mt-1">
                 Weekend badges show if a slot lands on Saturday/Sunday in a given time zone. If you enable holiday calendars per time zone, the tool can
                 display holiday names and optionally avoid holiday slots.
@@ -1522,7 +1579,7 @@ export default function MeetingOverlapClient() {
             </div>
 
             <div>
-              <div className="font-semibold text-slate-900">Tips</div>
+              <div className="font-semibold text-black/85">Tips</div>
               <ul className="mt-1 list-disc pl-5 space-y-1">
                 <li>Start with 2–3 time zones, then add more once your window is reasonable.</li>
                 <li>Use larger step sizes (30/60 min) to reduce noise.</li>

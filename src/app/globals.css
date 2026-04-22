@@ -108,6 +108,13 @@ select {
   line-height: 1.1;
 }
 
+.meeting-overlap input:focus,
+.meeting-overlap select:focus {
+  outline: none;
+  border-color: rgba(139, 111, 90, 0.45);
+  box-shadow: 0 0 0 3px rgba(139, 111, 90, 0.14);
+}
+
 /* Hard overrides for native widgets */
 .meeting-overlap input[type="date"],
 .meeting-overlap input[type="time"],
@@ -120,8 +127,16 @@ select {
 }
 
 /* Keep buttons same height */
-.meeting-overlap button {
+.meeting-overlap button:not(.mo-info-button) {
   height: 32px;
+}
+
+.meeting-overlap .mo-info-button {
+  height: 12px;
+  min-height: 12px;
+  width: 12px;
+  padding: 0;
+  line-height: 1;
 }
 
 .wedding-bg {
