@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import PageShell from "@/components/PageShell";
 import { ISO_COUNTRIES } from "@/lib/isoCountries";
 import {
@@ -39,6 +38,10 @@ function isWeekendUTC(ymd: string): boolean {
   const d = parseYYYYMMDDToUTCDate(ymd);
   const day = d.getUTCDay();
   return day === 0 || day === 6;
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 type HolidayApiItem = {
@@ -174,6 +177,12 @@ export default function BusinessDaysPage() {
     return [...ISO_COUNTRIES].sort((a, b) => a.name.localeCompare(b.name));
   }, []);
 
+  const selectedCountryName = useMemo(() => {
+    return countryOptions.find((c) => c.code === countryCode)?.name || countryCode;
+  }, [countryCode, countryOptions]);
+
+  const hasResult = Boolean(rangeResult || addResult);
+
   function getHolidayNames(date: string): string[] {
     const names = holidayNamesByDate.get(date);
     if (!names || names.length === 0) return [];
@@ -183,12 +192,6 @@ export default function BusinessDaysPage() {
       if (!uniq.includes(n)) uniq.push(n);
     }
     return uniq;
-  }
-
-  function renderHolidayLabel(date: string): string {
-    const names = getHolidayNames(date);
-    if (names.length === 0) return date;
-    return `${date} — ${names.join(", ")}`;
   }
 
   function renderSkippedDateLabel(date: string): string {
@@ -206,6 +209,59 @@ export default function BusinessDaysPage() {
       return `${date} — Holiday: ${holidayNames.join(", ")}`;
     }
     return date;
+  }
+
+  function getPublicHolidaysInRange(startDate: string, endDate: string) {
+    const [from, to] =
+      startDate <= endDate ? [startDate, endDate] : [endDate, startDate];
+
+    return [...holidayNamesByDate.entries()]
+      .filter(([date]) => date >= from && date <= to)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, names]) => ({
+        date,
+        names: [...new Set(names)].sort((a, b) => a.localeCompare(b)),
+      }));
+  }
+
+  function PublicHolidaysChecked({
+    startDate,
+    endDate,
+  }: {
+    startDate: string;
+    endDate: string;
+  }) {
+    const holidays = getPublicHolidaysInRange(startDate, endDate);
+
+    return (
+      <div className={`mt-3 p-4 ${styles.softCard}`}>
+        <div className="mb-2 font-bold">Public holidays checked</div>
+        {holidaySummary.status !== "ok" ? (
+          <div
+            className={[
+              styles.holidayAuditNotice,
+              holidaySummary.status === "error" ? styles.holidayAuditNoticeError : "",
+            ].join(" ")}
+          >
+            {holidaySummary.message ||
+              "We could not confirm the public holiday calendar for this date window."}
+          </div>
+        ) : null}
+        {holidays.length > 0 ? (
+          <ul className="list-inside list-disc space-y-1 text-sm">
+            {holidays.map((holiday) => (
+              <li key={holiday.date}>
+                {holiday.date} — {holiday.names.join(", ")}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-sm text-black/60">
+            No public holidays were returned for this date window.
+          </div>
+        )}
+      </div>
+    );
   }
 
   async function fetchHolidayCacheEntry(country: string, year: number): Promise<HolidayCacheEntry> {
@@ -257,12 +313,12 @@ export default function BusinessDaysPage() {
       const entry: HolidayCacheEntry = { set, namesByDate, status };
       holidayCacheRef.current.set(key, entry);
       return entry;
-    } catch (e: any) {
+    } catch (e: unknown) {
       const entry: HolidayCacheEntry = {
         set: new Set(),
         namesByDate: new Map(),
         status: "error",
-        errorMessage: e?.message || "Fetch failed",
+        errorMessage: getErrorMessage(e, "Fetch failed"),
       };
       holidayCacheRef.current.set(key, entry);
       return entry;
@@ -315,21 +371,15 @@ export default function BusinessDaysPage() {
     if (holidaySummary.status === "idle") return null;
 
     if (holidaySummary.status === "loading") {
-      return (
-        <div
-          className={`mt-3 border border-black/10 bg-white/60 p-3 text-xs text-black/70 dark:border-white/10 dark:bg-white/5 dark:text-white/70 ${styles.softCard}`}
-        >
-          Loading holiday data…
-        </div>
-      );
+      return <div className={styles.holidayPill}>Loading holidays</div>;
     }
 
-    const tone =
+    const toneClass =
       holidaySummary.status === "ok"
-        ? "border-slate-200/70 bg-slate-50/60 text-slate-950 dark:border-slate-300/20 dark:bg-slate-400/10 dark:text-slate-100"
+        ? styles.holidayPillOk
         : holidaySummary.status === "empty" || holidaySummary.status === "partial"
-        ? "border-amber-200/70 bg-amber-50/60 text-amber-950 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-100"
-        : "border-red-200/70 bg-red-50/60 text-red-950 dark:border-red-300/20 dark:bg-red-400/10 dark:text-red-100";
+        ? styles.holidayPillWarn
+        : styles.holidayPillError;
 
     const label =
       holidaySummary.status === "ok"
@@ -341,9 +391,8 @@ export default function BusinessDaysPage() {
         : "Holiday API error";
 
     return (
-      <div className={`mt-3 border p-3 text-xs shadow-sm ${tone} ${styles.softCard}`}>
-        <div className="font-bold">{label}</div>
-        <div className="mt-1 opacity-90">{holidaySummary.message}</div>
+      <div className={[styles.holidayPill, toneClass].join(" ")} title={holidaySummary.message}>
+        {label}
       </div>
     );
   }
@@ -473,8 +522,8 @@ export default function BusinessDaysPage() {
         countryCode: effectiveCountryCode,
         excludeWeekends: effectiveExcludeWeekends,
       });
-    } catch (e: any) {
-      setError(e?.message || "Something went wrong.");
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, "Something went wrong."));
       setComputedContext(null);
       setHolidaySummary({
         status: "error",
@@ -519,8 +568,9 @@ export default function BusinessDaysPage() {
     <PageShell
       title="Business Day Calculator"
       subtitle="Calculate working days between dates, or add business days — excluding weekends and country holidays."
+      contentClassName={styles.pageContent}
     >
-      <main className="mx-auto max-w-4xl px-6 py-6">
+      <main className={styles.shell}>
         <header className="mb-2">
           <div className="flex items-start justify-end gap-1">
             <button
@@ -531,22 +581,7 @@ export default function BusinessDaysPage() {
                 el.open = true;
                 el.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
-              className="mt-1 inline-flex items-center justify-center rounded-full border border-black/15 bg-transparent text-[10px] font-bold text-black/60 shadow-sm hover:text-black/80 dark:border-white/15 dark:text-white/60 dark:hover:text-white/85"
-              style={{
-                fontSize: 13,
-                verticalAlign: "super",
-                marginLeft: 4,
-                border: "1px solid rgba(0,0,0,0.15)",
-                borderRadius: 999,
-                width: 16,
-                height: 16,
-                lineHeight: "14px",
-                textAlign: "center",
-                background: "transparent",
-                cursor: "pointer",
-                opacity: 0.65,
-                padding: 0,
-              }}
+              className={styles.infoButton}
               aria-label="About this tool"
               title="About this tool"
             >
@@ -555,70 +590,79 @@ export default function BusinessDaysPage() {
           </div>
         </header>
 
-        <section
-          className={`border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 ${styles.sectionCard}`}
-        >
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setActivePreset(null);
-                setMode("range");
-              }}
-              className={[
-                `border shadow-sm ${styles.modeButton}`,
-                mode === "range"
-                  ? "border-violet-300/70 bg-violet-50 dark:border-violet-400/30 dark:bg-violet-500/10"
-                  : "border-black/10 bg-white/70 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10",
-              ].join(" ")}
-            >
-              Date Range
-            </button>
+        <section className={styles.sectionCard}>
+          <div className={styles.calculatorHeader}>
+            <div className={styles.modeGroup} aria-label="Calculation mode">
+              <button
+                type="button"
+                onClick={() => {
+                  setActivePreset(null);
+                  setMode("range");
+                }}
+                className={[
+                  styles.modeButton,
+                  mode === "range" ? styles.modeButtonActive : styles.modeButtonIdle,
+                ].join(" ")}
+              >
+                Date Range
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setMode("add")}
-              className={[
-                `border shadow-sm ${styles.modeButton}`,
-                mode === "add"
-                  ? "border-violet-300/70 bg-violet-50 dark:border-violet-400/30 dark:bg-violet-500/10"
-                  : "border-black/10 bg-white/70 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10",
-              ].join(" ")}
-            >
-              Add Business Days
-            </button>
+              <button
+                type="button"
+                onClick={() => setMode("add")}
+                className={[
+                  styles.modeButton,
+                  mode === "add" ? styles.modeButtonActive : styles.modeButtonIdle,
+                ].join(" ")}
+              >
+                Add Days
+              </button>
+            </div>
+
+            {mode === "add" ? (
+              <div className={styles.inlinePresets} aria-label="Common add-day presets">
+                {COMMON_ADD_PRESETS.map((days) => (
+                  <button
+                    key={days}
+                    type="button"
+                    onClick={() => void applyPreset(days)}
+                    className={[
+                      styles.presetChip,
+                      activePreset === days ? styles.presetChipActive : "",
+                    ].join(" ")}
+                    aria-pressed={activePreset === days}
+                  >
+                    {days} days
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
 
-          <div className="mt-5 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
-            <label className="block">
-              <div className="mb-1 text-sm font-semibold text-black/80 dark:text-white/80">
-                Start date
-              </div>
+          <div className={styles.formGrid}>
+            <label className={styles.dateField}>
+              <div className={styles.fieldLabel}>Start date</div>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className={`w-full border border-black/10 bg-white/80 px-3 text-sm shadow-sm outline-none focus:ring-2 focus:ring-violet-300 dark:border-white/10 dark:bg-white/5 ${styles.controlField} ${styles.valueField}`}
+                className={`px-3 ${styles.controlField} ${styles.valueField}`}
               />
             </label>
 
             {mode === "range" ? (
-              <label className="block">
-                <div className="mb-1 text-sm font-semibold text-black/80 dark:text-white/80">
-                  End date
-                </div>
+              <label className={styles.dateField}>
+                <div className={styles.fieldLabel}>End date</div>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className={`w-full border border-black/10 bg-white/80 px-3 text-sm shadow-sm outline-none focus:ring-2 focus:ring-violet-300 dark:border-white/10 dark:bg-white/5 ${styles.controlField}  ${styles.valueField}`}
+                  className={`px-3 ${styles.controlField} ${styles.valueField}`}
                 />
               </label>
             ) : (
-              <label className="block">
-                <div className="mb-1 text-sm font-semibold text-black/80 dark:text-white/80">
-                  Add business days
-                </div>
+              <label className={styles.dateField}>
+                <div className={styles.fieldLabel}>Add business days</div>
                 <input
                   type="number"
                   min={0}
@@ -627,19 +671,17 @@ export default function BusinessDaysPage() {
                     setActivePreset(null);
                     setAddDays(parseInt(e.target.value || "0", 10));
                   }}
-                  className={`w-full border border-black/10 bg-white/80 px-3 text-sm shadow-sm outline-none focus:ring-2 focus:ring-violet-300 dark:border-white/10 dark:bg-white/5 ${styles.controlField}`}
+                  className={`px-3 ${styles.controlField}`}
                 />
               </label>
             )}
 
-            <label className="block">
-              <div className="mb-1 text-sm font-semibold text-black/80 dark:text-white/80">
-                Country
-              </div>
+            <label className={styles.countryField}>
+              <div className={styles.fieldLabel}>Public holiday calendar</div>
               <select
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
-                className={`w-full border border-black/10 bg-white/80 px-3 text-sm shadow-sm outline-none focus:ring-2 focus:ring-violet-300 dark:border-white/10 dark:bg-white/5 ${styles.controlField}`}
+                className={`px-3 ${styles.controlField}`}
               >
                 {countryOptions.map((c) => (
                   <option key={c.code} value={c.code}>
@@ -649,27 +691,27 @@ export default function BusinessDaysPage() {
               </select>
             </label>
 
-            <div className="block">
-              <div className="mb-1 text-sm font-semibold text-transparent select-none">
-                placeholder
-              </div>
-
-              <label
-                className={`flex items-center gap-2 border border-black/10 bg-white/50 px-4 text-sm shadow-sm dark:border-white/10 dark:bg-white/5 ${styles.controlCard}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={excludeWeekends}
-                  onChange={(e) => setExcludeWeekends(e.target.checked)}
-                />
-                <span className="font-semibold text-black/80 dark:text-white/80">
-                  Exclude weekends
-                </span>
-              </label>
-            </div>
+            <label className={styles.weekendToggle}>
+              <input
+                type="checkbox"
+                checked={excludeWeekends}
+                onChange={(e) => setExcludeWeekends(e.target.checked)}
+              />
+              <span>Exclude weekends</span>
+            </label>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className={styles.actionsBar}>
+            <div className={styles.statusSlot}>
+              <HolidayStatusBanner />
+
+              {error ? (
+                <span className={styles.errorText}>
+                  {error}
+                </span>
+              ) : null}
+            </div>
+
             <button
               type="button"
               onClick={async () => {
@@ -677,237 +719,211 @@ export default function BusinessDaysPage() {
                 scrollToResults();
               }}
               disabled={loading}
-              className={[
-                `text-white shadow-sm ${styles.primaryButton}`,
-                loading ? "bg-violet-400" : "bg-violet-600 hover:bg-violet-700",
-              ].join(" ")}
+              className={styles.primaryButton}
             >
               {loading ? "Calculating…" : "Calculate"}
             </button>
-
-            {error ? (
-              <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-                {error}
-              </span>
-            ) : null}
           </div>
 
-          <HolidayStatusBanner />
-
-          <div
-            ref={commonCalcRef}
-            className="mt-5 border-t border-black/8 pt-4 dark:border-white/10"
-          >
-            <div className="text-sm font-bold text-black/80 dark:text-white/80">
-              Common calculations
-            </div>
-            <p className={styles.presetHint}>
-              Tap a preset to fill the calculator and run it automatically.
-            </p>
-
-            <div className={styles.presetRow}>
-              {COMMON_ADD_PRESETS.map((days) => (
-                <button
-                  key={days}
-                  type="button"
-                  onClick={() => void applyPreset(days)}
-                  className={[
-                    styles.presetChip,
-                    activePreset === days ? styles.presetChipActive : "",
-                  ].join(" ")}
-                  aria-pressed={activePreset === days}
-                >
-                  {days} business days from today
-                </button>
-              ))}
-            </div>
-          </div>
+          <div ref={commonCalcRef} />
         </section>
 
-        <section
-          ref={resultsRef}
-          id="business-days-results"
-          className={`mt-6 border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 ${styles.sectionCard}`}
-        >
-          <h2 className="text-lg font-black">Results</h2>
-
-          {!rangeResult && !addResult ? (
-            <p className="mt-2 text-sm text-black/60 dark:text-white/60">
-              Enter values above and click <span className="font-semibold">Calculate</span>.
-            </p>
-          ) : null}
-
+        {hasResult ? (
+          <section
+            ref={resultsRef}
+            id="business-days-results"
+            className={`mt-6 ${styles.sectionCard}`}
+          >
+            <div className={styles.sectionTitle}>Answer</div>
           {rangeResult && computedContext?.mode === "range" ? (
-            <p className="mt-2 text-[13px] italic text-black/55 dark:text-white/50">
-              Business days counted from{" "}
-              <span className="font-medium">{computedContext.startDate}</span> to{" "}
-              <span className="font-medium">{computedContext.endDate}</span> in{" "}
-              <span className="font-medium">{computedContext.countryCode}</span>
-              {computedContext.excludeWeekends ? " (weekends excluded)" : ""}.
-            </p>
-          ) : null}
-
-          {rangeResult ? (
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div
-                  className={`border-2 border-violet-400/80 bg-violet-100/70 p-4 shadow-md ring-2 ring-violet-300/60 dark:border-violet-400/40 dark:bg-violet-500/15 dark:ring-violet-400/20 ${styles.resultCard}`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="text-xs font-extrabold uppercase tracking-wide text-violet-900/80 dark:text-violet-200/80">
-                      Business Days
+            <>
+              <div className={styles.answerCard}>
+                <div className={styles.answerLayout}>
+                  <div>
+                    <div className={styles.answerEyebrow}>Business days</div>
+                    <div className={styles.answerValue}>
+                      {rangeResult.businessDays}{" "}
+                      <span className={styles.answerUnit}>
+                        day{rangeResult.businessDays === 1 ? "" : "s"}
+                      </span>
                     </div>
-                    <span className="rounded-full border border-violet-300/70 bg-white/60 px-2 py-0.5 text-[11px] font-bold text-violet-900/70 dark:border-violet-300/20 dark:bg-white/10 dark:text-violet-200/70">
-                      Result
-                    </span>
+                    <p className={styles.answerLine}>
+                      From <strong>{computedContext.startDate}</strong> to{" "}
+                      <strong>{computedContext.endDate}</strong> using the{" "}
+                      <strong>{selectedCountryName}</strong> holiday calendar
+                      {computedContext.excludeWeekends ? ", with weekends excluded." : "."}
+                    </p>
                   </div>
-                  <div className="mt-1 text-3xl font-black text-violet-950 dark:text-violet-200">
-                    {rangeResult.businessDays}
-                  </div>
-                  <div className="mt-1 text-xs text-violet-900/60 dark:text-violet-200/60">
-                    Working days in range
+
+                  <div className={styles.miniTimeline} aria-hidden="true">
+                    <div className={styles.timelineTrack}>
+                      <div
+                        className={styles.timelineFill}
+                        style={{
+                          width: `${Math.max(
+                            6,
+                            Math.min(
+                              100,
+                              (rangeResult.businessDays / Math.max(1, rangeResult.calendarDays)) *
+                                100
+                            )
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                    <div className={styles.timelineCaption}>
+                      Counted against {rangeResult.calendarDays} calendar day
+                      {rangeResult.calendarDays === 1 ? "" : "s"}
+                    </div>
                   </div>
                 </div>
 
-                <div
-                  className={`border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5 ${styles.softCard}`}
-                >
-                  <div className="text-black/60 dark:text-white/60">Calendar days (inclusive)</div>
-                  <div className="mt-1 text-xl font-bold">{rangeResult.calendarDays}</div>
-                </div>
-
-                <div
-                  className={`border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5 ${styles.softCard}`}
-                >
-                  <div className="text-black/60 dark:text-white/60">Weekend days excluded</div>
-                  <div className="mt-1 text-xl font-bold">{rangeResult.weekendDaysExcluded}</div>
-                </div>
-
-                <div
-                  className={`border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5 ${styles.softCard}`}
-                >
-                  <div className="text-black/60 dark:text-white/60">Holiday days excluded</div>
-                  <div className="mt-1 text-xl font-bold">{rangeResult.holidayDaysExcluded}</div>
+                <div className={styles.statGrid}>
+                  <div className={styles.statChip}>
+                    <div className={styles.statLabel}>Calendar days</div>
+                    <div className={styles.statValue}>{rangeResult.calendarDays}</div>
+                  </div>
+                  <div className={styles.statChip}>
+                    <div className={styles.statLabel}>Weekends skipped</div>
+                    <div className={styles.statValue}>{rangeResult.weekendDaysExcluded}</div>
+                  </div>
+                  <div className={styles.statChip}>
+                    <div className={styles.statLabel}>Holidays skipped</div>
+                    <div className={styles.statValue}>{rangeResult.holidayDaysExcluded}</div>
+                  </div>
                 </div>
               </div>
 
-              {rangeResult.holidaysHit.length > 0 ? (
-                <div
-                  className={`border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5 ${styles.softCard}`}
-                >
-                  <div className="mb-2 font-bold">Holidays excluded</div>
-                  <ul className="list-inside list-disc space-y-1">
-                    {rangeResult.holidaysHit.map((d) => (
-                      <li key={d}>{renderHolidayLabel(d)}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <div
-                  className={`border border-black/10 bg-white/70 p-4 text-black/60 dark:border-white/10 dark:bg-white/5 dark:text-white/60 ${styles.softCard}`}
-                >
-                  No holidays were excluded for that range (or holiday data was empty/unavailable).
-                </div>
-              )}
-            </div>
+              <PublicHolidaysChecked
+                startDate={computedContext.startDate}
+                endDate={computedContext.endDate}
+              />
+            </>
           ) : null}
 
           {addResult && computedContext?.mode === "add" ? (
-            <p className="mt-2 text-[13px] italic text-black/55 dark:text-white/50">
-              From <span className="font-medium">{computedContext.startDate}</span>, adding{" "}
-              <span className="font-medium">{computedContext.addDays}</span> business days in{" "}
-              <span className="font-medium">{computedContext.countryCode}</span>
-              {computedContext.excludeWeekends ? " (weekends excluded)" : ""}.
-            </p>
-          ) : null}
+            <>
+              <div className={styles.answerCard}>
+                <div className={styles.answerLayout}>
+                  <div>
+                    <div className={styles.answerEyebrow}>Result date</div>
+                    <div className={styles.answerValue}>
+                      {addResult.resultDate}
+                    </div>
+                    <p className={styles.answerLine}>
+                      Starting on <strong>{computedContext.startDate}</strong>,{" "}
+                      <strong>{computedContext.addDays}</strong> business day
+                      {computedContext.addDays === 1 ? "" : "s"} lands here using the{" "}
+                      <strong>{selectedCountryName}</strong> holiday calendar
+                      {computedContext.excludeWeekends ? ", with weekends excluded." : "."}
+                    </p>
+                  </div>
 
-          {addResult ? (
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div
-                  className={`border-2 border-violet-400/80 bg-violet-100/70 p-4 shadow-md ring-2 ring-violet-300/60 dark:border-violet-400/40 dark:bg-violet-500/15 dark:ring-violet-400/20 ${styles.resultCard}`}
-                >
-                  <div className="text-xs font-extrabold uppercase tracking-wide text-violet-900/80 dark:text-violet-200/80">
-                    Result date
-                  </div>
-                  <div className="mt-1 text-2xl font-black text-violet-950 dark:text-violet-200">
-                    {addResult.resultDate}
-                  </div>
-                  <div className="mt-1 text-xs text-violet-900/60 dark:text-violet-200/60">
-                    After adding {addResult.addBusinessDays} business day(s)
+                  <div className={styles.miniTimeline} aria-hidden="true">
+                    <div className={styles.timelineTrack}>
+                      <div
+                        className={styles.timelineFill}
+                        style={{
+                          width: `${Math.max(
+                            8,
+                            Math.min(
+                              100,
+                              (addResult.addBusinessDays /
+                                Math.max(1, addResult.addBusinessDays + addResult.daysSkipped)) *
+                                100
+                            )
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                    <div className={styles.timelineCaption}>
+                      {addResult.daysSkipped} skipped day{addResult.daysSkipped === 1 ? "" : "s"}
+                    </div>
                   </div>
                 </div>
 
-                <div
-                  className={`border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5 ${styles.softCard}`}
-                >
-                  <div className="text-black/60 dark:text-white/60">
-                    Days skipped (weekends + holidays)
+                <div className={styles.statGrid}>
+                  <div className={styles.statChip}>
+                    <div className={styles.statLabel}>Business days added</div>
+                    <div className={styles.statValue}>{addResult.addBusinessDays}</div>
                   </div>
-                  <div className="mt-1 text-xl font-bold">{addResult.daysSkipped}</div>
+                  <div className={styles.statChip}>
+                    <div className={styles.statLabel}>Skipped days</div>
+                    <div className={styles.statValue}>{addResult.daysSkipped}</div>
+                  </div>
+                  <div className={styles.statChip}>
+                    <div className={styles.statLabel}>Holiday calendar</div>
+                    <div className={styles.statValue}>{computedContext.countryCode}</div>
+                  </div>
                 </div>
               </div>
 
+              <PublicHolidaysChecked
+                startDate={computedContext.startDate}
+                endDate={addResult.resultDate}
+              />
+
               {addResult.skippedDates.length > 0 ? (
-                <div
-                  className={`border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5 ${styles.softCard}`}
-                >
+                <div className={`mt-3 p-4 ${styles.softCard}`}>
                   <div className="mb-2 font-bold">Skipped dates</div>
-                  <ul className="list-inside list-disc space-y-1">
-                    {addResult.skippedDates.map((d) => (
+                  <ul className="list-inside list-disc space-y-1 text-sm">
+                    {addResult.skippedDates.slice(0, 12).map((d) => (
                       <li key={d}>{renderSkippedDateLabel(d)}</li>
                     ))}
                   </ul>
+                  {addResult.skippedDates.length > 12 ? (
+                    <div className={styles.detailNote}>
+                      Showing 12 of {addResult.skippedDates.length} skipped dates.
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
-            </div>
+            </>
           ) : null}
-        </section>
+          </section>
+        ) : null}
 
-        <details
-          ref={faqRef}
-          className={`mt-6 border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 ${styles.sectionCard}`}
-        >
-          <summary className="cursor-pointer select-none text-sm font-bold text-black/80 dark:text-white/80">
+        <details ref={faqRef} className={`mt-6 ${styles.sectionCard} ${styles.infoSection}`}>
+          <summary className={styles.infoSummary}>
             Quick FAQ
           </summary>
 
-          <div className="mt-4 space-y-4 text-sm text-black/70 dark:text-white/70">
-            <div>
-              <div className="font-bold text-black/85 dark:text-white/85">What is a business day?</div>
-              <p className="mt-1">
+          <div className={styles.infoBody}>
+            <div className={styles.infoItem}>
+              <div className={styles.infoItemTitle}>What is a business day?</div>
+              <p>
                 A business day usually means Monday through Friday, excluding weekends and
                 public holidays.
               </p>
             </div>
 
-            <div>
-              <div className="font-bold text-black/85 dark:text-white/85">
+            <div className={styles.infoItem}>
+              <div className={styles.infoItemTitle}>
                 How do I calculate 10 business days from today?
               </div>
-              <p className="mt-1">
+              <p>
                 Use <span className="font-semibold">Add Business Days</span>, keep today as
                 the start date, enter <span className="font-semibold">10</span>, then click
                 Calculate. You can also tap the preset button above.
               </p>
             </div>
 
-            <div>
-              <div className="font-bold text-black/85 dark:text-white/85">
+            <div className={styles.infoItem}>
+              <div className={styles.infoItemTitle}>
                 How do I calculate business days between two dates?
               </div>
-              <p className="mt-1">
+              <p>
                 Use <span className="font-semibold">Date Range</span>, choose the start and
                 end dates, then calculate. The result shows business days, calendar days,
                 weekends excluded, and holidays excluded.
               </p>
             </div>
 
-            <div>
-              <div className="font-bold text-black/85 dark:text-white/85">
+            <div className={styles.infoItem}>
+              <div className={styles.infoItemTitle}>
                 Do business days include weekends or holidays?
               </div>
-              <p className="mt-1">
+              <p>
                 Usually no. This calculator can exclude weekends and also attempts to exclude
                 holidays for the selected country.
               </p>
@@ -915,27 +931,24 @@ export default function BusinessDaysPage() {
           </div>
         </details>
 
-        <details
-          ref={helpRef}
-          className={`mt-6 border border-black/10 bg-white/60 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 ${styles.sectionCard}`}
-        >
-          <summary className="cursor-pointer select-none text-sm font-bold text-black/80 dark:text-white/80 flex items-center gap-2">
+        <details ref={helpRef} className={`mt-6 ${styles.sectionCard} ${styles.infoSection}`}>
+          <summary className={styles.infoSummary}>
             How Business Day Calculator works
           </summary>
 
-          <div className="mt-4 space-y-4 text-sm text-black/70 dark:text-white/70">
-            <div>
-              <div className="font-bold text-black/85 dark:text-white/85">What this tool does</div>
-              <p className="mt-1">
+          <div className={styles.infoBody}>
+            <div className={styles.infoItem}>
+              <div className={styles.infoItemTitle}>What this tool does</div>
+              <p>
                 This calculator helps you count business days between two dates, or add
                 business days to a starting date. A business day usually means weekdays
                 (Monday–Friday), excluding weekends and public holidays.
               </p>
             </div>
 
-            <div>
-              <div className="font-bold text-black/85 dark:text-white/85">Weekends and holidays</div>
-              <p className="mt-1">
+            <div className={styles.infoItem}>
+              <div className={styles.infoItemTitle}>Weekends and holidays</div>
+              <p>
                 If “Exclude weekends” is enabled, Saturdays and Sundays are not counted as
                 business days. For holidays, the page calls the holiday API for the selected
                 country and relevant year(s). If the holiday API returns no data or errors,
@@ -943,9 +956,9 @@ export default function BusinessDaysPage() {
               </p>
             </div>
 
-            <div>
-              <div className="font-bold text-black/85 dark:text-white/85">Tips</div>
-              <ul className="mt-1 list-disc pl-5 space-y-1">
+            <div className={styles.infoItem}>
+              <div className={styles.infoItemTitle}>Tips</div>
+              <ul className={styles.infoList}>
                 <li>Use Date Range to estimate working days in a project timeline.</li>
                 <li>Use Add Business Days for “deliver X business days after” deadlines.</li>
                 <li>If you cross multiple years, holiday coverage depends on each year’s API response.</li>
@@ -954,25 +967,6 @@ export default function BusinessDaysPage() {
           </div>
         </details>
 
-        <section className="mt-6">
-          <div className="text-xs font-semibold text-black/50 dark:text-white/50">
-            Related tools
-          </div>
-
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Link href="/time-since" className={styles.relatedTool}>
-              Time Since
-            </Link>
-
-            <Link href="/timezone" className={styles.relatedTool}>
-              Timezone Converter
-            </Link>
-
-            <Link href="/meeting-overlap" className={styles.relatedTool}>
-              Meeting Overlap
-            </Link>
-          </div>
-        </section>
       </main>
     </PageShell>
   );

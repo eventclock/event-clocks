@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import styles from "./unix-time.module.css";
 
 function toDatetimeLocalValue(date: Date) {
   const pad = (value: number) => String(value).padStart(2, "0");
@@ -23,9 +24,13 @@ export default function UnixTimeClient() {
   const [dateTime, setDateTime] = useState("");
 
   useEffect(() => {
-    const now = new Date();
-    setTimestamp(String(Math.floor(now.getTime() / 1000)));
-    setDateTime(toDatetimeLocalValue(now));
+    const timeout = window.setTimeout(() => {
+      const now = new Date();
+      setTimestamp(String(Math.floor(now.getTime() / 1000)));
+      setDateTime(toDatetimeLocalValue(now));
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
   }, []);
 
   const timestampResult = useMemo(() => {
@@ -56,31 +61,33 @@ export default function UnixTimeClient() {
   }, [dateTime]);
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10">
-      <section className="rounded-lg border border-black/10 bg-white/65 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
-        <p className="m-0 text-xs font-extrabold text-sky-700/80 dark:text-sky-200/80">
-          Epoch time
-        </p>
-        <h1 className="mt-2">Unix Time Converter</h1>
-        <p className="max-w-2xl text-sm text-black/60 dark:text-white/60">
+    <main className={styles.shell}>
+      <section className={styles.hero}>
+        <p className={styles.eyebrow}>Epoch time</p>
+        <h1 className={styles.title}>Unix Time Converter</h1>
+        <p className={styles.subtitle}>
           Convert Unix timestamps into readable dates, or turn a local date and time into Unix
           seconds and milliseconds.
         </p>
+      </section>
 
-        <section className="mt-5 grid gap-4 md:grid-cols-2">
-          <div className="rounded-lg border border-black/10 bg-white/55 p-4 dark:border-white/10 dark:bg-white/5">
-            <h2 className="m-0 text-sm font-black">Timestamp to date</h2>
-            <div className="mt-4 grid gap-3">
+      <section className={styles.grid}>
+        <div className={styles.panel}>
+          <div className={styles.panelInner}>
+            <h2 className={styles.panelTitle}>Timestamp to date</h2>
+            <div className={styles.controls}>
               <input
                 value={timestamp}
                 onChange={(event) => setTimestamp(event.target.value)}
                 inputMode="numeric"
-                className="h-10 rounded-lg border border-black/10 bg-white px-3 text-sm text-black/80 dark:border-white/10 dark:bg-black dark:text-white/80"
+                className={styles.input}
+                aria-label="Unix timestamp"
               />
               <select
                 value={unit}
                 onChange={(event) => setUnit(event.target.value as "seconds" | "milliseconds")}
-                className="h-10 rounded-lg border border-black/10 bg-white px-3 text-sm text-black/80 dark:border-white/10 dark:bg-black dark:text-white/80"
+                className={styles.select}
+                aria-label="Timestamp unit"
               >
                 <option value="seconds">Seconds</option>
                 <option value="milliseconds">Milliseconds</option>
@@ -91,7 +98,7 @@ export default function UnixTimeClient() {
                   const now = Date.now();
                   setTimestamp(String(unit === "seconds" ? Math.floor(now / 1000) : now));
                 }}
-                className="h-10 rounded-lg border border-sky-200 bg-sky-50 px-3 text-sm font-bold text-sky-800 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-100"
+                className={styles.button}
               >
                 Use current time
               </button>
@@ -108,20 +115,23 @@ export default function UnixTimeClient() {
               }
             />
           </div>
+        </div>
 
-          <div className="rounded-lg border border-black/10 bg-white/55 p-4 dark:border-white/10 dark:bg-white/5">
-            <h2 className="m-0 text-sm font-black">Date to timestamp</h2>
-            <div className="mt-4 grid gap-3">
+        <div className={styles.panel}>
+          <div className={styles.panelInner}>
+            <h2 className={styles.panelTitle}>Date to timestamp</h2>
+            <div className={styles.controls}>
               <input
                 type="datetime-local"
                 value={dateTime}
                 onChange={(event) => setDateTime(event.target.value)}
-                className="h-10 rounded-lg border border-black/10 bg-white px-3 text-sm text-black/80 dark:border-white/10 dark:bg-black dark:text-white/80"
+                className={styles.input}
+                aria-label="Local date and time"
               />
               <button
                 type="button"
                 onClick={() => setDateTime(toDatetimeLocalValue(new Date()))}
-                className="h-10 rounded-lg border border-sky-200 bg-sky-50 px-3 text-sm font-bold text-sky-800 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-100"
+                className={styles.button}
               >
                 Use current date-time
               </button>
@@ -138,7 +148,7 @@ export default function UnixTimeClient() {
               }
             />
           </div>
-        </section>
+        </div>
       </section>
     </main>
   );
@@ -146,13 +156,11 @@ export default function UnixTimeClient() {
 
 function ResultBlock({ lines }: { lines: [string, string][] }) {
   return (
-    <dl className="mt-4 grid gap-2 rounded-lg border border-black/10 bg-white/70 p-3 text-sm dark:border-white/10 dark:bg-black/20">
+    <dl className={styles.result}>
       {lines.map(([label, value]) => (
-        <div key={label}>
-          <dt className="text-xs font-bold text-black/45 dark:text-white/45">{label}</dt>
-          <dd className="m-0 mt-1 break-words font-semibold text-black/75 dark:text-white/75">
-            {value}
-          </dd>
+        <div key={label} className={styles.resultRow}>
+          <dt className={styles.resultLabel}>{label}</dt>
+          <dd className={styles.resultValue}>{value}</dd>
         </div>
       ))}
     </dl>

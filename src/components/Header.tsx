@@ -35,6 +35,10 @@ export default function Header() {
           letterSpacing: "-0.01em",
         }}
       >
+        <Link href="/today" style={topLinkStyle}>
+          Today
+        </Link>
+
         <Dropdown label="Tools">
           <Section title="Time">
             <MenuItem href="/timezone">Timezone Converter</MenuItem>
@@ -68,10 +72,6 @@ export default function Header() {
             <MenuItem href="/tax-document-checklist">Tax Document Checklist</MenuItem>
           </Section>
         </Dropdown>
-
-        <Link href="/today" style={topLinkStyle}>
-          Today
-        </Link>
 
         <Link href="/about" style={topLinkStyle}>
           About

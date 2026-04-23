@@ -1,0 +1,167 @@
+.shell {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.hero {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(139, 111, 90, 0.72);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(139, 111, 90, 0.95);
+}
+
+.title {
+  margin: 12px 0 0;
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.subtitle {
+  max-width: 680px;
+  margin: 14px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.58);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.panel {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  border: 1px solid rgba(139, 111, 90, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.055);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(95, 74, 59, 0.88), rgba(185, 154, 97, 0.58));
+}
+
+.panelInner {
+  padding: 18px;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+  color: rgba(0, 0, 0, 0.84);
+}
+
+.controls {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.input,
+.select {
+  width: 100%;
+  height: 34px;
+  border: 1px solid rgba(139, 111, 90, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.78);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.045);
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: rgba(139, 111, 90, 0.5);
+  box-shadow: 0 0 0 3px rgba(139, 111, 90, 0.14);
+}
+
+.button {
+  height: 34px;
+  border: 1px solid rgba(95, 74, 59, 0.82);
+  border-radius: 6px;
+  background: rgba(95, 74, 59, 0.94);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(95, 74, 59, 0.12);
+}
+
+.button:hover {
+  background: rgba(78, 61, 49, 0.98);
+}
+
+.result {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  border: 1px solid rgba(139, 111, 90, 0.2);
+  border-radius: 7px;
+  background: rgba(139, 111, 90, 0.035);
+  padding: 12px;
+}
+
+.resultRow {
+  min-width: 0;
+}
+
+.resultLabel {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.46);
+}
+
+.resultValue {
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.45;
+  color: rgba(0, 0, 0, 0.76);
+}
+
+@media (max-width: 760px) {
+  .shell {
+    padding: 30px 16px;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
