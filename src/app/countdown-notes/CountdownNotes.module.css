@@ -38,6 +38,7 @@
 .btnDanger {
   border-color: rgba(244, 63, 94, 0.28);
   background: rgba(244, 63, 94, 0.05);
+  color: rgba(255, 255, 255, 0.94);
 }
 
 .badge {
@@ -597,4 +598,69 @@
   font-size: 14px;
   line-height: 1.6;
   color: rgba(0, 0, 0, 0.72);
+}
+
+@media (prefers-color-scheme: dark) {
+  .sectionTitle {
+    color: rgba(255, 255, 255, 0.74);
+  }
+
+  .btn {
+    color: rgba(0, 0, 0, 0.78);
+  }
+
+  .btnDanger {
+    color: rgba(255, 255, 255, 0.94);
+  }
+
+  .sectionBadge,
+  .badge {
+    color: rgba(0, 0, 0, 0.68);
+  }
+
+  .helper {
+    color: rgba(0, 0, 0, 0.62);
+  }
+
+  .pinTextButton {
+    color: rgba(0, 0, 0, 0.52);
+  }
+
+  .pinTextButton:hover {
+    color: rgba(0, 0, 0, 0.76);
+  }
+
+  .statusSoon {
+    color: rgba(146, 64, 14, 0.96);
+  }
+
+  .statusPast {
+    color: rgba(153, 27, 27, 0.96);
+  }
+
+  .statusFuture {
+    color: rgba(30, 64, 175, 0.96);
+  }
+
+  .modalTitle,
+  .labelText,
+  .input,
+  .textarea,
+  .title,
+  .noteBox,
+  .detailMeta,
+  .aboutContent p {
+    color: rgba(0, 0, 0, 0.82);
+  }
+
+  .meta,
+  .empty,
+  .clockLabelsInline {
+    color: rgba(0, 0, 0, 0.62);
+  }
+
+  .chevron,
+  .colon {
+    color: rgba(0, 0, 0, 0.5);
+  }
 }

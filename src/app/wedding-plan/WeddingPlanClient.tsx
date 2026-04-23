@@ -686,9 +686,9 @@ function ModalShell({
         padding: "16px",
       }}
     >
-      <div className="w-full max-w-2xl rounded-3xl border border-black/10 bg-white p-5 shadow-xl">
+      <div className={`${styles.card} ${styles.infoPanel} w-full max-w-2xl p-5 shadow-xl`}>
         <div className="flex items-center justify-between gap-3">
-          <div className="text-sm font-extrabold text-black/85">{title}</div>
+          <div className={styles.sectionTitle}>{title}</div>
           <button className={styles.btn + " " + styles.btnSmall} onClick={onClose} type="button">
             Close
           </button>
@@ -716,7 +716,7 @@ function StartHereModal({ open, onClose }: { open: boolean; onClose: () => void 
           </ol>
         </div>
 
-        <div className="rounded-2xl border border-black/10 bg-white/70 p-3">
+        <div className={`${styles.card} ${styles.infoPanel} p-3`}>
           <div className="text-xs font-extrabold text-black/75 uppercase tracking-wide">Common timelines</div>
           <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
             <div>
@@ -1358,6 +1358,7 @@ export default function WeddingPlanClient() {
       <PageShell
   title="Wedding Planner"
   subtitle="A simple wedding timeline built around your actual date."
+  mainClassName={styles.lightPageShell}
 >
         {/* Always-mounted modals (content is in DOM) */}
         <StartHereModal open={startHereOpen} onClose={() => setStartHereOpen(false)} />
@@ -1365,7 +1366,7 @@ export default function WeddingPlanClient() {
         <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
 
         <div className={styles.wrap}>
-          <div className="mx-auto max-w-4xl space-y-6 rounded-3xl border border-[#e9e5df] bg-white px-10 py-12 shadow-[0_18px_60px_rgba(0,0,0,0.06)]">
+          <div className={`${styles.card} ${styles.infoPanel} mx-auto max-w-4xl space-y-6 px-10 py-12`}>
             <div className="mb-6 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
 
             {/* Top bar */}
@@ -1465,9 +1466,9 @@ export default function WeddingPlanClient() {
             {/* Reset confirmation */}
             {showResetConfirm ? (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-                <div className="w-full max-w-md rounded-2xl border border-black/10 bg-white p-4 shadow-xl">
-                  <div className="text-sm font-extrabold text-black/85">Reset this wedding plan?</div>
-                  <div className="mt-1 text-xs text-black/60">
+                <div className={`${styles.card} ${styles.infoPanel} w-full max-w-md p-4 shadow-xl`}>
+                  <div className={styles.sectionTitle}>Reset this wedding plan?</div>
+                  <div className={styles.muted} style={{ marginTop: 4, fontSize: 12 }}>
                     This clears the saved wedding plan on this device. You can export first if you want a backup.
                   </div>
                   <div className="mt-4 flex justify-end gap-2">

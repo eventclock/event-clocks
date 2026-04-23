@@ -1698,7 +1698,11 @@ export default function CruiseTimelineClient() {
 
       {/* Bottom info panels (moved here so they don't steal space up top) */}
         {state.ui.showHowTo || state.ui.showAbout ? (
-        <div ref={infoRef} style={{ scrollMarginTop: 80 }} className={styles.card}>
+        <div
+          ref={infoRef}
+          style={{ scrollMarginTop: 80 }}
+          className={`${styles.card} ${styles.infoPanel}`}
+        >
             {state.ui.showHowTo ? (
             <div>
                 <div className={styles.sectionTitle}>How to use</div>

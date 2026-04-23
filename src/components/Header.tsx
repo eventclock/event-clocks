@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
 
 export default function Header() {
   return (
@@ -11,7 +11,7 @@ export default function Header() {
         alignItems: "center",
         justifyContent: "space-between",
         padding: "18px 24px",
-        borderBottom: "1px solid rgba(0,0,0,0.06)",
+        borderBottom: "1px solid var(--site-header-border)",
         gap: 18,
       }}
     >
@@ -143,7 +143,7 @@ function Dropdown({
   useEffect(() => {
     if (!open) return;
 
-    const onPointerDown = (e: MouseEvent | TouchEvent) => {
+    const onPointerDown = (e: Event) => {
       const root = detailsRef.current;
       if (!root) return;
       const target = e.target as Node | null;
@@ -162,39 +162,10 @@ function Dropdown({
 
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("touchstart", onPointerDown as any);
+      document.removeEventListener("touchstart", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open]);
-
-  const enhancedChildren = useMemo(() => {
-    return React.Children.map(children, (child) => {
-      if (!React.isValidElement(child)) return child;
-
-      const typeAny = child.type as any;
-      const isMenuItem = typeAny?.displayName === "MenuItem";
-      if (isMenuItem) {
-        return React.cloneElement(child as any, { onNavigate: close });
-      }
-
-      const isSection = typeAny?.displayName === "Section";
-      if (isSection) {
-        const sectionChildren = (child.props as any).children;
-        const newSectionChildren = React.Children.map(sectionChildren, (c) => {
-          if (!React.isValidElement(c)) return c;
-          const t = c.type as any;
-          if (t?.displayName === "MenuItem") {
-            return React.cloneElement(c as any, { onNavigate: close });
-          }
-          return c;
-        });
-
-        return React.cloneElement(child as any, { children: newSectionChildren });
-      }
-
-      return child;
-    });
-  }, [children]);
 
   return (
     <details ref={detailsRef} style={{ position: "relative" }} onToggle={onToggle}>
@@ -226,7 +197,7 @@ function Dropdown({
           if (target?.closest("a")) close();
         }}
       >
-        {enhancedChildren}
+        {children}
       </div>
     </details>
   );
@@ -246,10 +217,11 @@ const menuAppleStyle: React.CSSProperties = {
   top: "calc(100% + 12px)",
   width: 250,
   maxWidth: "calc(100vw - 32px)",
-  background: "rgba(255,255,255,0.92)",
-  border: "1px solid rgba(0,0,0,0.08)",
+  color: "var(--site-menu-fg)",
+  background: "var(--site-menu-bg)",
+  border: "1px solid var(--site-menu-border)",
   borderRadius: 14,
-  boxShadow: "0 18px 40px rgba(0,0,0,0.10)",
+  boxShadow: "0 18px 40px var(--site-menu-shadow)",
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
   padding: 8,
@@ -261,23 +233,20 @@ const menuAppleStyle: React.CSSProperties = {
 function MenuItem({
   href,
   children,
-  onNavigate,
 }: {
   href: string;
   children: React.ReactNode;
-  onNavigate?: () => void;
 }) {
   return (
     <Link
       href={href}
       role="menuitem"
-      onClick={() => onNavigate?.()}
       style={{
         display: "block",
         padding: "7px 10px",
         borderRadius: 8,
         textDecoration: "none",
-        color: "inherit",
+        color: "var(--site-menu-fg)",
         fontSize: 13,
         fontWeight: 500,
         opacity: 0.9,
@@ -287,15 +256,14 @@ function MenuItem({
     </Link>
   );
 }
-(MenuItem as any).displayName = "MenuItem";
 
 function Divider() {
   return (
     <div
       style={{
         height: 1,
-        background: "rgba(0,0,0,0.07)",
-        margin: "5px 6px",
+        background: "var(--site-menu-divider)",
+        margin: "8px 6px",
       }}
     />
   );
@@ -315,7 +283,7 @@ function Section({
           fontSize: 11,
           fontWeight: 600,
           letterSpacing: "0.02em",
-          opacity: 0.55,
+          color: "var(--site-menu-muted)",
           padding: "4px 10px 2px",
           textTransform: "uppercase",
         }}
@@ -326,4 +294,3 @@ function Section({
     </div>
   );
 }
-(Section as any).displayName = "Section";

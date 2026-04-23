@@ -218,3 +218,155 @@
   border: 1px solid rgba(99, 146, 241, 0.22);
   color: rgba(48, 88, 163, 0.95);
 }
+
+.infoPanel {
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.lightPageShell {
+  color: rgba(23, 23, 23, 0.92);
+}
+
+.lightPageShell :global(h1) {
+  color: rgba(23, 23, 23, 0.94);
+}
+
+.lightPageShell :global(.subtitle) {
+  color: rgba(55, 48, 43, 0.72);
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .wrap {
+    --c-border: rgba(95, 74, 59, 0.26);
+    --c-border-2: rgba(95, 74, 59, 0.16);
+    --c-text: rgba(0, 0, 0, 0.84);
+    --c-muted: rgba(0, 0, 0, 0.62);
+    --c-bg: rgba(255, 255, 255, 0.84);
+  }
+
+  .card {
+    border-color: var(--c-border-2);
+    background: var(--c-bg);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  }
+
+  .btn,
+  .segment,
+  .badge {
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--c-text);
+  }
+
+  .btn:hover {
+    background: rgba(255, 255, 255, 1);
+  }
+
+  .segmentBtn {
+    color: var(--c-text);
+  }
+
+  .segmentBtnActive {
+    background: rgba(95, 74, 59, 0.08);
+  }
+
+  .input {
+    border-color: var(--c-border);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--c-text);
+  }
+
+  .input:focus {
+    border-color: rgba(112, 82, 59, 0.5);
+    box-shadow: 0 0 0 3px rgba(171, 129, 94, 0.14);
+  }
+
+  .infoBtn {
+    border-color: rgba(214, 160, 109, 0.34);
+    color: rgba(255, 229, 200, 0.72);
+  }
+
+  .calendarHeaderCenter {
+    color: var(--c-muted);
+  }
+
+  .monthTitle,
+  .sectionTitle {
+    color: var(--c-text);
+  }
+
+  .dayCell {
+    border-color: var(--c-border-2);
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .dayCellMuted {
+    background: rgba(255, 255, 255, 0.62);
+  }
+
+  .cruiseDay {
+    background: rgba(16, 185, 129, 0.12);
+  }
+
+  .sailDay {
+    background: rgba(16, 185, 129, 0.18);
+  }
+
+  .taskLink,
+  .bullets {
+    color: rgba(0, 0, 0, 0.72);
+  }
+
+  .featureLabel {
+    background: rgba(255, 255, 255, 0.82);
+    border-color: rgba(95, 74, 59, 0.18);
+    color: var(--c-muted);
+  }
+
+  .featurePill {
+    background: rgba(99, 168, 241, 0.16);
+    border-color: rgba(99, 146, 241, 0.22);
+    color: rgba(48, 88, 163, 0.95);
+  }
+
+  .infoPanel {
+    background: rgba(255, 255, 255, 0.9);
+    color: rgba(0, 0, 0, 0.78);
+  }
+
+  .infoPanel .sectionTitle {
+    color: rgba(0, 0, 0, 0.86);
+  }
+
+  .infoPanel .bullets,
+  .infoPanel .muted {
+    color: rgba(0, 0, 0, 0.72);
+  }
+
+  .lightPageShell,
+  .lightPageShell :global(h1) {
+    color: rgba(23, 23, 23, 0.94);
+  }
+
+  .lightPageShell :global(.subtitle) {
+    color: rgba(55, 48, 43, 0.72);
+    opacity: 1;
+  }
+
+  .infoPanel :global(.text-black\/85),
+  .infoPanel :global(.text-black\/75),
+  .infoPanel :global(.text-black\/65),
+  .infoPanel :global(.text-black\/60) {
+    color: rgba(0, 0, 0, 0.78);
+  }
+
+  .infoPanel :global(.border-black\/10) {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .infoPanel :global(.bg-white\/60),
+  .infoPanel :global(.bg-white\/70),
+  .infoPanel :global(.bg-white) {
+    background-color: rgba(255, 255, 255, 0.78);
+  }
+}

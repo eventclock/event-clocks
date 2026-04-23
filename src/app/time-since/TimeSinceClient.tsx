@@ -169,34 +169,36 @@ export default function TimeSinceClient() {
 
   // Client-only init (restore + set "now")
   useEffect(() => {
-    let restored = false;
+    queueMicrotask(() => {
+      let restored = false;
 
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<{
-          startValue: string;
-          unit: Unit;
-          isRunning: boolean;
-        }>;
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as Partial<{
+            startValue: string;
+            unit: Unit;
+            isRunning: boolean;
+          }>;
 
-        if (typeof parsed.startValue === "string") {
-          setStartValue(parsed.startValue);
-          restored = true;
+          if (typeof parsed.startValue === "string") {
+            setStartValue(parsed.startValue);
+            restored = true;
+          }
+          if (parsed.unit) setUnit(parsed.unit);
+          if (typeof parsed.isRunning === "boolean") setIsRunning(parsed.isRunning);
         }
-        if (parsed.unit) setUnit(parsed.unit);
-        if (typeof parsed.isRunning === "boolean") setIsRunning(parsed.isRunning);
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
-    }
 
-    if (!restored) {
-      setStartValue(nowAsDateTimeLocalString());
-    }
+      if (!restored) {
+        setStartValue(nowAsDateTimeLocalString());
+      }
 
-    setNowMs(Date.now());
-    setMounted(true);
+      setNowMs(Date.now());
+      setMounted(true);
+    });
   }, []);
 
   // Persist (only after mount to avoid touching localStorage early)
@@ -214,8 +216,8 @@ export default function TimeSinceClient() {
     if (!mounted) return;
     if (!isRunning) return;
 
-    let interval: any = null;
-    let timeout: any = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
 
     const tick = () => setNowMs(Date.now());
     const ms = Date.now();
@@ -355,30 +357,17 @@ export default function TimeSinceClient() {
       title="Time Since Calculator"
       subtitle="Watch time since (or until) a date/time count live — with totals in a single unit."
     >
-      <main className="mx-auto max-w-4xl px-6 py-6">
+      <main className={styles.shell}>
         <header className="mb-2">
           <div className="flex items-start justify-between gap-2">
-            <div className="text-sm text-black/60 dark:text-white/60">
+            <div className={styles.introText}>
               Enter a date/time and watch the counter update every second.
             </div>
 
             <button
               type="button"
               onClick={() => setHelpOpen(true)}
-              className="mt-1 inline-flex items-center justify-center rounded-full border border-black/15 bg-transparent text-[10px] font-bold text-black/60 shadow-sm hover:text-black/80 dark:border-white/15 dark:text-white/60 dark:hover:text-white/85"
-              style={{
-                fontSize: 13,
-                border: "1px solid rgba(0,0,0,0.15)",
-                borderRadius: 999,
-                width: 16,
-                height: 16,
-                lineHeight: "14px",
-                textAlign: "center",
-                background: "transparent",
-                cursor: "pointer",
-                opacity: 0.65,
-                padding: 0,
-              }}
+              className={styles.infoButton}
               aria-label="Info about this tool"
               title="About this tool"
             >
@@ -402,17 +391,17 @@ export default function TimeSinceClient() {
         </section>
 
         {/* Controls */}
-        <section className="mt-4 rounded-2xl border border-black/10 bg-white/60 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
+        <section className={styles.controlPanel}>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:items-end">
             <label className="block">
-              <div className="text-xs font-semibold text-black/70 dark:text-white/70">
+              <div className={styles.fieldLabel}>
                 Date / Time
               </div>
               <input
                 type="datetime-local"
                 value={startValue}
                 onChange={(e) => setStartValue(e.target.value)}
-                className="mt-1 w-full min-w-0 rounded-xl border border-black/15 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-black/30 dark:border-white/15 dark:bg-black/20 dark:text-white"
+                className={styles.dateInput}
                 />
             </label>
 
@@ -421,9 +410,8 @@ export default function TimeSinceClient() {
                 type="button"
                 onClick={() => setStartValue(nowAsDateTimeLocalString())}
                 className={[
-                  "mt-6 inline-flex items-center justify-center text-sm font-semibold text-black/80 dark:text-white/80",
+                  "mt-6 inline-flex items-center justify-center text-sm font-semibold",
                   styles.thinBtn,
-                  "dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10",
                 ].join(" ")}
               >
                 Now
@@ -433,23 +421,22 @@ export default function TimeSinceClient() {
                 type="button"
                 onClick={() => setIsRunning((v) => !v)}
                 className={[
-                  "mt-6 inline-flex items-center justify-center text-sm font-semibold text-black/80 dark:text-white/80",
+                  "mt-6 inline-flex items-center justify-center text-sm font-semibold",
                   styles.thinBtn,
-                  "dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10",
                 ].join(" ")}
               >
                 {isRunning ? "Pause" : "Start"}
               </button>
             </div>
 
-            <div className="text-xs text-black/60 dark:text-white/60 sm:text-right">
+            <div className={`${styles.metaText} sm:text-right`}>
               <div>
-                <span className="font-semibold text-black/70 dark:text-white/70">Now:</span>{" "}
+                <span className={styles.metaStrong}>Now:</span>{" "}
                 {mounted ? derived.nowLabel : "—"}
               </div>
               {startDate && (
                 <div className="mt-1">
-                  <span className="font-semibold text-black/70 dark:text-white/70">Input:</span>{" "}
+                  <span className={styles.metaStrong}>Input:</span>{" "}
                   {mounted ? derived.inputLabel : "—"}
                 </div>
               )}
@@ -460,21 +447,21 @@ export default function TimeSinceClient() {
         {/* Results */}
         <section
           className={[
-            "mt-5 rounded-2xl border border-black/10 p-5 shadow-sm backdrop-blur dark:border-white/10",
+            styles.resultPanel,
             modeCardClass,
           ].join(" ")}
         >
           {!mounted ? (
-            <div className="text-sm text-black/60 dark:text-white/60">Loading…</div>
+            <div className={styles.stateText}>Loading…</div>
           ) : !derived.valid || !derived.breakdown ? (
-            <div className="text-sm text-black/60 dark:text-white/60">
+            <div className={styles.stateText}>
               Enter a valid date/time to see results.
             </div>
           ) : (
             <>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-black/50 dark:text-white/50">
+                  <div className={styles.resultEyebrow}>
                     {relativeLabel(derived.isFuture)}
                   </div>
 
@@ -524,7 +511,7 @@ export default function TimeSinceClient() {
 
               {/* Totals toggle */}
               <div className="mt-7">
-                <div className="text-xs font-semibold text-black/70 dark:text-white/70">Total in</div>
+                <div className={styles.totalLabel}>Total in</div>
 
                 <div className="mt-2 flex flex-wrap gap-2">
                   {unitButtons.map((b) => {
@@ -535,10 +522,9 @@ export default function TimeSinceClient() {
                         type="button"
                         onClick={() => setUnit(b.key)}
                         className={[
-                          "text-sm font-semibold text-black/80 dark:text-white/80",
+                          "text-sm font-semibold",
                           styles.thinBtn,
                           active ? styles.thinBtnActive : "",
-                          "dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10",
                         ].join(" ")}
                       >
                         {b.label}
@@ -547,15 +533,15 @@ export default function TimeSinceClient() {
                   })}
                 </div>
 
-                <div className="mt-3 rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm shadow-sm dark:border-white/10 dark:bg-white/5">
-                  <div className="text-xs font-semibold text-black/60 dark:text-white/60">
+                <div className={styles.totalBox}>
+                  <div className={styles.totalBoxLabel}>
                     {derived.totals[unit].label}
                   </div>
-                  <div className="mt-1 text-xl font-black tracking-tight">
+                  <div className={styles.totalValue}>
                     {derived.totals[unit].value} {unit}
                   </div>
                   {derived.totals[unit].note ? (
-                    <div className="mt-1 text-xs text-black/50 dark:text-white/50">
+                    <div className={styles.totalNote}>
                       {derived.totals[unit].note}
                     </div>
                   ) : null}
@@ -577,28 +563,27 @@ export default function TimeSinceClient() {
               type="button"
               aria-label="Close help"
               onClick={() => setHelpOpen(false)}
-              className="absolute inset-0 bg-black/40"
+              className={styles.modalBackdrop}
             />
 
-            <div className="relative w-full max-w-lg rounded-2xl border border-black/10 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-zinc-950">
+            <div className={styles.modalCard}>
               <div className="flex items-start justify-between gap-3">
-                <h3 id="help-title" className="text-base font-bold text-black/80 dark:text-white/85">
+                <h3 id="help-title" className={styles.modalTitle}>
                   About this tool
                 </h3>
                 <button
                   type="button"
                   onClick={() => setHelpOpen(false)}
                   className={[
-                    "text-xs font-semibold text-black/70 dark:text-white/70",
+                    "text-xs font-semibold",
                     styles.thinBtn,
-                    "dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10",
                   ].join(" ")}
                 >
                   Close
                 </button>
               </div>
 
-              <div className="mt-3 space-y-2 text-sm text-black/70 dark:text-white/70">
+              <div className={styles.modalBody}>
                 <p>
                   This tool shows a calendar-style breakdown (years, months, days, then time) that
                   updates every second.

@@ -439,6 +439,141 @@
   padding-left: 18px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .title {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .subtitle,
+  .muted,
+  .fieldHint {
+    color: rgba(255, 255, 255, 0.56);
+  }
+
+  .infoButton,
+  .helpIcon {
+    border-color: rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .section::before,
+  .helpWrap::before {
+    background: rgba(214, 160, 109, 0.58);
+  }
+
+  .label,
+  .sectionLabel,
+  .selectedHeader {
+    color: rgba(255, 255, 255, 0.48);
+  }
+
+  .input {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
+  }
+
+  .input::placeholder {
+    color: rgba(255, 255, 255, 0.38);
+  }
+
+  .input:focus {
+    border-color: rgba(214, 160, 109, 0.42);
+    box-shadow: 0 0 0 3px rgba(214, 160, 109, 0.14);
+  }
+
+  .suggestionList {
+    border-color: rgba(214, 160, 109, 0.28);
+    background: rgba(18, 18, 18, 0.98);
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.48);
+  }
+
+  .suggestion {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .suggestion:hover,
+  .suggestion:focus-visible {
+    background: rgba(214, 160, 109, 0.12);
+  }
+
+  .suggestion span:last-child,
+  .chipMeta,
+  .tzMeta,
+  .fromLabel,
+  .diffLabel {
+    color: rgba(255, 255, 255, 0.48);
+  }
+
+  .button {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.74);
+  }
+
+  .buttonPrimary {
+    border-color: rgba(214, 160, 109, 0.30);
+    background: rgba(214, 160, 109, 0.10);
+    color: rgba(255, 229, 200, 0.84);
+  }
+
+  .selectedCount {
+    border-color: rgba(214, 160, 109, 0.28);
+    background: rgba(214, 160, 109, 0.10);
+    color: rgba(255, 229, 200, 0.78);
+  }
+
+  .chip {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .iconButton {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .headRow {
+    color: rgba(255, 255, 255, 0.68);
+  }
+
+  .th {
+    border-bottom-color: rgba(214, 160, 109, 0.34);
+  }
+
+  .td {
+    border-bottom-color: rgba(255, 255, 255, 0.09);
+    color: rgba(255, 255, 255, 0.74);
+  }
+
+  .rowAlt {
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .row:hover,
+  .rowAlt:hover {
+    background: rgba(214, 160, 109, 0.10);
+  }
+
+  .fromRow {
+    border-left-color: rgba(214, 160, 109, 0.72);
+  }
+
+  .errorText {
+    color: rgba(252, 165, 165, 0.96);
+  }
+
+  .helpSummary,
+  .helpH3 {
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  .helpBody {
+    color: rgba(255, 255, 255, 0.68);
+  }
+}
+
 @media (max-width: 720px) {
   .wrap {
     padding: 28px 16px;

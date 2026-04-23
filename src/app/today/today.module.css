@@ -381,6 +381,141 @@
   color: rgba(0, 0, 0, 0.86);
 }
 
+@media (prefers-color-scheme: dark) {
+  .eyebrow {
+    color: rgba(214, 160, 109, 0.86);
+  }
+
+  .title {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .subtitle,
+  .dataNote {
+    color: rgba(255, 255, 255, 0.58);
+  }
+
+  .warning {
+    border-color: rgba(214, 160, 109, 0.32);
+    background: rgba(214, 160, 109, 0.10);
+    color: rgba(255, 230, 201, 0.88);
+  }
+
+  .sectionRule {
+    background: rgba(214, 160, 109, 0.58);
+  }
+
+  .locationShell {
+    border-color: rgba(214, 160, 109, 0.24);
+    background: rgba(18, 18, 18, 0.72);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.34);
+  }
+
+  .locationLabel,
+  .clockLabel {
+    color: rgba(255, 255, 255, 0.46);
+  }
+
+  .locationName {
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  .locationSource,
+  .selectedCity,
+  .locationStatus {
+    color: rgba(255, 255, 255, 0.54);
+  }
+
+  .locationError {
+    color: rgba(252, 165, 165, 0.96);
+  }
+
+  .controlButton {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.74);
+  }
+
+  .controlButton:hover {
+    border-color: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.11);
+  }
+
+  .controlButtonPrimary {
+    border-color: rgba(214, 160, 109, 0.28);
+    background: rgba(214, 160, 109, 0.10);
+    color: rgba(255, 229, 200, 0.84);
+  }
+
+  .controlButtonPrimary:hover {
+    border-color: rgba(214, 160, 109, 0.44);
+  }
+
+  .locationForm {
+    border-top-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .field {
+    color: rgba(255, 255, 255, 0.58);
+  }
+
+  .input,
+  .select {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
+  }
+
+  .input::placeholder {
+    color: rgba(255, 255, 255, 0.38);
+  }
+
+  .citySuggestions {
+    border-color: rgba(214, 160, 109, 0.28);
+    background: rgba(18, 18, 18, 0.98);
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.48);
+  }
+
+  .citySuggestion {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .citySuggestion:hover,
+  .citySuggestion:focus-visible {
+    background: rgba(214, 160, 109, 0.12);
+  }
+
+  .citySuggestion span:last-child {
+    color: rgba(255, 255, 255, 0.48);
+  }
+
+  .saveButton {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.86);
+    color: rgba(0, 0, 0, 0.88);
+  }
+
+  .clockSeparator {
+    color: rgba(255, 255, 255, 0.36);
+  }
+
+  .clockUnitLabel {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .clockTile {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.88);
+    color: rgba(0, 0, 0, 0.86);
+    box-shadow: 0 9px 18px rgba(0, 0, 0, 0.28);
+  }
+
+  .clockTile::after {
+    background: rgba(0, 0, 0, 0.13);
+  }
+}
+
 @media (max-width: 640px) {
   .wrap {
     padding: 28px 16px;

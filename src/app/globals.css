@@ -3,6 +3,13 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --site-header-border: rgba(0, 0, 0, 0.06);
+  --site-menu-bg: rgba(255, 255, 255, 0.96);
+  --site-menu-fg: rgba(23, 23, 23, 0.92);
+  --site-menu-muted: rgba(23, 23, 23, 0.56);
+  --site-menu-border: rgba(0, 0, 0, 0.08);
+  --site-menu-divider: rgba(95, 74, 59, 0.28);
+  --site-menu-shadow: rgba(0, 0, 0, 0.10);
 }
 
 @theme inline {
@@ -16,6 +23,13 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --site-header-border: rgba(255, 255, 255, 0.10);
+    --site-menu-bg: rgba(18, 18, 18, 0.96);
+    --site-menu-fg: rgba(255, 255, 255, 0.88);
+    --site-menu-muted: rgba(255, 255, 255, 0.52);
+    --site-menu-border: rgba(255, 255, 255, 0.14);
+    --site-menu-divider: rgba(214, 160, 109, 0.30);
+    --site-menu-shadow: rgba(0, 0, 0, 0.45);
   }
 }
 

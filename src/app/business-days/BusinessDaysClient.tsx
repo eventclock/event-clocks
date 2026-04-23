@@ -235,7 +235,7 @@ export default function BusinessDaysPage() {
 
     return (
       <div className={`mt-3 p-4 ${styles.softCard}`}>
-        <div className="mb-2 font-bold">Public holidays checked</div>
+        <div className={`mb-2 font-bold ${styles.softCardTitle}`}>Public holidays checked</div>
         {holidaySummary.status !== "ok" ? (
           <div
             className={[
@@ -256,7 +256,7 @@ export default function BusinessDaysPage() {
             ))}
           </ul>
         ) : (
-          <div className="text-sm text-black/60">
+          <div className={styles.emptyHolidayText}>
             No public holidays were returned for this date window.
           </div>
         )}

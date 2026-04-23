@@ -224,7 +224,17 @@
   border: 1px solid rgba(95, 74, 59, 0.18) !important;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.72) !important;
+  color: rgba(55, 48, 43, 0.76);
   box-shadow: 0 8px 18px rgba(44, 35, 28, 0.04);
+}
+
+.softCardTitle {
+  color: rgba(31, 28, 25, 0.9);
+}
+
+.emptyHolidayText {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
 }
 
 .answerCard {
@@ -575,6 +585,232 @@
 
 .infoList li + li {
   margin-top: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .infoButton {
+    border-color: rgba(214, 160, 109, 0.32);
+    color: rgba(255, 229, 200, 0.68);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+  }
+
+  .infoButton:hover {
+    border-color: rgba(214, 160, 109, 0.48);
+    color: rgba(255, 229, 200, 0.92);
+  }
+
+  .sectionCard::before {
+    background: rgba(214, 160, 109, 0.34);
+  }
+
+  .sectionTitle,
+  .sectionHint,
+  .fieldLabel,
+  .weekendToggle,
+  .infoSection,
+  .infoSummary,
+  .infoBody,
+  .infoItemTitle {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .sectionHint,
+  .infoBody {
+    color: rgba(255, 255, 255, 0.58);
+  }
+
+  .modeGroup {
+    border-color: rgba(214, 160, 109, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22);
+  }
+
+  .modeButtonActive {
+    background: linear-gradient(180deg, rgba(214, 160, 109, 0.34), rgba(95, 74, 59, 0.42)) !important;
+    color: rgba(255, 244, 232, 0.96);
+    box-shadow:
+      0 0 0 1px rgba(255, 229, 200, 0.08) inset,
+      0 7px 16px rgba(0, 0, 0, 0.24);
+  }
+
+  .modeButtonIdle {
+    color: rgba(255, 255, 255, 0.58);
+  }
+
+  .weekendToggle input {
+    accent-color: rgba(214, 160, 109, 0.9);
+  }
+
+  .actionsBar {
+    border-top-color: rgba(214, 160, 109, 0.16);
+  }
+
+  .errorText {
+    color: rgba(255, 148, 132, 0.92);
+  }
+
+  .holidayPill {
+    border-color: rgba(214, 160, 109, 0.22);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.62);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.16);
+  }
+
+  .holidayPill::before,
+  .holidayPillOk::before {
+    background: rgba(214, 160, 109, 0.72);
+  }
+
+  .holidayPillWarn::before {
+    background: rgba(224, 180, 106, 0.86);
+  }
+
+  .holidayPillError {
+    border-color: rgba(255, 129, 110, 0.34);
+    background: rgba(128, 34, 32, 0.16);
+    color: rgba(255, 178, 164, 0.94);
+  }
+
+  .holidayPillError::before {
+    background: rgba(255, 129, 110, 0.84);
+  }
+
+  .holidayAuditNotice {
+    border-color: rgba(224, 180, 106, 0.28);
+    background: rgba(224, 180, 106, 0.1);
+    color: rgba(255, 222, 164, 0.86);
+  }
+
+  .holidayAuditNoticeError {
+    border-color: rgba(255, 129, 110, 0.32);
+    background: rgba(128, 34, 32, 0.16);
+    color: rgba(255, 178, 164, 0.94);
+  }
+
+  .softCard {
+    border-color: rgba(214, 160, 109, 0.2) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: rgba(255, 255, 255, 0.68);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  }
+
+  .softCardTitle {
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  .emptyHolidayText {
+    color: rgba(255, 255, 255, 0.58);
+  }
+
+  .answerCard {
+    border-color: rgba(214, 160, 109, 0.22);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(214, 160, 109, 0.07)),
+      radial-gradient(circle at 0% 0%, rgba(214, 160, 109, 0.12), transparent 36%);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 12px 28px rgba(0, 0, 0, 0.28);
+  }
+
+  .answerEyebrow,
+  .resultEyebrow {
+    color: rgba(214, 160, 109, 0.8);
+  }
+
+  .answerValue,
+  .resultValue,
+  .statValue {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .answerUnit,
+  .answerLine,
+  .detailNote,
+  .timelineCaption,
+  .statLabel,
+  .resultDetail {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .miniTimeline,
+  .statChip,
+  .resultBadge {
+    border-color: rgba(214, 160, 109, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .timelineTrack {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .timelineFill {
+    background: linear-gradient(90deg, rgba(214, 160, 109, 0.88), rgba(255, 218, 166, 0.68));
+  }
+
+  .controlField {
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    background: rgba(255, 255, 255, 0.07) !important;
+    color: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.2);
+  }
+
+  .controlField:focus {
+    border-color: rgba(214, 160, 109, 0.42) !important;
+    box-shadow:
+      0 0 0 3px rgba(214, 160, 109, 0.14),
+      0 8px 18px rgba(0, 0, 0, 0.22);
+  }
+
+  .primaryButton {
+    border-color: rgba(214, 160, 109, 0.34);
+    background: linear-gradient(180deg, rgba(214, 160, 109, 0.28), rgba(95, 74, 59, 0.36));
+    color: rgba(255, 244, 232, 0.96);
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.26);
+  }
+
+  .primaryButton:hover:not(:disabled) {
+    box-shadow: 0 16px 26px rgba(0, 0, 0, 0.3);
+  }
+
+  .resultCard {
+    border-color: rgba(214, 160, 109, 0.24) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(214, 160, 109, 0.07)),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 55%) !important;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 14px 28px rgba(0, 0, 0, 0.24) !important;
+  }
+
+  .resultBadge {
+    color: rgba(255, 229, 200, 0.78);
+  }
+
+  .presetChip {
+    border-color: rgba(214, 160, 109, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.68);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+  }
+
+  .presetChip:hover {
+    border-color: rgba(214, 160, 109, 0.34);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+  }
+
+  .presetChipActive {
+    border-color: rgba(214, 160, 109, 0.42);
+    background: rgba(214, 160, 109, 0.16);
+    color: rgba(255, 244, 232, 0.92);
+  }
+
+  .infoSummary::after {
+    color: rgba(214, 160, 109, 0.78);
+  }
+
+  .infoItem {
+    border-top-color: rgba(214, 160, 109, 0.14);
+  }
 }
 
 @media (max-width: 720px) {
