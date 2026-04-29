@@ -6,12 +6,15 @@ import Header from "@/components/Header";
 
 export default function LayoutChrome({
   children,
+  forceHideChrome = false,
 }: {
   children: React.ReactNode;
+  forceHideChrome?: boolean;
 }) {
   const pathname = usePathname();
 
   const hideChrome =
+    forceHideChrome ||
     pathname === "/countdown-tasks/focus" ||
     pathname === "/color-match-app";
 

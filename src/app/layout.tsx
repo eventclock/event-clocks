@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -24,11 +25,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headerStore = await headers();
+  const hideChromeForSubdomain =
+    headerStore.get("x-event-clocks-subdomain") === "color";
+
   return (
     <html lang="en">
       <head>
@@ -66,7 +71,9 @@ export default function RootLayout({
           <div className="absolute top-72 -right-40 h-[26rem] w-[26rem] rounded-full bg-emerald-200/12 blur-3xl dark:bg-emerald-500/8" />
         </div>
 
-        <LayoutChrome>{children}</LayoutChrome>
+        <LayoutChrome forceHideChrome={hideChromeForSubdomain}>
+          {children}
+        </LayoutChrome>
       </body>
     </html>
   );
