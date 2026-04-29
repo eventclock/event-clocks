@@ -10,6 +10,10 @@ export function middleware(request: NextRequest) {
     host === "www.color.event-clocks.com";
 
   if (isColorDomain) {
+    if (url.pathname.startsWith("/api/")) {
+      return NextResponse.next();
+    }
+
     requestHeaders.set("x-event-clocks-subdomain", "color");
     url.pathname = "/color-match-app";
     return NextResponse.rewrite(url, {
@@ -24,6 +28,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)",
+    "/((?!api|_next|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)",
   ],
 };
