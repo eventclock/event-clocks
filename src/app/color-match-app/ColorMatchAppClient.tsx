@@ -323,7 +323,7 @@ export default function ColorMatchAppClient() {
             <h1 className={styles.title}>Fashion Color Match</h1>
           </div>
           <p className={styles.subtitle}>
-            Compare two photos or two colors. The score updates automatically.
+            See whether two colors feel like a good match.
           </p>
         </div>
 

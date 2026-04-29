@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: 18px 16px 32px;
   display: grid;
-  gap: 14px;
+  gap: 20px;
 }
 
 .panel {
@@ -133,9 +133,23 @@
 .fileInput {
   width: 100%;
   min-height: 46px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   color: rgba(31, 28, 25, 0.76);
   font-size: 13px;
+  font-weight: 700;
+}
+
+.fileInput::file-selector-button {
+  margin-right: 12px;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(95, 74, 59, 0.18);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 236, 228, 0.9));
+  color: rgba(31, 28, 25, 0.84);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .photoChoiceRow {
@@ -160,12 +174,16 @@
 }
 
 .imageCardPlaceholder {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
   background: rgba(255, 255, 255, 0.56);
   color: rgba(82, 73, 65, 0.54);
   font-size: 12px;
   font-weight: 800;
+  line-height: 1.2;
 }
 
 .imageCard {
@@ -366,6 +384,12 @@
   .fileInput,
   .hexInput {
     color: rgba(255, 255, 255, 0.66);
+  }
+
+  .fileInput::file-selector-button {
+    border-color: rgba(214, 160, 109, 0.2);
+    background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(214, 160, 109, 0.14));
+    color: rgba(255, 255, 255, 0.82);
   }
 
   .segment {
