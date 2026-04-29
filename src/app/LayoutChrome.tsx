@@ -11,7 +11,9 @@ export default function LayoutChrome({
 }) {
   const pathname = usePathname();
 
-  const hideChrome = pathname === "/countdown-tasks/focus";
+  const hideChrome =
+    pathname === "/countdown-tasks/focus" ||
+    pathname === "/color-match-app";
 
   return (
     <div className="relative z-10 flex min-h-screen flex-col">

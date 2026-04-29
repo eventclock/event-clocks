@@ -1,0 +1,388 @@
+.wrap {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 18px 16px 32px;
+  display: grid;
+  gap: 14px;
+}
+
+.panel {
+  border: 1px solid rgba(95, 74, 59, 0.16);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 243, 238, 0.76)),
+    radial-gradient(circle at top left, rgba(214, 160, 109, 0.08), transparent 34%);
+  box-shadow: 0 18px 32px rgba(44, 35, 28, 0.06);
+}
+
+.panel {
+  padding: 14px;
+}
+
+.title {
+  margin: 0;
+  color: rgba(0, 0, 0, 0.9);
+  font-size: 32px;
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.appHeader {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(95, 74, 59, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.segment {
+  min-height: 42px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(55, 48, 43, 0.72);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.segmentActive {
+  background: linear-gradient(180deg, rgba(46, 43, 40, 0.96), rgba(25, 23, 21, 0.94));
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 8px 18px rgba(44, 35, 28, 0.14);
+}
+
+.phoneFrame {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.card,
+.infoCard,
+.errorCard {
+  border: 1px solid rgba(95, 74, 59, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 10px 18px rgba(44, 35, 28, 0.04);
+}
+
+.card,
+.errorCard {
+  padding: 14px;
+}
+
+.cardLabel,
+.infoTitle {
+  color: rgba(31, 28, 25, 0.88);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.cardHint,
+.errorCard,
+.infoCard p,
+.infoCard li,
+.scoreCaption {
+  color: rgba(82, 73, 65, 0.68);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.scoreCaption {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scoreCaptionDot {
+  opacity: 0.45;
+  font-weight: 900;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.uploadBox,
+.hexInput {
+  min-height: 46px;
+  border: 1px solid rgba(95, 74, 59, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.fileInput {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  color: rgba(31, 28, 25, 0.76);
+  font-size: 13px;
+}
+
+.photoChoiceRow {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin-top: 10px;
+}
+
+.imageCard,
+.imageCardSmall,
+.imageCardPlaceholder {
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(95, 74, 59, 0.14);
+}
+
+.imageCardSmall,
+.imageCardPlaceholder {
+  aspect-ratio: 1 / 1;
+}
+
+.imageCardPlaceholder {
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.56);
+  color: rgba(82, 73, 65, 0.54);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.imageCard {
+  aspect-ratio: 1 / 1;
+}
+
+.imagePreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.swatchStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.swatchColumn {
+  display: grid;
+  gap: 8px;
+}
+
+.swatchColumnLabel {
+  color: rgba(82, 73, 65, 0.62);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.swatchColumnList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.swatchEmpty {
+  color: rgba(82, 73, 65, 0.56);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.swatchPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(95, 74, 59, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.76);
+  color: rgba(31, 28, 25, 0.82);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.swatchPillActive {
+  border-color: rgba(95, 74, 59, 0.38);
+  background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(243, 236, 228, 0.92));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    0 6px 14px rgba(44, 35, 28, 0.08);
+  transform: translateY(-1px);
+}
+
+.swatchDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 74, 59, 0.16);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.colorInput {
+  width: 76px;
+  height: 48px;
+  border: 1px solid rgba(95, 74, 59, 0.2);
+  border-radius: 12px;
+  padding: 4px;
+  background: transparent;
+}
+
+.hexInput {
+  flex: 1;
+  padding: 0 12px;
+  color: rgba(31, 28, 25, 0.9);
+  font-size: 16px;
+  font-weight: 800;
+  outline: none;
+}
+
+.hexInputInvalid {
+  border-color: rgba(128, 34, 32, 0.35);
+  color: rgba(128, 34, 32, 0.9);
+}
+
+.errorCard {
+  color: rgba(128, 34, 32, 0.92);
+  font-weight: 700;
+}
+
+.resultHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.scoreValue {
+  color: rgba(31, 28, 25, 0.92);
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.miniPreview {
+  display: grid;
+  width: 70px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(95, 74, 59, 0.16);
+}
+
+.miniPreview span {
+  height: 22px;
+}
+
+.resultBody {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.infoCard {
+  padding: 14px;
+}
+
+.infoLead {
+  margin-top: 8px;
+  color: rgba(31, 28, 25, 0.9);
+  font-size: 18px;
+  font-weight: 850;
+}
+
+.infoCard p,
+.infoCard ul {
+  margin: 8px 0 0;
+}
+
+.infoCard ul {
+  padding-left: 18px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .panel,
+  .card,
+  .infoCard,
+  .errorCard,
+  .uploadBox,
+  .hexInput,
+  .previewBlock,
+  .imageCard,
+  .miniPreview,
+  .segmented,
+  .swatchPill {
+    border-color: rgba(214, 160, 109, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .title,
+  .cardLabel,
+  .infoTitle,
+  .scoreValue,
+  .infoLead {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .subtitle,
+  .cardHint,
+  .scoreCaption,
+  .infoCard p,
+  .infoCard li,
+  .fileInput,
+  .hexInput {
+    color: rgba(255, 255, 255, 0.66);
+  }
+
+  .segment {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .swatchPillActive {
+    border-color: rgba(214, 160, 109, 0.34);
+    background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(214, 160, 109, 0.16));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      0 8px 18px rgba(0,0,0,0.18);
+  }
+
+  .imageCardPlaceholder,
+  .swatchEmpty,
+  .swatchColumnLabel {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" fill="none">
+  <defs>
+    <mask id="shirt-cutout">
+      <rect width="400" height="600" fill="white" />
+      <path
+        d="M110 78L160 44H240L290 78L350 132L318 188L278 164V258C278 288 254 310 224 310H176C146 310 122 288 122 258V164L82 188L50 132L110 78Z"
+        fill="black"
+      />
+    </mask>
+  </defs>
+
+  <rect width="400" height="600" fill="white" mask="url(#shirt-cutout)" />
+
+  <path
+    d="M110 78L160 44H240L290 78L350 132L318 188L278 164V258C278 288 254 310 224 310H176C146 310 122 288 122 258V164L82 188L50 132L110 78Z"
+    stroke="rgba(0,0,0,0.25)"
+    stroke-width="5"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M167 56Q200 90 233 56"
+    stroke="rgba(255,255,255,0.68)"
+    stroke-width="12"
+    stroke-linecap="round"
+  />
+  <path
+    d="M145 248Q200 264 255 248"
+    stroke="rgba(255,255,255,0.26)"
+    stroke-width="7"
+    stroke-linecap="round"
+  />
+</svg>

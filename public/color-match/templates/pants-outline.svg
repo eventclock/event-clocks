@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 146 188" fill="none">
+  <rect x="25" y="0" width="96" height="18" rx="5" stroke="rgba(0,0,0,0.22)" stroke-width="2.2"/>
+  <path d="M25 8H121" stroke="rgba(255,255,255,0.16)" stroke-width="2"/>
+  <path d="M27 17C31 14 47 14 62 17L59 180C59 185 54 188 48 188H35C29 188 24 184 24 178L21 53C21 36 23 24 27 17Z" stroke="rgba(0,0,0,0.25)" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M84 17C99 14 115 14 119 17C123 24 125 36 125 53L122 178C122 184 117 188 111 188H98C92 188 87 185 87 180L84 17Z" stroke="rgba(0,0,0,0.25)" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M73 18V72" stroke="rgba(0,0,0,0.16)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M67 17Q73 28 79 17" stroke="rgba(0,0,0,0.14)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M40 28C44 36 51 41 61 45" stroke="rgba(0,0,0,0.16)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M106 28C102 36 95 41 85 45" stroke="rgba(0,0,0,0.16)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M41 17V28" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M55 17V28" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M91 17V28" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M105 17V28" stroke="rgba(255,255,255,0.22)" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="73" cy="9" r="2.4" fill="rgba(0,0,0,0.18)"/>
+  <path d="M47 31C44 78 44 126 44 179" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M99 31C102 78 102 126 102 179" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M31 179Q42 183 53 179" stroke="rgba(0,0,0,0.16)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M93 179Q104 183 115 179" stroke="rgba(0,0,0,0.16)" stroke-width="2" stroke-linecap="round"/>
+</svg>

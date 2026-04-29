@@ -1,0 +1,10 @@
+{
+  "id": "skirt-a-line",
+  "label": "A-line skirt",
+  "type": "bottom",
+  "canvasWidth": 400,
+  "canvasHeight": 600,
+  "waistY": 220,
+  "centerX": 200,
+  "template": "/color-match/templates/bottoms/skirt-a-line/template.svg"
+}

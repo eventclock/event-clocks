@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" fill="none">
+  <path
+    d="M138 220
+       C156 212 244 212 262 220
+       L322 502
+       C322 520 309 531 289 536
+       H111
+       C91 531 78 520 78 502
+       Z"
+    stroke="rgba(0,0,0,0.25)"
+    stroke-width="4.2"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M136 220
+       C154 206 246 206 264 220
+       L260 240
+       C242 248 158 248 140 240
+       Z"
+    stroke="rgba(0,0,0,0.18)"
+    stroke-width="3.4"
+    stroke-linejoin="round"
+  />
+  <path d="M146 226C163 219 237 219 254 226" stroke="rgba(255,255,255,0.24)" stroke-width="4" stroke-linecap="round" />
+  <path d="M118 254C111 344 103 429 98 500" stroke="rgba(255,255,255,0.18)" stroke-width="4" stroke-linecap="round" />
+  <path d="M145 248C139 335 133 421 130 514" stroke="rgba(255,255,255,0.22)" stroke-width="4" stroke-linecap="round" />
+  <path d="M172 244C166 336 162 430 160 523" stroke="rgba(255,255,255,0.22)" stroke-width="4" stroke-linecap="round" />
+  <path d="M200 242C198 334 198 430 200 528" stroke="rgba(255,255,255,0.16)" stroke-width="4" stroke-linecap="round" />
+  <path d="M228 244C234 336 238 430 240 523" stroke="rgba(255,255,255,0.22)" stroke-width="4" stroke-linecap="round" />
+  <path d="M255 248C261 335 267 421 270 514" stroke="rgba(255,255,255,0.22)" stroke-width="4" stroke-linecap="round" />
+  <path d="M282 254C289 344 297 429 302 500" stroke="rgba(255,255,255,0.18)" stroke-width="4" stroke-linecap="round" />
+  <path d="M92 505C128 526 272 526 308 505" stroke="rgba(0,0,0,0.16)" stroke-width="4" stroke-linecap="round" />
+  <path d="M116 511C145 525 255 525 284 511" stroke="rgba(255,255,255,0.12)" stroke-width="3" stroke-linecap="round" />
+</svg>

@@ -1,0 +1,771 @@
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
+}
+
+.hero {
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(139, 111, 90, 0.95);
+}
+
+.title {
+  margin: 0;
+  font-size: 44px;
+  line-height: 1.06;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.subtitle {
+  max-width: 760px;
+  margin: 14px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.58);
+}
+
+.disclaimer {
+  margin-top: 12px;
+  max-width: 760px;
+  border: 1px solid rgba(95, 74, 59, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.56);
+  padding: 10px 12px;
+  color: rgba(55, 48, 43, 0.72);
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 8px 18px rgba(44, 35, 28, 0.04);
+}
+
+.stack {
+  display: grid;
+  gap: 18px;
+}
+
+.panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(95, 74, 59, 0.18);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(247, 243, 238, 0.72)),
+    radial-gradient(circle at 0% 0%, rgba(214, 160, 109, 0.08), transparent 30%);
+  box-shadow: 0 14px 34px rgba(44, 35, 28, 0.055);
+  backdrop-filter: blur(8px);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(95, 74, 59, 0.88), rgba(185, 154, 97, 0.58));
+}
+
+.panelInner {
+  padding: 18px;
+}
+
+.composerLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+  gap: 22px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.controlsColumn,
+.previewColumn {
+  min-width: 0;
+}
+
+.tabs {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid rgba(95, 74, 59, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.tab {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(55, 48, 43, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tabActive {
+  background: linear-gradient(180deg, rgba(46, 43, 40, 0.96), rgba(25, 23, 21, 0.94));
+  color: #fff;
+  box-shadow: 0 8px 16px rgba(44, 35, 28, 0.14);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.fieldLabel {
+  color: rgba(55, 48, 43, 0.78);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.fieldHint {
+  color: rgba(82, 73, 65, 0.58);
+  font-size: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.colorInput {
+  width: 74px;
+  height: 48px;
+  border: 1px solid rgba(95, 74, 59, 0.2);
+  border-radius: 10px;
+  background: transparent;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.hexBox,
+.hexInput,
+.fileBox,
+.previewCard,
+.summaryBox,
+.accessBox {
+  border: 1px solid rgba(95, 74, 59, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: 0 6px 14px rgba(44, 35, 28, 0.04);
+}
+
+.hexBox,
+.hexInput,
+.fileBox {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: rgba(31, 28, 25, 0.9);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.hexInput {
+  width: min(100%, 170px);
+  appearance: none;
+  outline: none;
+}
+
+.hexInputInvalid {
+  border-color: rgba(128, 34, 32, 0.35);
+  color: rgba(128, 34, 32, 0.92);
+}
+
+.fileInput {
+  width: 100%;
+  color: rgba(31, 28, 25, 0.78);
+  font-size: 13px;
+}
+
+.previewGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.previewCard {
+  overflow: hidden;
+}
+
+.previewFrame {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(247, 243, 238, 0.9), rgba(230, 223, 214, 0.82));
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.previewMeta {
+  padding: 10px 12px;
+  color: rgba(82, 73, 65, 0.66);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.inlineSwatchSection {
+  display: grid;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.inlineSwatchLabel {
+  color: rgba(82, 73, 65, 0.68);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.inlineSwatchList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.inlineSwatchButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(95, 74, 59, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  color: rgba(31, 28, 25, 0.82);
+  cursor: pointer;
+}
+
+.inlineSwatchButtonActive {
+  border-color: rgba(95, 74, 59, 0.26);
+  background: rgba(95, 74, 59, 0.08);
+}
+
+.inlineSwatchChip {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 74, 59, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+}
+
+.inlineSwatchText {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.previewHeader {
+  display: grid;
+  gap: 6px;
+}
+
+.previewControls {
+  display: grid;
+  gap: 12px;
+}
+
+.toggleBlock {
+  display: grid;
+  gap: 6px;
+}
+
+.composerFooter {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toggleGroup {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid rgba(95, 74, 59, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.toggleButton {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(55, 48, 43, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.toggleButtonActive {
+  background: rgba(95, 74, 59, 0.1);
+  color: rgba(31, 28, 25, 0.92);
+}
+
+.selectInput {
+  min-height: 38px;
+  border: 1px solid rgba(95, 74, 59, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.68);
+  color: rgba(31, 28, 25, 0.92);
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  outline: none;
+}
+
+.outfitStage {
+  border: 1px solid rgba(95, 74, 59, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 420px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+  padding: 24px;
+  margin-top: 14px;
+}
+
+.outfitStageLight {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255,255,255,0.95), rgba(255,255,255,0.18) 38%),
+    linear-gradient(180deg, rgba(250, 247, 243, 0.94), rgba(231, 223, 213, 0.82));
+}
+
+.outfitStageDark {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255,255,255,0.12), rgba(255,255,255,0.04) 38%),
+    linear-gradient(180deg, rgba(38, 37, 41, 0.94), rgba(17, 18, 22, 0.92));
+}
+
+.outfitFigure {
+  width: min(100%, 280px);
+}
+
+.colorBlockPreview {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(95, 74, 59, 0.16);
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.44),
+    0 14px 26px rgba(44, 35, 28, 0.08);
+}
+
+.colorBlockHalf {
+  width: 100%;
+  height: calc(50% - 0.5px);
+}
+
+.colorBlockTop {
+  border-bottom: 0;
+}
+
+.colorBlockBottom {
+  border-top: 0;
+}
+
+.colorDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 1px 0 rgba(95, 74, 59, 0.12),
+    0 -1px 0 rgba(255,255,255,0.18);
+}
+
+.autoCompareHint {
+  color: rgba(82, 73, 65, 0.66);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.error {
+  color: rgba(128, 34, 32, 0.92);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.resultTop {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: center;
+}
+
+.scoreRing {
+  width: 108px;
+  height: 108px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(95, 74, 59, 0.18);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.9), rgba(255,255,255,0.52)),
+    conic-gradient(rgba(95, 74, 59, 0.92) var(--score-angle), rgba(95, 74, 59, 0.1) 0deg);
+  box-shadow: 0 10px 22px rgba(44, 35, 28, 0.06);
+}
+
+.scoreInner {
+  width: 78px;
+  height: 78px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(95, 74, 59, 0.12);
+}
+
+.scoreValue {
+  color: rgba(31, 28, 25, 0.92);
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.scoreLabel {
+  color: rgba(82, 73, 65, 0.64);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rating {
+  color: rgba(31, 28, 25, 0.92);
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.reason {
+  margin-top: 8px;
+  color: rgba(55, 48, 43, 0.76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.infoStack {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.infoLabel {
+  margin-top: 10px;
+  color: rgba(31, 28, 25, 0.92);
+  font-size: 18px;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+.infoMeta {
+  margin-top: 8px;
+  color: rgba(82, 73, 65, 0.64);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.subTitle {
+  color: rgba(31, 28, 25, 0.9);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.swatchList {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.swatchRow {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.swatchRowButton {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.swatchRowButtonActive {
+  border-color: rgba(95, 74, 59, 0.2);
+  background: rgba(95, 74, 59, 0.06);
+}
+
+.swatch {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(95, 74, 59, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+}
+
+.swatchHex {
+  color: rgba(31, 28, 25, 0.88);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.swatchPercent {
+  color: rgba(82, 73, 65, 0.64);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.accessGrid {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.accessBox {
+  padding: 12px;
+}
+
+.metricRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metricLabel {
+  color: rgba(82, 73, 65, 0.64);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.metricValue {
+  color: rgba(31, 28, 25, 0.88);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.notesList {
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(55, 48, 43, 0.74);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notesList li + li {
+  margin-top: 6px;
+}
+
+.breakdownList {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.breakdownRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  border: 1px solid rgba(95, 74, 59, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.52);
+  padding: 12px;
+}
+
+.breakdownLabel {
+  color: rgba(31, 28, 25, 0.9);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.breakdownExplanation {
+  margin-top: 5px;
+  color: rgba(55, 48, 43, 0.72);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.breakdownRight {
+  text-align: right;
+}
+
+.breakdownScore {
+  color: rgba(31, 28, 25, 0.9);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.breakdownWeight {
+  color: rgba(82, 73, 65, 0.62);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .wrap {
+    padding: 24px 16px 32px;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .composerLayout,
+  .grid,
+  .previewGrid,
+  .detailGrid,
+  .resultTop {
+    grid-template-columns: 1fr;
+  }
+
+  .resultTop {
+    gap: 14px;
+  }
+
+  .outfitStage {
+    min-height: 380px;
+  }
+
+  .outfitFigure {
+    width: min(100%, 244px);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .title {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .subtitle {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .disclaimer,
+  .panel,
+  .hexBox,
+  .fileBox,
+  .previewCard,
+  .summaryBox,
+  .accessBox {
+    border-color: rgba(214, 160, 109, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .fieldLabel,
+  .subTitle,
+  .scoreValue,
+  .rating,
+  .swatchHex,
+  .metricValue {
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .fieldHint,
+  .disclaimer,
+  .reason,
+  .breakdownExplanation,
+  .previewMeta,
+  .autoCompareHint,
+  .swatchPercent,
+  .metricLabel,
+  .notesList,
+  .infoMeta,
+  .breakdownWeight,
+  .error {
+    color: rgba(255, 255, 255, 0.64);
+  }
+
+  .tab {
+    color: rgba(255, 255, 255, 0.68);
+  }
+
+  .toggleGroup {
+    border-color: rgba(214, 160, 109, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .toggleButton {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .toggleButtonActive {
+    background: rgba(214, 160, 109, 0.14);
+    color: rgba(255, 244, 232, 0.92);
+  }
+
+  .hexBox,
+  .fileBox,
+  .fileInput,
+  .scoreLabel {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .previewFrame,
+  .scoreInner {
+    background: rgba(18, 18, 18, 0.72);
+    border-color: rgba(214, 160, 109, 0.14);
+  }
+
+  .inlineSwatchButton {
+    border-color: rgba(214, 160, 109, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  .inlineSwatchButtonActive {
+    border-color: rgba(214, 160, 109, 0.28);
+    background: rgba(214, 160, 109, 0.12);
+  }
+
+  .infoLabel,
+  .breakdownLabel,
+  .breakdownScore {
+    color: rgba(255, 255, 255, 0.88);
+  }
+}

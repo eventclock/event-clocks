@@ -1,0 +1,9 @@
+{
+  "id": "dress-basic",
+  "label": "Basic dress",
+  "type": "onepiece",
+  "canvasWidth": 400,
+  "canvasHeight": 600,
+  "waistY": 220,
+  "centerX": 200
+}
