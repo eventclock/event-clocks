@@ -352,6 +352,57 @@
   padding-left: 18px;
 }
 
+.breakdownList {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.breakdownRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(95, 74, 59, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.breakdownCopy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.breakdownLabel {
+  color: rgba(31, 28, 25, 0.82);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.breakdownMeta {
+  flex: 0 0 auto;
+  min-width: 52px;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  justify-items: end;
+}
+
+.breakdownValue {
+  color: rgba(31, 28, 25, 0.92);
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.breakdownWeight {
+  color: rgba(82, 73, 65, 0.62);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 @media (prefers-color-scheme: dark) {
   .panel,
   .card,
@@ -408,5 +459,19 @@
   .swatchEmpty,
   .swatchColumnLabel {
     color: rgba(255, 255, 255, 0.6);
+  }
+
+  .breakdownRow {
+    border-color: rgba(214, 160, 109, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .breakdownLabel,
+  .breakdownValue {
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  .breakdownWeight {
+    color: rgba(255, 255, 255, 0.62);
   }
 }

@@ -11,6 +11,12 @@ type Result = {
   rating: string;
   reason: string;
   summary: string;
+  scoreBreakdown: Array<{
+    label: string;
+    score: number;
+    weight: number;
+    explanation: string;
+  }>;
   styleRead: {
     label: string;
     explanation: string;
@@ -90,6 +96,12 @@ function getAppRating(score: number) {
   return "Tricky";
 }
 
+function getResultSummaryTitle(score: number) {
+  if (score >= 85) return "Why this works";
+  if (score >= 65) return "Quick summary";
+  return "Why this feels tricky";
+}
+
 export default function ColorMatchAppClient() {
   const [mode, setMode] = useState<Mode>("photo");
   const [colorA, setColorA] = useState("#355C7D");
@@ -112,6 +124,7 @@ export default function ColorMatchAppClient() {
   const activeBottomColor =
     mode === "colors" ? colorB : selectedPaletteB ?? result?.paletteB[0]?.hex ?? "#B18E6B";
   const appRating = result ? getAppRating(result.score) : null;
+  const summaryTitle = result ? getResultSummaryTitle(result.score) : "Quick summary";
 
   const requestColorComparison = useCallback(async (
     nextColorA: string,
@@ -511,9 +524,7 @@ export default function ColorMatchAppClient() {
             <div>
               <div className={styles.scoreValue}>{result.score}%</div>
               <div className={styles.scoreCaption}>
-                {appRating}
-                <span className={styles.scoreCaptionDot}>•</span>
-                {result.score}%
+                {appRating} match
               </div>
             </div>
             <div className={styles.miniPreview}>
@@ -524,21 +535,20 @@ export default function ColorMatchAppClient() {
 
           <div className={styles.resultBody}>
             <div className={styles.infoCard}>
-              <div className={styles.infoTitle}>Why it works</div>
+              <div className={styles.infoTitle}>{summaryTitle}</div>
+              <div className={styles.infoLead}>{result.reason}</div>
               <p>{result.summary}</p>
-            </div>
-
-            <div className={styles.infoCard}>
-              <div className={styles.infoTitle}>Overall feel</div>
-              <div className={styles.infoLead}>{result.styleRead.label}</div>
-              <p>{result.styleRead.explanation}</p>
+              <p>
+                <strong>Overall feel:</strong> {result.styleRead.label}.{" "}
+                {result.styleRead.explanation}
+              </p>
             </div>
 
             {result.suggestions.length ? (
               <div className={styles.infoCard}>
                 <div className={styles.infoTitle}>Helpful styling tip</div>
                 <ul>
-                  {result.suggestions.slice(0, 2).map((tip) => (
+                  {result.suggestions.slice(0, 1).map((tip) => (
                     <li key={tip}>{tip}</li>
                   ))}
                 </ul>
@@ -549,10 +559,29 @@ export default function ColorMatchAppClient() {
               <div className={styles.infoCard}>
                 <div className={styles.infoTitle}>Things to watch</div>
                 <ul>
-                  {result.avoid.slice(0, 2).map((tip) => (
+                  {result.avoid.slice(0, 1).map((tip) => (
                     <li key={tip}>{tip}</li>
                   ))}
                 </ul>
+              </div>
+            ) : null}
+
+            {result.scoreBreakdown.length ? (
+              <div className={styles.infoCard}>
+                <div className={styles.infoTitle}>Why the score landed here</div>
+                <div className={styles.breakdownList}>
+                  {result.scoreBreakdown.map((item) => (
+                    <div key={item.label} className={styles.breakdownRow}>
+                      <div className={styles.breakdownCopy}>
+                        <div className={styles.breakdownLabel}>{item.label}</div>
+                        <div className={styles.breakdownWeight}>{item.weight}% weight</div>
+                      </div>
+                      <div className={styles.breakdownMeta}>
+                        <span className={styles.breakdownValue}>{item.score}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
           </div>
