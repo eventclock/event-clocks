@@ -75,6 +75,52 @@
   margin-top: 14px;
 }
 
+.subModeBlock {
+  display: grid;
+  gap: 8px;
+}
+
+.subModeLabel {
+  color: rgba(82, 73, 65, 0.62);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.subModeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.subModeChip {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(95, 74, 59, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(55, 48, 43, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.subModeChipActive {
+  border-color: rgba(95, 74, 59, 0.26);
+  background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(243, 236, 228, 0.92));
+  color: rgba(31, 28, 25, 0.86);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    0 6px 14px rgba(44, 35, 28, 0.06);
+  transform: translateY(-1px);
+}
+
 .card,
 .infoCard,
 .errorCard {
@@ -403,6 +449,94 @@
   font-weight: 800;
 }
 
+.matchList {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.matchRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(95, 74, 59, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.matchPair {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.matchSwatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(95, 74, 59, 0.14);
+}
+
+.matchCopy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.matchLabel {
+  color: rgba(31, 28, 25, 0.88);
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.matchHex {
+  color: rgba(82, 73, 65, 0.62);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.matchReason {
+  color: rgba(82, 73, 65, 0.74);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.matchScore {
+  color: rgba(31, 28, 25, 0.92);
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.matchMeta {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.comparePill {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(82, 73, 65, 0.62);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.comparePill:hover {
+  color: rgba(31, 28, 25, 0.82);
+  transform: translateY(-1px);
+}
+
 @media (prefers-color-scheme: dark) {
   .panel,
   .card,
@@ -447,6 +581,25 @@
     color: rgba(255, 255, 255, 0.72);
   }
 
+  .subModeLabel {
+    color: rgba(255, 255, 255, 0.58);
+  }
+
+  .subModeChip {
+    border-color: rgba(214, 160, 109, 0.16);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .subModeChipActive {
+    border-color: rgba(214, 160, 109, 0.28);
+    background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(214, 160, 109, 0.16));
+    color: rgba(255, 255, 255, 0.86);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      0 8px 18px rgba(0,0,0,0.14);
+  }
+
   .swatchPillActive {
     border-color: rgba(214, 160, 109, 0.34);
     background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(214, 160, 109, 0.16));
@@ -473,5 +626,28 @@
 
   .breakdownWeight {
     color: rgba(255, 255, 255, 0.62);
+  }
+
+  .matchRow {
+    border-color: rgba(214, 160, 109, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .matchLabel,
+  .matchScore {
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  .matchHex,
+  .matchReason {
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .comparePill {
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .comparePill:hover {
+    color: rgba(255, 255, 255, 0.84);
   }
 }

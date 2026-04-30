@@ -69,6 +69,38 @@ export type ColorMatchRequest =
       imageB: string;
     };
 
+export type ColorSuggestionsRequest =
+  | {
+      mode: "color";
+      color: string;
+      limit?: number;
+      minScore?: number;
+    }
+  | {
+      mode: "image";
+      image: string;
+      selectedColor?: string;
+      limit?: number;
+      minScore?: number;
+    };
+
+export type SuggestedMatch = {
+  hex: string;
+  label: string;
+  score: number;
+  rating: string;
+  reason: string;
+};
+
+export type ColorSuggestionsResult = {
+  baseColor: string | null;
+  dominantColors?: PaletteEntry[];
+  matches: SuggestedMatch[];
+  needsSelection: boolean;
+  requestedLimit: number;
+  minScore: number;
+};
+
 type WeightedPaletteEntry = PaletteEntry & {
   rgb: Rgb;
   hsl: Hsl;
@@ -87,8 +119,150 @@ type AggregateBreakdown = PairBreakdown & {
   topPair: PairBreakdown;
 };
 
+type CuratedCandidate = {
+  hex: string;
+  label: string;
+};
+
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 const MAX_DIMENSION = 72;
+const DEFAULT_SUGGESTION_LIMIT = 10;
+const DEFAULT_MIN_SUGGESTION_SCORE = 0;
+
+const CURATED_MATCH_COLORS: CuratedCandidate[] = [
+  { hex: "#FBF8F2", label: "Chalk white" },
+  { hex: "#F8F4EC", label: "Porcelain cream" },
+  { hex: "#F6F1E7", label: "Soft cream" },
+  { hex: "#F4EEE4", label: "Milk glass" },
+  { hex: "#F2EBDD", label: "Buttermilk" },
+  { hex: "#EFE7DA", label: "Warm ivory" },
+  { hex: "#ECE3D5", label: "Pearl beige" },
+  { hex: "#E9DECF", label: "Oat" },
+  { hex: "#E6D9C8", label: "Pale flax" },
+  { hex: "#E2D1BE", label: "Sand" },
+  { hex: "#DEC8B3", label: "Wheat beige" },
+  { hex: "#D7C0A4", label: "Tan" },
+  { hex: "#D2B596", label: "Biscuit" },
+  { hex: "#CBB8A1", label: "Soft khaki" },
+  { hex: "#C29C72", label: "Camel" },
+  { hex: "#B88E67", label: "Toasted camel" },
+  { hex: "#AF835F", label: "Caramel" },
+  { hex: "#A68A74", label: "Taupe" },
+  { hex: "#9D8A78", label: "Warm taupe" },
+  { hex: "#9A775C", label: "Cocoa" },
+  { hex: "#8B6A52", label: "Walnut" },
+  { hex: "#7B5E4B", label: "Chestnut brown" },
+  { hex: "#6D5445", label: "Mocha" },
+  { hex: "#59463B", label: "Espresso brown" },
+  { hex: "#43362F", label: "Umber" },
+  { hex: "#332E2B", label: "Soft black" },
+  { hex: "#262322", label: "Ink black" },
+  { hex: "#4D4A47", label: "Charcoal" },
+  { hex: "#5B5855", label: "Iron gray" },
+  { hex: "#6A6764", label: "Pewter" },
+  { hex: "#7C7A76", label: "Stone gray" },
+  { hex: "#8C8883", label: "Pebble gray" },
+  { hex: "#9B968F", label: "Ash taupe" },
+  { hex: "#AAA39B", label: "Greige" },
+  { hex: "#B7B1A8", label: "Mushroom" },
+  { hex: "#C4BDB3", label: "Silver beige" },
+  { hex: "#D0C8BE", label: "Driftwood" },
+  { hex: "#DAD4CB", label: "Cloud beige" },
+  { hex: "#E6E1D8", label: "Porcelain" },
+  { hex: "#ECEAE5", label: "Quiet gray" },
+  { hex: "#F1F3F4", label: "Soft cloud" },
+  { hex: "#E6EBEF", label: "Cool pearl" },
+  { hex: "#DCE3E8", label: "Pale steel" },
+  { hex: "#D4DCE2", label: "Cool mist" },
+  { hex: "#C6D0D8", label: "Blue gray" },
+  { hex: "#B6C1CB", label: "Storm mist" },
+  { hex: "#A4B1BE", label: "Steel blue gray" },
+  { hex: "#93A1B0", label: "Harbor blue" },
+  { hex: "#7F90A2", label: "Weathered blue" },
+  { hex: "#6B7F94", label: "Oxford blue" },
+  { hex: "#566C83", label: "Slate navy" },
+  { hex: "#24324A", label: "Navy" },
+  { hex: "#2C3C58", label: "Midnight navy" },
+  { hex: "#314664", label: "Deep marine" },
+  { hex: "#385372", label: "Denim blue" },
+  { hex: "#436184", label: "Washed denim" },
+  { hex: "#516A89", label: "Slate blue" },
+  { hex: "#5E78A0", label: "Dusty cornflower" },
+  { hex: "#7187A1", label: "Dusty blue" },
+  { hex: "#889AB0", label: "Faded chambray" },
+  { hex: "#9DACBF", label: "Powder slate" },
+  { hex: "#B8C7D6", label: "Pale denim" },
+  { hex: "#D7E2EA", label: "Icy blue" },
+  { hex: "#E0ECEF", label: "Sea mist" },
+  { hex: "#D3E2DB", label: "Soft mint gray" },
+  { hex: "#C8D2C7", label: "Soft eucalyptus" },
+  { hex: "#BEC9BB", label: "Sage mist" },
+  { hex: "#B1BCAB", label: "Muted sage" },
+  { hex: "#9CA482", label: "Soft sage" },
+  { hex: "#8F9978", label: "Dried sage" },
+  { hex: "#818B68", label: "Moss green" },
+  { hex: "#7B8760", label: "Sage olive" },
+  { hex: "#5E6A44", label: "Olive" },
+  { hex: "#556241", label: "Herb olive" },
+  { hex: "#4F5C3B", label: "Deep olive" },
+  { hex: "#47533D", label: "Forest olive" },
+  { hex: "#3F4D35", label: "Juniper olive" },
+  { hex: "#6C6E59", label: "Moss gray" },
+  { hex: "#79806A", label: "Lichen" },
+  { hex: "#88907D", label: "Eucalyptus gray" },
+  { hex: "#A7B19A", label: "Dusted thyme" },
+  { hex: "#C8D4BE", label: "Pale sage green" },
+  { hex: "#E1E7D8", label: "Celery cream" },
+  { hex: "#F3E7B8", label: "Butter yellow" },
+  { hex: "#EDD99A", label: "Soft marigold" },
+  { hex: "#E5CA83", label: "Golden straw" },
+  { hex: "#E0BF7C", label: "Honey" },
+  { hex: "#D6AF5F", label: "Muted mustard" },
+  { hex: "#CDA453", label: "Ochre" },
+  { hex: "#B6924E", label: "Antique gold" },
+  { hex: "#A58048", label: "Bronzed ochre" },
+  { hex: "#977447", label: "Tobacco gold" },
+  { hex: "#E9C4A4", label: "Soft apricot" },
+  { hex: "#E3B48C", label: "Apricot tan" },
+  { hex: "#D9A47D", label: "Cider beige" },
+  { hex: "#C78462", label: "Clay" },
+  { hex: "#BB765C", label: "Baked clay" },
+  { hex: "#A9674B", label: "Terracotta" },
+  { hex: "#965C46", label: "Burnt sienna" },
+  { hex: "#855240", label: "Rust brown" },
+  { hex: "#784B3D", label: "Cinnamon bark" },
+  { hex: "#6A4439", label: "Brick brown" },
+  { hex: "#F0D2C8", label: "Pale blush" },
+  { hex: "#E6B7A8", label: "Muted peach" },
+  { hex: "#D09A93", label: "Dusty rose" },
+  { hex: "#C58E88", label: "Rosewood pink" },
+  { hex: "#B56C61", label: "Muted coral" },
+  { hex: "#A95C58", label: "Rose clay" },
+  { hex: "#964F50", label: "Muted brick rose" },
+  { hex: "#7C434B", label: "Mulberry rose" },
+  { hex: "#6E3E45", label: "Burgundy" },
+  { hex: "#7A4251", label: "Wine berry" },
+  { hex: "#8C5160", label: "Berry" },
+  { hex: "#9D6075", label: "Dusty berry" },
+  { hex: "#B27B95", label: "Muted mauve" },
+  { hex: "#C9A0B2", label: "Powder rose" },
+  { hex: "#E3C4BE", label: "Blush beige" },
+  { hex: "#E8D3D8", label: "Rose mist" },
+  { hex: "#DCC2D2", label: "Petal mauve" },
+  { hex: "#CFB4C9", label: "Soft orchid" },
+  { hex: "#B99BB7", label: "Dusty lilac" },
+  { hex: "#9E86A2", label: "Muted plum" },
+  { hex: "#7A6888", label: "Smoky violet" },
+  { hex: "#655978", label: "Ink plum" },
+  { hex: "#475968", label: "Lead blue" },
+  { hex: "#5A6871", label: "Mineral gray" },
+  { hex: "#6E7468", label: "Dusty olive gray" },
+  { hex: "#827B70", label: "Earth taupe" },
+  { hex: "#A4927E", label: "Fawn" },
+  { hex: "#B8A48B", label: "Sandstone" },
+  { hex: "#D7C8B8", label: "Latte cream" },
+  { hex: "#E9DED3", label: "Vanilla stone" },
+];
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -344,6 +518,28 @@ function normalizePalette(entries: WeightedPaletteEntry[]) {
   }));
 }
 
+function makeSuggestionKey(hsl: Hsl) {
+  const family = colorFamily(hsl);
+  const hueBucket = family === "color" ? Math.round(hsl.h / 24) * 24 : family;
+  const lightBucket = Math.round(hsl.l * 5);
+  const satBucket = Math.round(hsl.s * 4);
+  return `${hueBucket}:${lightBucket}:${satBucket}`;
+}
+
+function areSuggestionColorsTooSimilar(a: WeightedPaletteEntry, b: WeightedPaletteEntry) {
+  const hueDiff = hueDistance(a.hsl.h, b.hsl.h);
+  const satDiff = Math.abs(a.hsl.s - b.hsl.s);
+  const lightDiff = Math.abs(a.hsl.l - b.hsl.l);
+  const familyA = colorFamily(a.hsl);
+  const familyB = colorFamily(b.hsl);
+
+  if (familyA === familyB && familyA !== "color") {
+    return hueDiff < 20 && satDiff < 0.18 && lightDiff < 0.16;
+  }
+
+  return hueDiff < 18 && satDiff < 0.12 && lightDiff < 0.1;
+}
+
 function mergeSimilarEntries(entries: WeightedPaletteEntry[]) {
   const merged: WeightedPaletteEntry[] = [];
 
@@ -475,6 +671,10 @@ async function extractPaletteFromImageDataUrl(dataUrl: string) {
   }
 
   return palette;
+}
+
+export async function extractDominantPaletteFromImage(dataUrl: string) {
+  return toPublicPalette(await extractPaletteFromImageDataUrl(dataUrl));
 }
 
 function describeAccessibility(primaryA: WeightedPaletteEntry, primaryB: WeightedPaletteEntry): AccessibilitySummary {
@@ -972,6 +1172,78 @@ function scorePalettes(paletteA: WeightedPaletteEntry[], paletteB: WeightedPalet
   };
 }
 
+function scoreSingleColorPair(baseHex: string, candidateHex: string) {
+  const normalizedBase = normalizeHex(baseHex);
+  const normalizedCandidate = normalizeHex(candidateHex);
+  return scorePalettes(
+    [buildPaletteEntry(normalizedBase, 100)],
+    [buildPaletteEntry(normalizedCandidate, 100)],
+  );
+}
+
+export function getTopMatchesForColor(
+  baseHex: string,
+  options?: {
+    limit?: number;
+    minScore?: number;
+  },
+): SuggestedMatch[] {
+  const normalizedBase = normalizeHex(baseHex);
+  const requestedLimit = clamp(Math.round(options?.limit ?? DEFAULT_SUGGESTION_LIMIT), 1, 10);
+  const minScore = clamp(options?.minScore ?? DEFAULT_MIN_SUGGESTION_SCORE, 0, 100);
+
+  const scoredCandidates = CURATED_MATCH_COLORS
+    .filter((candidate) => normalizeHex(candidate.hex) !== normalizedBase)
+    .map((candidate) => {
+      const result = scoreSingleColorPair(normalizedBase, candidate.hex);
+      return {
+        candidate,
+        result,
+        weighted: buildPaletteEntry(candidate.hex, 100),
+        suggestionKey: makeSuggestionKey(buildPaletteEntry(candidate.hex, 100).hsl),
+      };
+    })
+    .filter(({ result }) => result.score >= minScore)
+    .sort((a, b) => {
+      if (b.result.score !== a.result.score) {
+        return b.result.score - a.result.score;
+      }
+      return b.result.scoreBreakdown[0]?.score - a.result.scoreBreakdown[0]?.score;
+    });
+
+  const chosen: Array<(typeof scoredCandidates)[number]> = [];
+  const seenKeys = new Set<string>();
+
+  for (const entry of scoredCandidates) {
+    if (seenKeys.has(entry.suggestionKey)) {
+      continue;
+    }
+
+    const isTooSimilar = chosen.some((selected) =>
+      areSuggestionColorsTooSimilar(selected.weighted, entry.weighted),
+    );
+
+    if (isTooSimilar) {
+      continue;
+    }
+
+    chosen.push(entry);
+    seenKeys.add(entry.suggestionKey);
+
+    if (chosen.length >= requestedLimit) {
+      break;
+    }
+  }
+
+  return chosen.map(({ candidate, result }) => ({
+    hex: normalizeHex(candidate.hex),
+    label: candidate.label,
+    score: result.score,
+    rating: result.rating,
+    reason: result.reason,
+  }));
+}
+
 function validateColorsPayload(input: ColorMatchRequest) {
   if (input.mode !== "colors") {
     throw new Error("Unsupported mode.");
@@ -1009,4 +1281,42 @@ export async function analyzeColorMatch(input: ColorMatchRequest): Promise<Color
       : await validateImagesPayload(input);
 
   return scorePalettes(palettes.paletteA, palettes.paletteB);
+}
+
+export async function getColorSuggestions(
+  input: ColorSuggestionsRequest,
+): Promise<ColorSuggestionsResult> {
+  const requestedLimit = clamp(Math.round(input.limit ?? DEFAULT_SUGGESTION_LIMIT), 1, 10);
+  const minScore = clamp(input.minScore ?? DEFAULT_MIN_SUGGESTION_SCORE, 0, 100);
+
+  if (input.mode === "color") {
+    const baseColor = normalizeHex(input.color);
+    return {
+      baseColor,
+      matches: getTopMatchesForColor(baseColor, {
+        limit: requestedLimit,
+        minScore,
+      }),
+      needsSelection: false,
+      requestedLimit,
+      minScore,
+    };
+  }
+
+  const dominantPalette = await extractDominantPaletteFromImage(input.image);
+  const baseColor = input.selectedColor ? normalizeHex(input.selectedColor) : null;
+
+  return {
+    baseColor,
+    dominantColors: dominantPalette,
+    matches: baseColor
+      ? getTopMatchesForColor(baseColor, {
+          limit: requestedLimit,
+          minScore,
+        })
+      : [],
+    needsSelection: !baseColor,
+    requestedLimit,
+    minScore,
+  };
 }
