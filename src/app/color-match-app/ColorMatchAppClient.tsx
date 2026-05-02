@@ -127,8 +127,8 @@ function getResultSummaryTitle(score: number) {
 
 export default function ColorMatchAppClient() {
   const [flow, setFlow] = useState<Flow>("compare");
-  const [mode, setMode] = useState<Mode>("photo");
-  const [matchesMode, setMatchesMode] = useState<Mode>("photo");
+  const [mode, setMode] = useState<Mode>("colors");
+  const [matchesMode, setMatchesMode] = useState<Mode>("colors");
 
   const [colorA, setColorA] = useState("#355C7D");
   const [colorB, setColorB] = useState("#D9A066");
@@ -589,17 +589,17 @@ export default function ColorMatchAppClient() {
                 <div className={styles.subModeRow} aria-label="Compare input mode">
                   <button
                     type="button"
+                    className={`${styles.subModeChip} ${mode === "colors" ? styles.subModeChipActive : ""}`}
+                    onClick={() => setMode("colors")}
+                  >
+                    Pick colors
+                  </button>
+                  <button
+                    type="button"
                     className={`${styles.subModeChip} ${mode === "photo" ? styles.subModeChipActive : ""}`}
                     onClick={() => setMode("photo")}
                   >
                     Use photos
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.subModeChip} ${mode === "colors" ? styles.subModeChipActive : ""}`}
-                    onClick={() => setMode("colors")}
-                  >
-                    Manual colors
                   </button>
                 </div>
               </div>
@@ -767,17 +767,17 @@ export default function ColorMatchAppClient() {
                 <div className={styles.subModeRow} aria-label="Top matches input mode">
                   <button
                     type="button"
+                    className={`${styles.subModeChip} ${matchesMode === "colors" ? styles.subModeChipActive : ""}`}
+                    onClick={() => setMatchesMode("colors")}
+                  >
+                    Pick a color
+                  </button>
+                  <button
+                    type="button"
                     className={`${styles.subModeChip} ${matchesMode === "photo" ? styles.subModeChipActive : ""}`}
                     onClick={() => setMatchesMode("photo")}
                   >
                     Use photo
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.subModeChip} ${matchesMode === "colors" ? styles.subModeChipActive : ""}`}
-                    onClick={() => setMatchesMode("colors")}
-                  >
-                    Manual color
                   </button>
                 </div>
               </div>
